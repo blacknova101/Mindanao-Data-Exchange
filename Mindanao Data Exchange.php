@@ -48,6 +48,7 @@
     .search-bar img {
         width: 20px;
         height: 20px;
+        margin-left: -40px;
     }
     .nav-links a {
         color: white;
