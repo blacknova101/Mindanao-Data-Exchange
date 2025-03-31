@@ -9,7 +9,7 @@
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        background-color: white;
+        background-color: #E3F2FD;
         text-align: center;
     }
     .navbar {
