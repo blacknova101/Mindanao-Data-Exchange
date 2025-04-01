@@ -17,7 +17,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 5%; /* Matches home page */
+            padding: 15px 2%;
             background-color: #0c1a36;
             color: white;
         }
@@ -26,7 +26,10 @@
             align-items: center;
         }
         .logo img {
-            height: 50px;
+        height: auto; 
+        width: 100px; 
+        max-width: 100%; 
+        margin-left: 0; 
         }
         .nav-links {
             display: flex; 
@@ -109,6 +112,22 @@
         a:hover {
             text-decoration: underline;
         }
+        .login {
+        display: block;
+        background-color: #0c1a36;
+        color: white;
+        padding: 14px 25px;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 10px;
+        }
+
+        .login:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
@@ -137,7 +156,7 @@
                     <input type="password" name="password" placeholder="Password" required>
                 </div>
                 <a href="#" class="forgot-password">Forgot password?</a>
-                <button type="submit">LOGIN</button>
+                <a href="HomeLogin.php" class="login">LOGIN</a>
             </form>
             <a href="#" class="sign-up">Sign up</a>
         </div>

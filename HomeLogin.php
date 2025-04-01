@@ -45,7 +45,7 @@
         border: none;
     }
     .search-bar button {
-        background-color: #0c1a36;
+        background: none;
         border: none;
         cursor: pointer;
     }
@@ -120,9 +120,22 @@
         font-size: 16px;
         color: black;
     }
-    .upload-btn img {
-        height: 80px;
-        width: 100px;
+    .profile-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: white; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 70px;
+    }
+    .profile-icon img {
+        width: 150%;
+        height: auto;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
     }
     @media (max-width: 768px) {
         .stats-box {
@@ -138,7 +151,12 @@
         h1 {
             font-size: 40px;
         }
-    }
+        }
+        .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        }
     </style>
 </head>
 <body>
@@ -154,9 +172,12 @@
                 </button>
             </div>
             <nav class="nav-links">
-                <a href="login.php">Login</a>
-                <a href="#">Sign up</a>
-            </nav>
+            <a href="#">DATASETS</a>
+            <a href="#">CATEGORIES</a>
+            <div class="profile-icon">
+                <img src="images/avatarIconunknown.jpg" alt="Profile">
+            </div>
+        </nav>
         </header>
 
         <main class="wrapper">
@@ -177,7 +198,7 @@
         </main>
 
         <div class="upload-section">
-            <a href="login.php" class="upload-btn">
+            <a href="#" class="upload-btn">
             <img src="images/upload_button.png" alt="Upload">
             </a>
             <p>Upload Data</p>
