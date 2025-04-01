@@ -1,44 +1,3 @@
-<?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $targetDirectory = "uploads/";
-    $targetFile = $targetDirectory . basename($_FILES["fileToUpload"]["name"]);
-    $uploadOk = 1;
-    $fileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-
-    
-    if (file_exists($targetFile)) {
-        echo "Sorry, file already exists.";
-        $uploadOk = 0;
-    }
-
-    
-    if ($_FILES["fileToUpload"]["size"] > 5000000) {
-        echo "Sorry, your file is too large.";
-        $uploadOk = 0;
-    }
-
-    
-    $allowedTypes = ["jpg", "png", "pdf", "csv", "txt"];
-    if (!in_array($fileType, $allowedTypes)) {
-        echo "Sorry, only JPG, PNG, PDF, CSV, and TXT files are allowed.";
-        $uploadOk = 0;
-    }
-
-    
-    if ($uploadOk == 1) {
-        if (!is_dir($targetDirectory)) {
-            mkdir($targetDirectory, 0777, true);
-        }
-
-        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $targetFile)) {
-            echo "The file " . htmlspecialchars(basename($_FILES["fileToUpload"]["name"])) . " has been uploaded.";
-        } else {
-            echo "Sorry, there was an error uploading your file.";
-        }
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,9 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        background: url('images/Mindanao.png');
-        background-size: cover;
-        background-attachment: fixed;
+        background-color: #E3F2FD;
         text-align: center;
     }
     .navbar {
@@ -141,82 +98,83 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         align-items: center;
         gap: 20px;
         }
-        
         .container {
-            width: 70%;
-            margin: 50px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            position: relative;
-        }
-        
-
-        h2 {
-            padding: 20px;
-            margin: 0 auto;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: left;
-            margin-bottom: 20px;
-        }
-        #uploadForm {
-            padding: 20px;
-            margin: 0 auto;
-            
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .drop-area {
-            border: 2px dashed black;
-            padding: 50px 200px 50px 200px;
-            margin: 0 auto;
-        }
-
-        
-        .drop-area.dragover {
-            background-color: #e6ebff;
-            border-color: #0c1a36;
-        }
-
-        
-        .drop-area img {
-            width: 50px;
-            margin-bottom: 10px;
-        }
-
-       
-        .drop-area p {
-            font-size: 16px;
-            color: #333;
-            margin: 5px 0;
-        }
-
-        
-        input[type="file"] {
-            display: none;
-        }
-
-       
-        .browse-btn {
-            background-color: #0c1a36;
-            color: white;
-            padding: 10px;
-            margin: 0 auto;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            display: block;
-            margin-top: 10px;
-            
-        }
-        .modal {
+        width: 60%;
+        margin: 50px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+        .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between; 
+        padding: 10px;
+        border-bottom: 2px solid #ccc;
+    }
+        .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .create-btn {
+    padding: 10px;
+    background-color: #ccc;
+    border: none;
+    cursor: not-allowed;
+}
+    .close-btn {
+        font-size: 24px;
+        cursor: pointer;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        margin-top: 15px;
+    }
+    .form-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .form-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .flex-container {
+        display: flex;
+        gap: 20px;
+    }
+    .flex-item {
+        flex: 1;
+    }
+    .form-item {
+        flex: 1;
+        min-width: 45%;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .file-upload {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .footer {
+        height: 50px;
+        background: #ccc;
+        margin-top: 20px;
+    }
+    .modal {
             display: none;
             position: fixed;
             top: 0;
@@ -262,16 +220,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 5px;
             margin-top: 10px;
         }
-        @media (max-width: 600px) {
-            .container {
-                width: 90%;
-            }
-        }
     </style>
 </head>
 <body>
 
-<div id="wrapper">
+    <div id="wrapper">
         <header class="navbar">
             <div class="logo">
                 <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
@@ -288,7 +241,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
             </div>
-        </nav>
+            </nav>
         </header>
         <div class="modal" id="categoryModal">
         <div class="modal-content">
@@ -320,20 +273,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     document.getElementById("categoryModal").style.display = "none";
     });
     </script>
-<div class="container">
-    <h2>UPLOAD DATASET</h2>
-    <form id="uploadForm" action="upload.php" method="post" enctype="multipart/form-data">
-        <label for="fileToUpload" class="drop-area">
-            <img src="images/upload_button.png" alt="Upload Icon">
-            <p>Drag & drop files to upload</p>
-            <p>or</p>
-            <a href="upload_fill.php">
-                <button type="button" class="browse-btn">Browse</button>
-            </a>
-        </label>
-        <input type="file" name="fileToUpload" id="fileToUpload" onchange="this.form.submit()" required>
-    </form>
-</div>
-
+        <div class="container">
+        <div class="header">
+    <div class="header-left">
+        <span class="close-btn">&times;</span>
+        <h2>UPLOAD DATASET</h2>
+    </div>
+        <button class="create-btn">Create</button>
+    </div>
+    <div class="form-group">
+        <label for="title">DATASET TITLE</label>
+        <input type="text" id="title" placeholder="Enter dataset title">
+    </div>
+    <div class="flex-container">
+        <div class="form-group flex-item">
+            <label for="visibility">VISIBILITY</label>
+            <select id="visibility">
+                <option>Choose Visibility</option>
+                <option>Public</option>
+                <option>Private</option>
+            </select>
+        </div>
+        <div class="form-group flex-item">
+            <label for="category">CATEGORY</label>
+            <select id="category">
+                <option>Choose Category</option>
+                <option>Business and Finance</option>
+                <option>Geography and Mapping</option>
+            </select>
+        </div>
+    </div>
+    <div class="flex-container">
+        <div class="form-group flex-item">
+            <label for="time-period">TIME PERIOD</label>
+            <input type="text" id="time-period" placeholder="Add time period">
+        </div>
+        <div class="form-group flex-item">
+            <label for="source">SOURCE</label>
+            <input type="text" id="source" placeholder="Add source">
+        </div>
+    </div>
+    <div class="flex-container">
+        <div class="form-group flex-item">
+            <label for="location">LOCATION</label>
+            <input type="text" id="location" placeholder="Enter location">
+        </div>
+        <div class="form-group flex-item">
+            <label for="link">LINK</label>
+            <input type="text" id="link" placeholder="Add link">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Files</label>
+        <div class="file-upload">
+            <span>📄</span>
+            <span>davao_urban_growth_statistics_2024.csv</span>
+        </div>
+    <div class="footer"></div>
 </body>
 </html>

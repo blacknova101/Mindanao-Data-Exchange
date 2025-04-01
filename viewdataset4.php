@@ -114,64 +114,54 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
-        .dataset-header {
+        .dataset-header h2 {
+            color: #0c1a36;
+        }
+        .dataset-content {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            justify-content: space-between;
         }
-        .filters {
-            display: flex;
-            gap: 10px;
+        .dataset-text {
+            width: 60%;
         }
-        .filters button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #0c1a36;
-            color: white;
-            transition: background 0.3s;
+        .dataset-image {
+            width: 35%;
         }
-        .filters button:hover {
-            background-color: #142d5e;
-        }
-        .add-data {
-            padding: 8px 16px;
-            background-color: #0c1a36;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .add-data:hover {
-            background-color: #142d5e;
-        }
-        .dataset-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .dataset-item {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .dataset-item img {
+        .dataset-image img {
             width: 100%;
-            height: 150px;
-            object-fit: cover;
+            border-radius: 8px;
         }
-        .dataset-info {
-            padding: 10px;
+        .info-resources-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
         }
-        .dataset-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr); /* Ensures only 2 dataset-items per row */
-        gap: 20px;
+        .additional-info, .resources {
+            padding: 15px;
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+        .resources ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .resources ul li {
+            padding: 5px 0;
+        }
+        .dataset-image {
+            width: 10%;
+            height: 10%;
+        }
+        .info-image img {
+            width: 95%;
+            height: 300px;
+            display: block;
+            margin: auto;
+            margin-top: 20px;
         }
         .modal {
             display: none;
@@ -277,67 +267,39 @@
         }
         document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("categoryModal").style.display = "none";
-});
+    });
     </script>
     <div class="container">
         <div class="dataset-header">
-            <h2>DATASETS</h2>
-            <button class="add-data">ADD DATA</button>
+            <h2>Smart Cities: IoT & Infrastructure Data</h2>
         </div>
-        <div class="filters">
-            <button>Most Popular</button>
-            <button>All Datasets</button>
-            <button>Science & Research</button>
+        <div class="dataset-content">
+            <div class="dataset-text">
+                <p>TThis dataset contains information on IoT-enabled smart city infrastructure, including smart traffic systems, energy-efficient buildings, sensor networks, and real-time urban monitoring. It provides insights into how smart technologies are integrated into city planning to improve efficiency, sustainability, and quality of life.</p>
+            </div>
+            <div class="dataset-image">
+                <img src="images/viewpic4.png" alt="Stock Market Data">
+            </div>
         </div>
-        <h3>Trending Datasets</h3>
-        <div class="dataset-list">
-            <div class="dataset-item">
-            <a href="viewdataset.php">
-                <img src="images/pic1.png" alt="Urban Expansion">
-                <div class="dataset-info">
-                    <h4>Global Urban Expansion Trends 2024</h4>
-                    <p>A dataset on city growth, infrastructure development, and population density.</p>
-                </div>
-            </a>
+        <div class="info-image">
+            <img src="images/viewpic4.1.png" alt="Additional Data Visualization">
+        </div>
+        <div class="info-resources-container">
+            <div class="additional-info">
+                <h3>Additional Information</h3>
+                <p><strong>Time Period:</strong> January 1, 2018 - December 31, 2023</p>
+                <p><strong>Location:</strong> Philippines</p>
+                <p><strong>Source:</strong> National Institute for Smart Infrastructure (NISI)</p>
+                <p><strong>Link:</strong> <a href="#">www.psuda.gov.ph/smartcity-data</a></p>
             </div>
-            <div class="dataset-item">
-            <a href="viewdataset2.php">
-                <img src="images/pic2.png" alt="Traffic Data">
-                <div class="dataset-info">
-                    <h4>Real-Time Traffic Patterns & Congestion Data</h4>
-                    <p>Traffic flow and congestion data from major urban areas.</p>
-                </div>
-                </a>
-            </div>
-            <div class="dataset-item">
-            <a href="viewdataset3.php">
-                <img src="images/pic3.png" alt="Green Spaces">
-                <div class="dataset-info">
-                    <h4>Satellite Analysis of Green Spaces in Cities</h4>
-                    <p>Data on urban greenery, parks, and environmental zones.</p>
-                </div>
-                </a>
-            </div>
-            <div class="dataset-item">
-            <a href="viewdataset4.php">
-                <img src="images/pic4.png" alt="Smart Cities">
-                <div class="dataset-info">
-                    <h4>Smart Cities: IoT & Infrastructure Data</h4>
-                    <p>Information on smart city networks, IoT systems, and urban infrastructure.</p>
-                </div>
-                </a>
+            <div class="resources">
+                <h3>Data and Resources</h3>
+                <ul>
+                    <li><a href="#">smartcity-data.csv</a></li>
+                    <li><a href="#">smartcity-data.json</a></li>
+                </ul>
             </div>
         </div>
     </div>
-    <script>
-        function showDropdown() {
-            document.getElementById("searchDropdown").style.display = "block";
-        }
-        function hideDropdown() {
-            setTimeout(() => {
-                document.getElementById("searchDropdown").style.display = "none";
-            }, 200);
-        }
-    </script>
 </body>
 </html>

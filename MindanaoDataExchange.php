@@ -27,31 +27,68 @@
             height: auto;
         }
         .search-bar {
-            flex-grow: 1;
-            margin-left: 100px;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-        .search-bar input {
-            padding: 10px;
-            width: 100%;
-            max-width: 300px;
-            border-radius: 5px;
-            border: none;
-        }
-        .search-dropdown {
-            position: absolute;
-            top: 45px;
-            left: 0;
-            width: 100%;
-            max-width: 300px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: none;
-            z-index: 10;
-        }
+        flex-grow: 1;
+        margin-left: 100px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    .search-bar input {
+        padding: 10px;
+        width: 100%;
+        max-width: 300px;
+        border-radius: 5px;
+        border: none;
+    }
+    .search-bar button {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    .search-bar img {
+        width: 20px;
+        height: 20px;
+        margin-left: -50px;
+    }
+    .search-dropdown {
+        position: absolute;
+        top: 45px;
+        left: 0;
+        width: 100%;
+        max-width: 300px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 10;
+    }
+    .search-dropdown ul li, .trending-title {
+        padding: 10px;
+        cursor: pointer;
+        transition: background 0.3s;
+        color: black;
+    }
+    .search-dropdown .trending-title {
+        font-weight: bold;
+        padding: 8px 10px;
+        border-bottom: 1px solid #ccc;
+        text-align: left;
+    }
+    .search-dropdown ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .search-dropdown ul li {
+        padding: 10px;
+        cursor: pointer;
+        transition: background 0.3s;
+        text-align: left;
+    }
+    .search-dropdown ul li:hover {
+        background: #e3f2fd;
+    }
         .nav-links a {
             color: white;
             margin-left: 20px;
@@ -147,6 +184,9 @@
         </div>
         <div class="search-bar">
             <input type="text" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
+            <button>
+                <img src="images/search_icon.png" alt="Search">
+            </button>
             <div class="search-dropdown" id="searchDropdown">
                 <p class="trending-title">Trending</p>
                 <ul>
