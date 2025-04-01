@@ -102,6 +102,10 @@
             font-weight: bold;
             margin-bottom: 20px;
         }
+        p {
+        font-size: 20px;
+        margin-bottom: 40px;
+        }
         .stats-box {
             display: flex;
             justify-content: center;
