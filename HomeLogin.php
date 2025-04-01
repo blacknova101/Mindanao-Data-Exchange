@@ -213,7 +213,7 @@
                 </div>
             </div>
             <nav class="nav-links">
-                <a href="#">DATASETS</a>
+                <a href="datasets.php">DATASETS</a>
                 <a href="#">CATEGORY</a>
                 <div class="profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
@@ -236,7 +236,7 @@
             </div>
         </main>
         <div class="upload-section">
-            <a href="login.php" class="upload-btn">
+            <a href="uploadselection.php" class="upload-btn">
                 <img src="images/upload_button.png" alt="Upload">
             </a>
             <p>Upload Data</p>
