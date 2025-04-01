@@ -159,7 +159,7 @@
         </div>
         <nav class="nav-links">
             <a href="login.php">Login</a>
-            <a href="#">Sign up</a>
+            <a href="AccountSelectionPage.php">Sign up</a>
         </nav>
     </header>
     <main class="wrapper">
