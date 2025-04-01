@@ -9,7 +9,9 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #E3F2FD;
+            background: url('images/Mindanao.png');
+            background-size: cover;
+            background-attachment: fixed;
             text-align: center;
             overflow: hidden;
         }

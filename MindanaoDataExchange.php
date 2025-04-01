@@ -9,7 +9,9 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #E3F2FD;
+            background: url('images/Mindanao.png');
+            background-size: cover;
+            background-attachment: fixed;
             text-align: center;
         }
         .navbar {
@@ -38,16 +40,6 @@
             border-radius: 5px;
             border: none;
         }
-        .search-bar button {
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-        .search-bar img {
-            width: 20px;
-            height: 20px;
-            margin-left: -50px;
-        }
         .search-dropdown {
             position: absolute;
             top: 45px;
@@ -55,37 +47,10 @@
             width: 100%;
             max-width: 300px;
             background: white;
-            border: 1px solid #ccc;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: none;
             z-index: 10;
-        }
-        .search-dropdown ul li, .trending-title {
-        padding: 10px;
-        cursor: pointer;
-        transition: background 0.3s;
-        color: black;
-        }
-        .search-dropdown .trending-title {
-            font-weight: bold;
-            padding: 8px 10px;
-            border-bottom: 1px solid #ccc;
-            text-align: left;
-        }
-        .search-dropdown ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-        .search-dropdown ul li {
-            padding: 10px;
-            cursor: pointer;
-            transition: background 0.3s;
-            text-align: left;
-        }
-        .search-dropdown ul li:hover {
-            background: #e3f2fd;
         }
         .nav-links a {
             color: white;
@@ -107,7 +72,7 @@
             justify-content: center;
             align-items: center;
             background-color: white;
-            padding: 20px 0px 0px 0px;
+            padding: 20px 0px;
             width: 30%;
             margin: 0 auto;
             border-radius: 10px;
@@ -123,7 +88,6 @@
             width: 3px;
             background-color: black;
             height: 90px;
-            margin-top: -20px;
         }
         .upload-section {
             position: fixed;
@@ -134,16 +98,41 @@
             width: 60px;
             height: auto;
         }
+        @media (max-width: 1024px) {
+            .stats-box {
+                width: 50%;
+                font-size: 24px;
+            }
+            h1 {
+                font-size: 60px;
+            }
+        }
         @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: center;
+            }
+            .search-bar {
+                margin-left: 0;
+                width: 100%;
+            }
             .stats-box {
                 flex-direction: column;
                 width: 80%;
-                font-size: 24px;
+                font-size: 20px;
             }
             .divider {
                 width: 100%;
                 height: 2px;
-                margin: 20px 0;
+            }
+            h1 {
+                font-size: 50px;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-box {
+                width: 90%;
+                font-size: 18px;
             }
             h1 {
                 font-size: 40px;
@@ -158,9 +147,6 @@
         </div>
         <div class="search-bar">
             <input type="text" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
-            <button>
-                <img src="images/search_icon.png" alt="Search">
-            </button>
             <div class="search-dropdown" id="searchDropdown">
                 <p class="trending-title">Trending</p>
                 <ul>
