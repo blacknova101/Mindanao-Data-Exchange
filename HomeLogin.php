@@ -26,16 +26,17 @@
         margin-right: 30px;
     }
     .logo img {
-    height: auto; 
-    width: 100px; 
-    max-width: 100%; 
-    margin-left: 0; 
+        height: auto; 
+        width: 100px; 
+        max-width: 100%; 
+        margin-left: 0; 
     }
     .search-bar {
         flex-grow: 1;
-        margin-left: 20px;
+        margin-left: 100px;
         display: flex;
         align-items: center;
+        position: relative;
     }
     .search-bar input {
         padding: 10px;
@@ -54,6 +55,45 @@
         height: 20px;
         margin-left: -50px;
     }
+    .search-dropdown {
+        position: absolute;
+        top: 45px;
+        left: 0;
+        width: 100%;
+        max-width: 300px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 10;
+    }
+    .search-dropdown ul li, .trending-title {
+        padding: 10px;
+        cursor: pointer;
+        transition: background 0.3s;
+        color: black;
+    }
+    .search-dropdown .trending-title {
+        font-weight: bold;
+        padding: 8px 10px;
+        border-bottom: 1px solid #ccc;
+        text-align: left;
+    }
+    .search-dropdown ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .search-dropdown ul li {
+        padding: 10px;
+        cursor: pointer;
+        transition: background 0.3s;
+        text-align: left;
+    }
+    .search-dropdown ul li:hover {
+        background: #e3f2fd;
+    }
     .nav-links a {
         color: white;
         margin-left: 20px;
@@ -64,17 +104,11 @@
         padding: 50px 5%;
         margin-top: 50px;
     }
-
     h1 {
-        font-size: 50px;
+        font-size: 90px;
         font-weight: bold;
         margin-bottom: 20px;
     }
-
-    .highlight {
-        font-size: 60px;
-    }
-
     p {
         font-size: 20px;
         margin-bottom: 40px;
@@ -151,12 +185,12 @@
         h1 {
             font-size: 40px;
         }
-        }
-        .nav-links {
+    }
+    .nav-links {
         display: flex;
         align-items: center;
         gap: 20px;
-        }
+    }
     </style>
 </head>
 <body>
@@ -166,24 +200,31 @@
                 <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
             </div>
             <div class="search-bar">
-                <input type="text" placeholder="Search datasets">
+                <input type="text" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
                 <button>
                     <img src="images/search_icon.png" alt="Search">
                 </button>
+                <div class="search-dropdown" id="searchDropdown">
+                    <p class="trending-title">Trending</p>
+                    <ul>
+                        <li>Smart City IoT Sensor Readings</li>
+                        <li>Davao City</li>
+                        <li>Space Tourism Flight Records</li>
+                        <li>Extreme Weather Events Database</li>
+                    </ul>
+                </div>
             </div>
             <nav class="nav-links">
-            <a href="#">DATASETS</a>
-            <a href="#">CATEGORIES</a>
-            <div class="profile-icon">
+                <a href="#">DATASETS</a>
+                <a href="#">CATEGORY</a>
+                <div class="profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
             </div>
-        </nav>
+            </nav>
         </header>
-
         <main class="wrapper">
-            <h1>Mangasay <br> <span class="highlight">Data Exchange</span></h1>
+            <h1>Mangasay <br> Data Exchange </h1>
             <p>Discover, Share, and Transform Data Seamlessly.</p>
-            
             <div class="stats-box">
                 <div class="stat">
                     <span class="stat-number">18,000</span>
@@ -196,13 +237,22 @@
                 </div>
             </div>
         </main>
-
         <div class="upload-section">
-            <a href="#" class="upload-btn">
-            <img src="images/upload_button.png" alt="Upload">
+            <a href="login.php" class="upload-btn">
+                <img src="images/upload_button.png" alt="Upload">
             </a>
             <p>Upload Data</p>
         </div>
     </div>
+    <script>
+        function showDropdown() {
+            document.getElementById("searchDropdown").style.display = "block";
+        }
+        function hideDropdown() {
+            setTimeout(() => {
+                document.getElementById("searchDropdown").style.display = "none";
+            }, 200);
+        }
+    </script>
 </body>
 </html>
