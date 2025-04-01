@@ -139,7 +139,7 @@
         </div>
         <nav class="nav-links">
             <a href="MindanaoDataExchange.php">Home</a>
-            <a href="#">Sign up</a>
+            <a href="AccountSelectionPage.php">Sign up</a>
         </nav>
     </header>
 
@@ -160,7 +160,7 @@
                 <a href="#" class="forgot-password">Forgot password?</a>
                 <a href="HomeLogin.php" class="login">LOGIN</a>
             </form>
-            <a href="#" class="sign-up">Sign up</a>
+            <a href="AccountSelectionPage.php" class="sign-up">Sign up</a>
         </div>
     </div>
 </body>
