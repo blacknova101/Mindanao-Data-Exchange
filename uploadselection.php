@@ -162,8 +162,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             text-align: left;
             margin-bottom: 20px;
         }
-
-        
         #uploadForm {
             padding: 20px;
             margin: 0 auto;
