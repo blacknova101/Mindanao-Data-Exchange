@@ -236,6 +236,7 @@
                 </button>
             </div>
             <nav class="nav-links">
+            <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">DATASETS</a>
             <a onclick="showModal()">CATEGORY</a>
             <div class="profile-icon">
