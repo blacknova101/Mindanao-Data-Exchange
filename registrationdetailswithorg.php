@@ -24,8 +24,8 @@
 </head>
 <body>
     <form action="registrationdetailswithorg.php" method="POST">
-    First Name: <input type="text" name="firstname" id="first name" required><br>
-    Last Name:  <input type="text" name="lastname" id="last name" required><br>
+    First Name: <input type="text" name="firstname" id="firstname" required><br>
+    Last Name:  <input type="text" name="lastname" id="lastname" required><br>
     Email Address:     <input type="text" name="email address" id="email address" required><br>
     Re-enter Email Address:     <input type="text" name="re_enter_email" id="re_enter_email" required><br>
     username:   <input type="text" name="username" id="username" required><br>
