@@ -238,7 +238,7 @@
             <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">DATASETS</a>
-            <a onclick="showModal()">CATEGORY</a>
+            <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
             <div class="profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
             </div>
@@ -331,5 +331,6 @@
             <span>davao_urban_growth_statistics_2024.csv</span>
         </div>
     <div class="footer"></div>
+    <?php include 'sidebar.php'; ?>
 </body>
 </html>
