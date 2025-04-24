@@ -11,7 +11,19 @@
         $_SESSION['password'] = $_POST['password'];
         $_SESSION['re_enter_pass'] = $_POST['re_enter_pass'];
 
-        header("Location: verifyemailaddressnoorg.php");
+        $emailMatch = $_SESSION['email_address'] === $_SESSION['re_enter_email'];
+        $passwordMatch = $_SESSION['password'] === $_SESSION['re_enter_pass'];
+    
+        if ($emailMatch && $passwordMatch) {
+            header("Location: verifyemailaddressnoorg.php");
+            exit();
+        } elseif ($emailMatch && !$passwordMatch) {
+            echo "<script>alert('Password does not match.');</script>";
+        } elseif (!$emailMatch && $passwordMatch) {
+            echo "<script>alert('Email does not match.');</script>";
+        } else {
+            echo "<script>alert('Email and Password do not match.');</script>";
+        }
         }
 
 ?>
@@ -129,7 +141,7 @@
 </head>
 <body>
 <div class="header">
-        <img src="mdx_logo.png" alt="Logo">
+        <img src="images/mdx_logo.png" alt="Logo">
     </div>
     <div class="container">
         <div class="progress">
