@@ -26,8 +26,8 @@
     <form action="registrationdetailsnoorg.php" method="POST">
     First Name: <input type="text" name="firstname" id="firstname" required><br>
     Last Name:  <input type="text" name="lastname" id="lastname" required><br>
-    Email_Address:     <input type="text" name="email_address" id="email_address" required><br>
-    Re-enter Email_Address:     <input type="text" name="re_enter_email" id="re_enter_email" required><br>
+    Email Address:     <input type="text" name="email_address" id="email_address" required><br>
+    Re-enter Email Address:     <input type="text" name="re_enter_email" id="re_enter_email" required><br>
     Password:   <input type="text" name="password" id="password" required><br>
     Re-enter Password:   <input type="text" name="re_enter_pass" id="re_enter_pass" required><br>
     <input type="submit" value="Submit">
