@@ -28,8 +28,8 @@
     Last Name:  <input type="text" name="lastname" id="lastname" required><br>
     Email Address:     <input type="text" name="email_address" id="email_address" required><br>
     Re-enter Email Address:     <input type="text" name="re_enter_email" id="re_enter_email" required><br>
-    Password:   <input type="text" name="password" id="password" required><br>
-    Re-enter Password:   <input type="text" name="re_enter_pass" id="re_enter_pass" required><br>
+    Password:   <input type="password" name="password" id="password" required><br>
+    Re-enter Password:   <input type="password" name="re_enter_pass" id="re_enter_pass" required><br>
     <input type="submit" value="Submit">
     </form>
 </body>

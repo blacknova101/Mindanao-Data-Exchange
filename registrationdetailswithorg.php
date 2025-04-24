@@ -8,7 +8,7 @@
         $_SESSION['last_name'] = $_POST['lastname'];
         $_SESSION['email_address'] = $_POST['email_address'];
         $_SESSION['re_enter_email'] = $_POST['re_enter_email'];
-        $_SESSION['username'] = $_POST['username'];
+        $_SESSION['password'] = $_POST['password'];
         $_SESSION['re_enter_pass'] = $_POST['re_enter_pass'];
 
         header("Location: verifyemailaddresswithorg.php");
@@ -28,8 +28,8 @@
     Last Name:  <input type="text" name="lastname" id="lastname" required><br>
     Email Address:     <input type="text" name="email_address" id="email_address" required><br>
     Re-enter Email Address:     <input type="text" name="re_enter_email" id="re_enter_email" required><br>
-    username:   <input type="text" name="username" id="username" required><br>
-    Re-enter Password:   <input type="text" name="re_enter_pass" id="re_enter_pass" required><br>
+    Password:   <input type="password" name="password" id="password" required><br>
+    Re-enter Password:   <input type="password" name="re_enter_pass" id="re_enter_pass" required><br>
     <input type="submit" value="Submit">
     </form>
 </body>
