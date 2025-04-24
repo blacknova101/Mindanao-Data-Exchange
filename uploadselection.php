@@ -285,7 +285,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">DATASETS</a>
-            <a onclick="showModal()">CATEGORY</a>
+            <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
             <div class="profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
             </div>
@@ -335,6 +335,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="file" name="fileToUpload" id="fileToUpload" onchange="this.form.submit()" required>
     </form>
 </div>
-
+<?php include 'sidebar.php'; ?>
 </body>
 </html>

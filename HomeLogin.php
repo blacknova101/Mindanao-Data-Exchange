@@ -235,6 +235,7 @@
             border-radius: 5px;
             margin-top: 10px;
         }
+        
     </style>
 </head>
 <body>
@@ -261,7 +262,7 @@
             <nav class="nav-links">
                 <a href="HomeLogin.php">HOME</a>
                 <a href="datasets.php">DATASETS</a>
-                <a onclick="showModal()">CATEGORY</a>
+                <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
                 <div class="profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
             </div>
@@ -329,5 +330,6 @@
             }, 200);
         }
     </script>
+    <?php include 'sidebar.php'; ?>
 </body>
 </html>

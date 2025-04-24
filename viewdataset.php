@@ -234,7 +234,7 @@
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="#">DATASETS</a>
-            <a onclick="showModal()">CATEGORY</a>
+            <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
             <div class="profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
             </div>
@@ -302,5 +302,6 @@
             </div>
         </div>
     </div>
+    <?php include 'sidebar.php'; ?>
 </body>
 </html>
