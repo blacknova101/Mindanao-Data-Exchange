@@ -130,4 +130,3 @@ document.querySelector('.sign-out').addEventListener('click', function() {
     window.location.href = 'mindanaodataexchange.php';
 });
 </script>
-
