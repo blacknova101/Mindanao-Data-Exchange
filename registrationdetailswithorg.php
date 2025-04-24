@@ -1,19 +1,28 @@
 <?php
     session_start();
 
-    if(
-        $_SERVER['REQUEST_METHOD'] == "POST")
-        {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['first_name'] = $_POST['firstname'];
         $_SESSION['last_name'] = $_POST['lastname'];
         $_SESSION['email_address'] = $_POST['email_address'];
         $_SESSION['re_enter_email'] = $_POST['re_enter_email'];
         $_SESSION['password'] = $_POST['password'];
         $_SESSION['re_enter_pass'] = $_POST['re_enter_pass'];
-
-        header("Location: verifyemailaddresswithorg.php");
+    
+        $emailMatch = $_SESSION['email_address'] === $_SESSION['re_enter_email'];
+        $passwordMatch = $_SESSION['password'] === $_SESSION['re_enter_pass'];
+    
+        if ($emailMatch && $passwordMatch) {
+            header("Location: verifyemailaddresswithorg.php");
+            exit();
+        } elseif ($emailMatch && !$passwordMatch) {
+            echo "Password does not match.";
+        } elseif (!$emailMatch && $passwordMatch) {
+            echo "Email does not match.";
+        } else {
+            echo "Email and Password do not match.";
         }
-
+    }
 ?>
 <!DOCTYPE html>
 <html>
