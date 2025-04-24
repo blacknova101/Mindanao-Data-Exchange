@@ -92,17 +92,14 @@
             <div class="step active">
                 <div class="circle">3</div>
                 <div>Account created</div>
-            </div>
-            <div class="step">
-                <div class="circle">4</div>
-                <div>Select organization</div>
-            </div>
+            </div> 
         </div>
 
         <div class="title">Account Created!</div>
+        <div><br>You may now proceed to Log in page</br></div>
 
         <form action="MindanaoDataExchange.php" method="POST">
-            <button class="btn" type="submit">Next</button>
+            <button class="btn" type="submit">Log In</button>
         </form>
     </div>
 </body>
