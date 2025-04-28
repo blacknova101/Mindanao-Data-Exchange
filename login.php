@@ -1,3 +1,9 @@
+<?php
+if (isset($_GET['error'])) {
+    $error_message = htmlspecialchars($_GET['error']); // Sanitize the error message
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,18 +26,19 @@
             align-items: center;
             justify-content: space-between;
             padding: 15px 2%;
-            background-color: #0c1a36;
-            color: white;
+            background-color:rgba(12, 26, 54, 0.8);
+            color: #cfd9ff;
         }
         .logo {
             display: flex;
             align-items: center;
+            margin-right: 30px;
         }
         .logo img {
-        height: auto; 
-        width: 100px; 
-        max-width: 100%; 
-        margin-left: 0; 
+            height: auto; 
+            width: 100px; 
+            max-width: 100%; 
+            margin-left: 0; 
         }
         .nav-links {
             display: flex; 
@@ -39,8 +46,18 @@
         }
         .nav-links a {
             color: white;
+            margin-left: 20px;
             text-decoration: none;
             font-size: 18px;
+        }
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* stays behind everything */
         }
         .container {
             display: flex;
@@ -50,7 +67,7 @@
         }
         .login-container {
             margin-top: 100px;
-            background-color: white;
+            background: #cfd9ff;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
@@ -128,11 +145,29 @@
         }
 
         .login:hover {
-            background-color: #d32f2f;
+            background-color:rgb(142, 155, 226);
         }
-    </style>
+        #flashbang {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 9999; /* Make sure it's on top of everything */
+        }
+
+        </style>
 </head>
 <body>
+<div id="flashbang"></div>
+
+    <video autoplay muted loop id="background-video">
+        <source src="videos/background.mp4" type="video/mp4">
+    </video>
     <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
@@ -148,20 +183,41 @@
             <div class="logo-container">
                 <img src="images/mdx_logo.png" alt="MDX Logo">
             </div>
-            <form action="dashboard.php" method="POST">
+            
+            <!-- Display the error message if it exists -->
+            <?php if (isset($error_message)): ?>
+                <div style="color: red; font-size: 16px; margin-bottom: 20px;">
+                    <?php echo $error_message; ?>
+                </div>
+            <?php endif; ?>
+            <form action="login_api.php" method="POST">
                 <div class="input-container">
                     <img src="images/user_icon.png" alt="User Icon">
-                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="text" name="email" placeholder="Email address" required>
                 </div>
                 <div class="input-container">
                     <img src="images/password_icon.png" alt="Password Icon">
                     <input type="password" name="password" placeholder="Password" required>
                 </div>
                 <a href="#" class="forgot-password">Forgot password?</a>
-                <a href="HomeLogin.php" class="login">LOGIN</a>
+                <button type="submit" class="login">LOGIN</button>
             </form>
             <a href="AccountSelectionPage.php" class="sign-up">Sign up</a>
         </div>
     </div>
+    <script>
+        document.querySelector('.login').addEventListener('click', function(e) {
+            e.preventDefault(); // Stop form from submitting immediately
+
+            const flashbang = document.getElementById('flashbang');
+            flashbang.style.opacity = 1; // Show white screen
+
+            // Wait 500ms for the flash, then submit the form
+            setTimeout(() => {
+                this.closest('form').submit(); // Now submit
+            }, 500); // match the CSS transition time
+        });
+</script>
+
 </body>
 </html>

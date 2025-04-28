@@ -101,7 +101,7 @@
 
         <div class="title">Account Created!</div>
 
-        <form action="MindanaoDataExchange.php" method="POST">
+        <form action="selectorganization.php" method="POST">
             <button class="btn" type="submit">Next</button>
         </form>
     </div>

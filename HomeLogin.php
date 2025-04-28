@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,13 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MDX</title>
     <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
     body {
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        background: url('images/Mindanao.png');
-        background-size: cover;
-        background-attachment: fixed;
         text-align: center;
     }
     .navbar {
@@ -19,8 +24,8 @@
         align-items: center;
         justify-content: space-between;
         padding: 15px 2%;
-        background-color: #0c1a36;
-        color: white;
+        background-color: rgba(0, 153, 255, 0.8);
+        color: #cfd9ff;
     }
     .logo {
         display: flex;
@@ -94,28 +99,71 @@
         text-align: left;
     }
     .search-dropdown ul li:hover {
-        background: #e3f2fd;
+        background: #cfd9ff;
     }
     .nav-links a {
         color: white;
         margin-left: 20px;
         text-decoration: none;
         font-size: 18px;
+        transition: transform 0.3s ease; /* Smooth transition for scaling */
     }
+
+    .nav-links a:hover {
+        transform: scale(1.2); /* Scale up the link by 20% */
+    }
+
     .wrapper {
         padding: 50px 5%;
         margin-top: 50px;
+        position: relative;
+        z-index: 1; 
+    }
+    #background-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1; /* stays behind everything */
     }
     h1 {
         font-size: 90px;
-        font-weight: bold;
+        font-weight: 600;
         margin-bottom: 20px;
+        color: rgba(0, 153, 255, 0.8);
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease; /* Smooth transition for all properties */
     }
+
+    h1:hover {
+        color: rgba(0, 172, 255, 1); /* Change color on hover */
+        font-size: 95px; /* Slightly increase font size */
+        text-shadow: 2px 2px 5px rgba(233, 230, 230, 0.3); /* Enhance shadow */
+    }
+
+    #tagline {
+        color: rgba(0, 153, 255, 0.8);
+        text-align: center;
+        font-size: 1.2rem;
+        margin-top: 10px;
+        text-shadow: 1px 1px 5px rgba(255, 253, 253, 0.67);
+        transition: all 0.3s ease; /* Smooth transition for hover effects */
+    }
+
+    #tagline:hover {
+        color: rgba(0, 172, 255, 1); /* Change color on hover (brighter blue) */
+        font-size: 1.3rem; /* Slightly increase font size */
+        text-shadow: 2px 2px 8px rgb(255, 253, 253); /* Enhance shadow */
+    }
+
     .stats-box {
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: white;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
         padding: 20px 0px 0px 0px;
         width: 30%;
         margin: 0 auto;
@@ -123,10 +171,12 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         font-size: 30px;
         font-weight: bold;
+        color: #ffffff;
     }
     .stat {
         flex: 1;
         text-align: center;
+        color:rgba(28, 132, 227, 0.8);
     }
     .divider {
         width: 3px;
@@ -138,15 +188,26 @@
         position: fixed;
         bottom: 20px;
         right: 20px;
+        color:rgba(0, 153, 255, 0.8);
     }
     .upload-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        text-align: center;
+        display: inline-block;
+        padding: 20px;
+        background-color:rgba(0, 153, 255, 0.8);
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        transition: all 0.3s ease;
     }
-    .upload-btn img {
-        width: 60px;
+
+    .upload-btn i {
+        font-size: 40px; /* Larger icon size */
+        color: #ffffff; /* White color for the icon */
+    }
+
+    .upload-btn:hover {
+        background-color: #a0b6f3; /* Darker blue when hovered */
+        transform: scale(1.1); /* Slightly increase size on hover */
+    }
     }
     .upload-btn p {
         font-size: 16px;
@@ -169,6 +230,9 @@
         object-fit: cover;
         cursor: pointer;
     }
+    .profile-icon img:hover {
+        transform: scale(1.2); /* Slightly enlarge the image on hover */
+    }
     @media (max-width: 768px) {
         .stats-box {
             flex-direction: column;
@@ -189,57 +253,45 @@
         align-items: center;
         gap: 20px;
     }
-    .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+    /* Cursor Trail Styles */
+    .cursor-trail {
+        position: absolute;
+        width: 10px; /* Size of the trail dot */
+        height: 10px; /* Size of the trail dot */
+        border-radius: 50%; /* Round shape */
+        pointer-events: none; /* So it doesn't interfere with other elements */
+        animation: trail-animation 0.5s forwards; /* Smooth fade effect */
+    }
+
+    .cursor-trail.blue {
+        background-color: rgba(0, 153, 255, 0.8); /* Blue color for the trail */
+    }
+
+    .cursor-trail.white {
+        background-color: rgba(255, 255, 255, 0.8); /* White color for the trail */
+    }
+
+    @keyframes trail-animation {
+        0% {
+            transform: scale(1);
+            opacity: 1;
         }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 50%;
-            max-width: 600px;
-            text-align: center;
+        100% {
+            transform: scale(0);
+            opacity: 0;
         }
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .category-grid div {
-            padding: 10px;
-            background: #e3f2fd;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .category-grid div:hover {
-            background: #bbdefb;
-        }
-        .close-btn {
-            background: red;
-            color: white;
-            padding: 5px 10px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        
+    }
+
+            
     </style>
 </head>
 <body>
+    <video autoplay muted loop id="background-video">
+        <source src="videos/background4.mp4" type="video/mp4">
+    </video>
+
     <div id="wrapper">
+        
         <header class="navbar">
             <div class="logo">
                 <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
@@ -268,24 +320,6 @@
             </div>
             </nav>
         </header>
-        <div class="modal" id="categoryModal">
-        <div class="modal-content">
-            <h2>Select a Category</h2>
-            <div class="category-grid">
-                <div>Business & Finance</div>
-                <div>Education & Academia</div>
-                <div>Science & Research</div>
-                <div>Agriculture & Environment</div>
-                <div>Technology & IT</div>
-                <div>Government & Public Data</div>
-                <div>Geography & Mapping</div>
-                <div>Commerce & Consumer Data</div>
-                <div>Social & Media</div>
-                <div>Health & Medicine</div>
-            </div>
-            <button class="close-btn" onclick="hideModal()">Close</button>
-        </div>
-    </div>
     
     <script>
         function showModal() {
@@ -300,7 +334,7 @@
     </script>
         <main class="wrapper">
             <h1>Mangasay <br> Data Exchange </h1>
-            <p>Discover, Share, and Transform Data Seamlessly.</p>
+            <p id="tagline">Discover, Share, and Transform Data Seamlessly.</p>
             <div class="stats-box">
                 <div class="stat">
                     <span class="stat-number">18,000</span>
@@ -315,7 +349,7 @@
         </main>
         <div class="upload-section">
             <a href="uploadselection.php" class="upload-btn">
-                <img src="images/upload_button.png" alt="Upload">
+            <i class="fa-solid fa-upload"></i>
             </a>
             <p>Upload Data</p>
         </div>
@@ -330,6 +364,37 @@
             }, 200);
         }
     </script>
+    <script src="https://kit.fontawesome.com/2c68a433da.js" crossorigin="anonymous">  
+    </script>
     <?php include 'sidebar.php'; ?>
+    <?php include 'category_modal.php'; // Include the modal?>
+    
+    <script>
+        document.addEventListener("mousemove", function (e) {
+            // Create a new element for the trail dot
+            const trailDot = document.createElement("div");
+            trailDot.classList.add("cursor-trail");
+
+            // Check if the mouse is over the header
+            if (e.target.closest("header")) {
+                trailDot.classList.add("white"); // White trail if over header
+            } else {
+                trailDot.classList.add("blue"); // Blue trail otherwise
+            }
+
+            // Set its position to the cursor's position
+            trailDot.style.left = `${e.pageX - 5}px`; // Position adjusted to center the trail
+            trailDot.style.top = `${e.pageY - 5}px`; // Position adjusted to center the trail
+
+            // Append the trail dot to the body
+            document.body.appendChild(trailDot);
+
+            // Remove the trail dot after animation ends
+            setTimeout(() => {
+                trailDot.remove();
+            }, 500); // Matches the animation duration
+        });
+    </script>
+
 </body>
 </html>
