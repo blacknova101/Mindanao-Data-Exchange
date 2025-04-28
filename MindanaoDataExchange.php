@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <script src="https://kit.fontawesome.com/2c68a433da.js" crossorigin="anonymous"></script>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,19 +1,28 @@
 <?php
     session_start();
 
-    if(
-        $_SERVER['REQUEST_METHOD'] == "POST")
-        {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['first_name'] = $_POST['firstname'];
         $_SESSION['last_name'] = $_POST['lastname'];
-        $_SESSION['email address'] = $_POST['email address'];
+        $_SESSION['email_address'] = $_POST['email_address'];
         $_SESSION['re_enter_email'] = $_POST['re_enter_email'];
-        $_SESSION['username'] = $_POST['username'];
+        $_SESSION['password'] = $_POST['password'];
         $_SESSION['re_enter_pass'] = $_POST['re_enter_pass'];
-
-        header("Location: verifyemailaddresswithorg.php");
+    
+        $emailMatch = $_SESSION['email_address'] === $_SESSION['re_enter_email'];
+        $passwordMatch = $_SESSION['password'] === $_SESSION['re_enter_pass'];
+    
+        if ($emailMatch && $passwordMatch) {
+            header("Location: verifyemailaddresswithorg.php");
+            exit();
+        } elseif ($emailMatch && !$passwordMatch) {
+            echo "Password does not match.";
+        } elseif (!$emailMatch && $passwordMatch) {
+            echo "Email does not match.";
+        } else {
+            echo "Email and Password do not match.";
         }
-
+    }
 ?>
 <!DOCTYPE html>
 <html>
@@ -21,16 +30,169 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title></title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #e6f0fa;
+        }
+        .header {
+            background-color: #0c2239;
+            padding: 15px 25.65px;
+        }
+        .header img {
+            height: 95px;
+            width: 100px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+        .progress { 
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .step .circle {
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            background-color: #0c2239;
+            color: white;
+        }
+        .step.active .circle {
+            background-color: white;
+            color: #0c2239;
+            border: 2px solid #0c2239;
+        }
+        .step.active {
+            font-weight: bold;
+            color: #0c2239;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .input-group input {
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f8f9fa;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .btn-next {
+            background-color: #0c2239;
+            color: white;
+            padding: 15px 60px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            width: 200px;
+        }
+
+        .btn-cancel {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <form action="registrationdetailswithorg.php" method="POST">
-    First Name: <input type="text" name="firstname" id="first name" required><br>
-    Last Name:  <input type="text" name="lastname" id="last name" required><br>
-    Email Address:     <input type="text" name="email address" id="email address" required><br>
-    Re-enter Email Address:     <input type="text" name="re_enter_email" id="re_enter_email" required><br>
-    username:   <input type="text" name="username" id="username" required><br>
-    Re-enter Password:   <input type="text" name="re_enter_pass" id="re_enter_pass" required><br>
-    <input type="submit" value="Submit">
-    </form>
+<div class="header">
+        <img src="images/mdx_logo.png" alt="Logo">
+    </div>
+    <div class="container">
+        <div class="progress">
+            <div class="step active">
+                <div class="circle">1</div>
+                <div>Personal details</div>
+            </div>
+            <div class="step active">
+                <div class="circle">2</div>
+                <div>Verify email</div>
+            </div>
+            <div class="step active">
+                <div class="circle">3</div>
+                <div>Account created</div>
+            </div> 
+        </div>
+    <h1>Provide the following information</h1>
+
+    <form action="registrationdetailsnoorg.php" method="POST">
+    <div class="form-grid">
+        <div class="input-group">
+            <label for="firstname">First Name:</label>
+            <input type="text" name="firstname" id="firstname" required>
+        </div>
+        <div class="input-group">
+            <label for="lastname">Last Name:</label>
+            <input type="text" name="lastname" id="lastname" required>
+        </div>
+
+        <div class="input-group">
+            <label for="email_address">Email Address:</label>
+            <input type="text" name="email_address" id="email_address" required>
+        </div>
+        <div class="input-group">
+            <label for="re_enter_email">Re-enter Email Address:</label>
+            <input type="text" name="re_enter_email" id="re_enter_email" required>
+        </div>
+
+        <div class="input-group">
+            <label for="password">Password:</label>
+            <input type="text" name="password" id="password" required>
+        </div>
+        <div class="input-group">
+            <label for="re_enter_pass">Re-enter Password:</label>
+            <input type="text" name="re_enter_pass" id="re_enter_pass" required>
+        </div>
+    </div>
+    <div class="button-group">
+        <button type="submit" class="btn-next">Next</button>
+        <button type="button" class="btn-cancel">Cancel</button>
+    </div>
+    </div>
+</form>
+
+    
 </body>
 </html>

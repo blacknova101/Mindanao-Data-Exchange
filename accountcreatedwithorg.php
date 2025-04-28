@@ -77,7 +77,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="your-logo.png" alt="Logo">
+        <img src="images/mdx_logo.png" alt="Logo">
     </div>
     <div class="container">
         <div class="progress">
