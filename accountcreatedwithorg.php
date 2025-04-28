@@ -77,7 +77,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="your-logo.png" alt="Logo">
+        <img src="images/mdx_logo.png" alt="Logo">
     </div>
     <div class="container">
         <div class="progress">
@@ -101,7 +101,7 @@
 
         <div class="title">Account Created!</div>
 
-        <form action="MindanaoDataExchange.php" method="POST">
+        <form action="HomeLogin.php" method="POST">
             <button class="btn" type="submit">Next</button>
         </form>
     </div>
