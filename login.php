@@ -15,9 +15,6 @@ if (isset($_GET['error'])) {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: url('images/Mindanao.png');
-            background-size: cover;
-            background-attachment: fixed;
             text-align: center;
             overflow: hidden;
         }
