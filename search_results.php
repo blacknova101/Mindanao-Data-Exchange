@@ -7,12 +7,16 @@ $category = isset($_GET['category']) ? $_GET['category'] : '';
 
 if ($search) {
     // Search by title or description
-    $sql = "SELECT title, description, category, user_id FROM datasets 
-        WHERE title LIKE '%$search%' 
-        OR description LIKE '%$search%' 
-        OR category LIKE '%$search%' 
-        OR user_id LIKE '%$search%' 
-        ORDER BY user_id DESC";
+    $sql = "SELECT d.title, d.description, d.category, d.user_id, d.location, u.first_name, u.last_name
+            FROM datasets d
+            JOIN users u ON d.user_id = u.user_id
+            WHERE d.title LIKE '%$search%' 
+            OR d.description LIKE '%$search%' 
+            OR d.category LIKE '%$search%' 
+            OR u.first_name LIKE '%$search%' 
+            OR u.last_name LIKE '%$search%' 
+            OR d.location LIKE '%$search%' 
+            ORDER BY d.user_id DESC";
     $page_title = "Search results for: " . htmlspecialchars($search);
 } elseif ($category) {
     // Filter by category
