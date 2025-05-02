@@ -22,20 +22,30 @@ if (isset($_GET['error'])) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 2%;
-            background-color:rgba(12, 26, 54, 0.8);
+            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
+            padding-left: 30px;
+            background-color: rgba(0, 153, 255, 0.5); /* Transparent background */
             color: #cfd9ff;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            margin: 10px 0;
+            backdrop-filter: blur(10px);
+            max-width: 1200px; /* Limit the maximum width */
+            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
+            margin-top:30px;
+            margin-left: auto; /* Center align the navbar */
+            margin-right: auto; /* Center align the navbar */
         }
         .logo {
             display: flex;
             align-items: center;
-            margin-right: 30px;
+            margin-right: 20px;
         }
         .logo img {
-            height: auto; 
-            width: 100px; 
-            max-width: 100%; 
-            margin-left: 0; 
+            height: auto;
+            width: 80px; /* Adjust logo size */
+            max-width: 100%;
         }
         .nav-links {
             display: flex; 
@@ -181,7 +191,6 @@ if (isset($_GET['error'])) {
                 <img src="images/mdx_logo.png" alt="MDX Logo">
             </div>
             
-            <!-- Display the error message if it exists -->
             <?php if (isset($error_message)): ?>
                 <div style="color: red; font-size: 16px; margin-bottom: 20px;">
                     <?php echo $error_message; ?>

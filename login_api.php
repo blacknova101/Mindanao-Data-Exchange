@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($hashedPassword === $row['password']) { // Compare hashed passwords
             // Successful login
             $_SESSION['email'] = $email; // Store email in session
-            $_SESSION['user_id'] = $row['id']; // Store user ID in session
+            $_SESSION['user_id'] = $row['user_id']; // Store user ID in session
             $_SESSION['first_name'] = $row['first_name']; // Store user's name in session
 
             header("Location: HomeLogin.php"); // Redirect to home page after login

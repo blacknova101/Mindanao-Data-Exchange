@@ -14,6 +14,21 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $password = $_POST['password'];
     $reEnterPassword = $_POST['re_enter_pass'];
 
+    if (!preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email)) {
+        $_SESSION['error_message'] = 'Error: Invalid email format.';
+        header("Location: registrationdetailsnoorg.php");
+        exit();
+    }
+    if (!preg_match("/^[a-zA-Z\s'-]+$/", $firstName) || !preg_match("/^[a-zA-Z\s'-]+$/", $lastName)) {
+        $_SESSION['error_message'] = 'Error: Names can only contain letters, spaces, hyphens, and apostrophes.';
+        header("Location: registrationdetailsnoorg.php");
+        exit();
+    }
+    if (!preg_match("/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
+        $_SESSION['error_message'] = 'Error: Password must be at least 8 characters long, contain 1 uppercase letter, 1 number, and 1 special character.';
+        header("Location: registrationdetailsnoorg.php");
+        exit();
+    }
     // Check if email and password match
     $emailMatch = ($email === $reEnterEmail);
     $passwordMatch = ($password === $reEnterPassword);
@@ -25,7 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
         if (mysqli_num_rows($result) > 0) {
             // Email already exists, show an error message
-            echo "<script>alert('Error: Email is already registered.'); window.history.back();</script>";
+            $_SESSION['error_message'] = 'Error: Email is already registered.';
+            header("Location: registrationdetailsnoorg.php"); // use your real form page filename
+            exit();
         } else {
             // Hash the password for security
             $hashedPassword = hash('sha256', $password);
@@ -74,7 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             }
         }
     } else {
-        echo "<script>alert('Error: Email or Password does not match.'); window.history.back();</script>";
+        echo $_SESSION['error_message'] = 'Error: Email or Password does not match.';
+        header("Location: registrationdetailsnoorg.php");
+        exit();        
     }
 }
 ?>

@@ -112,6 +112,7 @@
     <div class="profile">
         <img src="images/avatarIconunknown.jpg" alt="Profile">
          <span><?php echo isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'Guest'; ?></span> 
+         <span><?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'Guest'; ?></span> 
     </div>
     <a href="#" class="menu-item">
         <i id="gear"class="fa-solid fa-gear"></i>
@@ -120,7 +121,7 @@
     
     <a href="#" class="menu-item">
         <i class="fa-solid fa-file"></i>
-        <i id="my_datasets">My Datasets</i>
+        <i id="my_datasets" style="cursor: pointer;" onclick="window.location.href='mydataset.php';">My Datasets</i>
     </a>
     
     <a href="#" class="menu-item">

@@ -173,6 +173,7 @@ session_start();
                 <div class="input-group">
                     <label for="re_enter_email">Re-enter Email Address:</label>
                     <input type="text" name="re_enter_email" id="re_enter_email" value="<?php echo isset($_SESSION['re_enter_email']) ? $_SESSION['re_enter_email'] : ''; ?>" required>
+                    <div id="password-error" class="error-text"></div>
                 </div>
 
                 <div class="input-group">
@@ -182,6 +183,7 @@ session_start();
                 <div class="input-group">
                     <label for="re_enter_pass">Re-enter Password:</label>
                     <input type="password" name="re_enter_pass" id="re_enter_pass" required>
+                    <div id="password-error" class="error-text"></div>
                 </div>
             </div>
             

@@ -24,35 +24,49 @@ session_start();
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 15px 2%;
-        background-color: rgba(0, 153, 255, 0.8);
+        padding: 10px 5%; /* Adjusted padding for a more compact navbar */
+        padding-left: 30px;
+        background-color: rgba(0, 153, 255, 0.5); /* Transparent background */
         color: #cfd9ff;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        position: relative;
+        margin: 10px 0;
+        backdrop-filter: blur(10px);
+        max-width: 1200px; /* Limit the maximum width */
+        width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
+        margin-top:30px;
+        margin-left: auto; /* Center align the navbar */
+        margin-right: auto; /* Center align the navbar */
     }
+
     .logo {
         display: flex;
         align-items: center;
-        margin-right: 30px;
+        margin-right: 20px;
     }
     .logo img {
-        height: auto; 
-        width: 100px; 
-        max-width: 100%; 
-        margin-left: 0; 
+        height: auto;
+        width: 80px; /* Adjust logo size */
+        max-width: 100%;
     }
+
     .search-bar {
         flex-grow: 1;
-        margin-left: 100px;
         display: flex;
         align-items: center;
         position: relative;
+        margin-left: 30px; /* Adjust space for a smaller navbar */
     }
+
     .search-bar input {
-        padding: 10px;
+        padding: 8px;
         width: 100%;
-        max-width: 300px;
+        max-width: 250px; /* Reduced width */
         border-radius: 5px;
         border: none;
     }
+
     .search-bar button {
         background: none;
         border: none;
