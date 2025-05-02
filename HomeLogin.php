@@ -7,6 +7,13 @@ $sql = "SELECT COUNT(*) AS dataset_count FROM datasets";
 $result = mysqli_query($conn, $sql);
 $row = mysqli_fetch_assoc($result);
 $dataset_count = $row['dataset_count']; // Store the dataset count
+// Query to count the number of unique users (distinct user_id) in the datasets table
+$sql_sources = "SELECT COUNT(DISTINCT user_id) AS unique_sources FROM datasets";
+$result_sources = mysqli_query($conn, $sql_sources);
+$row_sources = mysqli_fetch_assoc($result_sources);
+$sources_count = $row_sources['unique_sources']; // Store the unique sources count
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,7 +39,7 @@ $dataset_count = $row['dataset_count']; // Store the dataset count
         justify-content: space-between;
         padding: 10px 5%; /* Adjusted padding for a more compact navbar */
         padding-left: 30px;
-        background-color: rgba(0, 153, 255, 0.5); /* Transparent background */
+        background-color: #0099ff; /* Transparent background */
         color: #cfd9ff;
         border-radius: 20px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -44,12 +51,12 @@ $dataset_count = $row['dataset_count']; // Store the dataset count
         margin-top:30px;
         margin-left: auto; /* Center align the navbar */
         margin-right: auto; /* Center align the navbar */
+        font-weight: bold;
     }
 
     .logo {
         display: flex;
         align-items: center;
-        margin-right: 20px;
     }
     .logo img {
         height: auto;
@@ -61,12 +68,11 @@ $dataset_count = $row['dataset_count']; // Store the dataset count
         display: flex;
         align-items: center;
         position: relative;
-        margin-left: 30px; /* Adjust space for a smaller navbar */
+        margin-left: -190px; /* Adjust space for a smaller navbar */
     }
     .search-bar input {
         padding: 8px;
-        width: 100%;
-        max-width: 250px; /* Reduced width */
+        width: 400px;
         border-radius: 5px;
         border: none;
     }
@@ -313,21 +319,15 @@ $dataset_count = $row['dataset_count']; // Store the dataset count
             <div class="logo">
                 <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
             </div>
+            <form id="searchForm" action="search_results.php" method="GET">
             <div class="search-bar">
-                <input type="text" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
+                <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
                 <button>
                     <img src="images/search_icon.png" alt="Search">
                 </button>
-                <div class="search-dropdown" id="searchDropdown">
-                    <p class="trending-title">Trending</p>
-                    <ul>
-                        <li>Smart City IoT Sensor Readings</li>
-                        <li>Davao City</li>
-                        <li>Space Tourism Flight Records</li>
-                        <li>Extreme Weather Events Database</li>
-                    </ul>
-                </div>
+                
             </div>
+            </form>
             <nav class="nav-links">
                 <a href="HomeLogin.php">HOME</a>
                 <a href="datasets.php">DATASETS</a>
@@ -359,8 +359,8 @@ $dataset_count = $row['dataset_count']; // Store the dataset count
                 </div>
                 <div class="divider"></div>
                 <div class="stat">
-                    <span class="stat-number">2,000</span>
-                    <p>Sources</p>
+                <span class="stat-number"><?= number_format($sources_count) ?></span> <!-- Dynamic Sources Count -->
+                <p>Sources</p>
                 </div>
             </div>
 
@@ -414,6 +414,8 @@ $dataset_count = $row['dataset_count']; // Store the dataset count
             }, 500); // Matches the animation duration
         });
     </script>
+    <script src="search.js"></script>
+
 
 </body>
 </html>

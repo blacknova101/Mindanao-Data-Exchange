@@ -21,40 +21,41 @@ session_start();
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 5%;
+            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
             padding-left: 30px;
-            background-color: rgba(0, 153, 255, 0.5);
+            background-color: #0099ff; /* Transparent background */
             color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
             margin: 10px 0;
             backdrop-filter: blur(10px);
-            max-width: 1200px;
-            width: 100%;
+            max-width: 1200px; /* Limit the maximum width */
+            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
             margin-top:30px;
-            margin-left: auto;
-            margin-right: auto;
+            margin-left: auto; /* Center align the navbar */
+            margin-right: auto; /* Center align the navbar */
+            font-weight: bold;
         }
         .logo {
             display: flex;
             align-items: center;
-            margin-right: 20px;
         }
         .logo img {
             height: auto;
             width: 80px;
+            max-width: 100%;
         }
         .search-bar {
             flex-grow: 1;
-            margin-left: 20px;
             display: flex;
             align-items: center;
+            position: relative;
+            margin-left: -190px; /* Adjust space for a smaller navbar */
         }
         .search-bar input {
-            padding: 10px;
-            width: 100%;
-            max-width: 300px;
+            padding: 8px;
+            width: 400px;
             border-radius: 5px;
             border: none;
         }
@@ -234,12 +235,15 @@ session_start();
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
         </div>
-        <div class="search-bar">
-            <input type="text" placeholder="Search datasets">
-            <button>
-                <img src="images/search_icon.png" alt="Search">
-            </button>
-        </div>
+        <form id="searchForm" action="search_results.php" method="GET">
+            <div class="search-bar">
+                <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
+                <button>
+                    <img src="images/search_icon.png" alt="Search">
+                </button>
+                
+            </div>
+            </form>
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">DATASETS</a>

@@ -2,16 +2,28 @@
 session_start();
 include 'db_connection.php';
 
-// Get the selected category from the URL
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 
-// Prepare the SQL query
-if ($category) {
-    // If a category is selected, filter the datasets by category
-    $sql = "SELECT title, description FROM datasets WHERE category = '$category' ORDER BY user_id DESC";
+if ($search) {
+    // Search by title or description
+    $sql = "SELECT title, description, category, user_id FROM datasets 
+        WHERE title LIKE '%$search%' 
+        OR description LIKE '%$search%' 
+        OR category LIKE '%$search%' 
+        OR user_id LIKE '%$search%' 
+        ORDER BY user_id DESC";
+    $page_title = "Search results for: " . htmlspecialchars($search);
+} elseif ($category) {
+    // Filter by category
+    $sql = "SELECT title, description FROM datasets 
+            WHERE category = '$category'
+            ORDER BY user_id DESC";
+    $page_title = htmlspecialchars($category);
 } else {
-    // If no category is selected, fetch all datasets
+    // Show all datasets
     $sql = "SELECT title, description FROM datasets ORDER BY user_id DESC";
+    $page_title = "All Datasets";
 }
 
 $result = mysqli_query($conn, $sql);
@@ -127,7 +139,7 @@ $result = mysqli_query($conn, $sql);
 <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
-            <h2><?php echo htmlspecialchars($category); ?></h2>
+            <h2><?php echo $page_title; ?></h2>
         </div>
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>

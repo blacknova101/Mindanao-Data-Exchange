@@ -1,5 +1,17 @@
 <?php
 session_start();
+include 'db_connection.php'; // Include your database connection file
+
+// Query to count the number of datasets in the database
+$sql = "SELECT COUNT(*) AS dataset_count FROM datasets";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_fetch_assoc($result);
+$dataset_count = $row['dataset_count']; // Store the dataset count
+// Query to count the number of unique users (distinct user_id) in the datasets table
+$sql_sources = "SELECT COUNT(DISTINCT user_id) AS unique_sources FROM datasets";
+$result_sources = mysqli_query($conn, $sql_sources);
+$row_sources = mysqli_fetch_assoc($result_sources);
+$sources_count = $row_sources['unique_sources']; // Store the unique sources count
 ?>
 <script src="https://kit.fontawesome.com/2c68a433da.js" crossorigin="anonymous"></script>
 <!DOCTYPE html>
@@ -296,21 +308,7 @@ session_start();
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
         </div>
-        <div class="search-bar">
-            <input type="text" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
-            <button>
-                <img src="images/search_icon.png" alt="Search">
-            </button>
-            <div class="search-dropdown" id="searchDropdown">
-                <p class="trending-title">Trending</p>
-                <ul>
-                    <li>Smart City IoT Sensor Readings</li>
-                    <li>Davao City</li>
-                    <li>Space Tourism Flight Records</li>
-                    <li>Extreme Weather Events Database</li>
-                </ul>
-            </div>
-        </div>
+
         <nav class="nav-links">
             <a href="login.php">Login</a>
             <a href="AccountSelectionPage.php">Sign up</a>
@@ -321,12 +319,12 @@ session_start();
         <p id="tagline">Discover, Share, and Transform Data Seamlessly.</p>
         <div class="stats-box">
             <div class="stat">
-                <span class="stat-number">18,000</span>
+            <span class="stat-number"><?= number_format($dataset_count) ?></span>
                 <p>Datasets</p>
             </div>
             <div class="divider"></div>
             <div class="stat">
-                <span class="stat-number">2,000</span>
+            <span class="stat-number"><?= number_format($sources_count) ?></span>
                 <p>Sources</p>
             </div>
         </div>
