@@ -114,9 +114,9 @@
          <span><?php echo isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'Guest'; ?></span> 
          <span><?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'Guest'; ?></span> 
     </div>
-    <a href="#" class="menu-item">
+    <a href="user_settings.php" class="menu-item">
         <i id="gear"class="fa-solid fa-gear"></i>
-        <i id="user_settings">User Settings</i>
+        <span id="user_settings">User Settings</i>
     </a>
     
     <a href="#" class="menu-item">

@@ -16,6 +16,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($_FILES["fileToUpload"]["size"] > 5000000) {
         $_SESSION['error_message'] = "Sorry, your file is too large.";
         $uploadOk = 0;
+        header("Location: uploadselection.php");
+        exit();
     }
 
     // Define allowed file types (CSV, XLS, XLSX, and JSON)
@@ -23,6 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!in_array($fileType, $allowedTypes)) {
         $_SESSION['error_message'] = "Sorry, only CSV, Excel (XLS, XLSX), and JSON files are allowed.";
         $uploadOk = 0;
+        header("Location: uploadselection.php");
+        exit();
     }
 
     // If everything is ok, try to upload the file

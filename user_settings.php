@@ -12,9 +12,9 @@ session_start();
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background: url('images/Mindanao.png');
             background-size: cover;
             background-attachment: fixed;
-            text-align: center;
         }
         .navbar {
             display: flex;
@@ -121,13 +121,12 @@ session_start();
             text-align: center;
             position: relative;
         }
-        h2 {
-            padding: 20px;
+        .settings-container h2 {
             margin: 0 auto;
-            font-size: 18px;
+            font-size: 30px;
             font-weight: bold;
             text-align: left;
-            margin-bottom: 20px;
+            color: black;
         }
         #uploadForm {
             padding: 20px;
@@ -225,6 +224,113 @@ session_start();
         #errormessage{
             color: red;
         }
+        .settings-container {
+            width: 100%; /* Full width */
+            max-width: 1200px; /* Ensure it matches the max-width of the navbar */
+            margin: 40px auto; /* Centering the container */
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 1200px) {
+            .settings-container {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .settings-container {
+                width: 90%;
+            }
+        }
+
+
+        .settings-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group-container {
+            width: 500px;
+            display: flex;
+            justify-content: space-between; /* Ensure the inputs are spaced out */
+            gap: 30px; /* Add space between the fields */
+        }
+
+        .form-group {
+            padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .form-group input[type="file"] {
+            padding: 5px;
+        }
+        #email, #current_password, #new_password, #confirm_password {
+            width: 480px; /* Set the width of the email input box */
+        }
+        #first_name, #last_name {
+            width: 200px; /* Ensure both fields fit within their respective containers */
+        }
+        #confirmpass{
+            padding-bottom: 20px;
+        }
+
+        .submit-btn {
+            padding: 12px 20px;
+            background-color: #0099ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #007acc;
+        }
+        #profpic-firstname {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 10px;
+        }
+
+        #avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        #header #first_name, #header #last_name {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 2px solid black;
+            margin-bottom: 10px;
+        }
+        #first_name[readonly],
+        #last_name[readonly] {
+            background-color: #d3d3d3; /* Gray background */
+            cursor: not-allowed; /* Disable the cursor to indicate the field is not editable */
+        }
         #background-video {
             position: fixed;
             top: 0;
@@ -234,12 +340,15 @@ session_start();
             object-fit: cover;
             z-index: -1; /* stays behind everything */
         }
+
+
     </style>
 </head>
 <body>
 <video autoplay muted loop id="background-video">
         <source src="videos/background4.mp4" type="video/mp4">
     </video>
+
 
 <div id="wrapper">
     <header class="navbar">
@@ -264,30 +373,79 @@ session_start();
             </div>
         </nav>
     </header>
-
-    <div class="container">
-        <h2>UPLOAD DATASET</h2>
-        <div id="errormessage">
-        <?php if (isset($_SESSION['error_message'])): ?>
-            <div class="error-message">
-                <?php echo $_SESSION['error_message']; ?>
+    <!-- User settings section -->
+    <div class="settings-container">
+        <div id="header">
+            <h2 id="settings">User Settings</h2>
+            <form action="save_settings.php" method="POST" enctype="multipart/form-data">
+            <div id="profpic-firstname">
+                <div>
+                    <img id="avatar" src="images/user_icon.png" alt="User Icon">
+                </div>
+                <div>
+                    <span id="first_name"><?php echo $_SESSION['first_name']; ?></span>
+                    <span id="last_name"><?php echo $_SESSION['last_name']; ?></span>
+                </div>
             </div>
-            <?php unset($_SESSION['error_message']); // Unset the message after displaying it ?>
-        <?php endif; ?>
+
+            <hr class="section-divider">
+
         </div>
-        <form id="uploadForm" action="upload.php" method="post" enctype="multipart/form-data">
-            <label for="fileToUpload" class="drop-area">
-                <img src="images/upload_button.png" alt="Upload Icon">
-                <p>Drag & drop files to upload</p>
-                <p>or</p>
-                <button type="button" class="browse-btn" onclick="document.getElementById('fileToUpload').click();">Browse</button>
-            </label>
-            <input type="file" name="fileToUpload" id="fileToUpload" onchange="this.form.submit()" required>
+        <div class="form-group-container">
+            <div id="display1" class="form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" id="first_name" name="first_name" value="<?php echo $_SESSION['first_name']; ?>" required readonly>
+            </div>
+
+            <div id="display2" class="form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" id="last_name" name="last_name" value="<?php echo $_SESSION['last_name']; ?>" required readonly>
+            </div>
+        </div>
+                        
+            <!-- Email Address -->
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" value="<?php echo $_SESSION['email']; ?>" required>
+            </div>
+
+            <!-- Current Password -->
+            <div class="form-group">
+                <label for="current_password">Current Password</label>
+                <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required>
+            </div>
+
+            <!-- New Password -->
+            <div class="form-group">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" placeholder="Enter new password" required>
+            </div>
+
+            <!-- Confirm New Password -->
+            <div id="confirmpass" class="form-group">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" required>
+            </div>
+
+            <!-- Save Changes Button -->
+            <button type="submit" class="submit-btn">Save Changes</button>
         </form>
     </div>
 
     <?php include 'sidebar.php'; ?>
+    <?php include 'category_modal.php'; // Include the modal?>
 </div>
+<script>
+        function showModal() {
+            document.getElementById("categoryModal").style.display = "flex";
+        }
+        function hideModal() {
+            document.getElementById("categoryModal").style.display = "none";
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("categoryModal").style.display = "none";
+    });
+    </script>
 
 </body>
 </html>

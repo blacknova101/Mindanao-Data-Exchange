@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $link = isset($_POST['link']) ? $_POST['link'] : '';
     
     $file = isset($_FILES['fileToUpload']) ? $_FILES['fileToUpload'] : null;
-
+    $uploaded_file_name = isset($_POST['uploaded_file']) ? $_POST['uploaded_file'] : '';
     // Check if user is logged in
     if (!isset($_SESSION['user_id'])) {
         echo "You must be logged in to upload a dataset.";
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle file upload if a file was uploaded
         if ($file) {
             $target_dir = "uploads/";
-            $target_file = $target_dir . basename($file["name"]);
+            $target_file = $target_dir . $uploaded_file_name;
             $uploadOk = 1;
             $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Allow only certain file formats (CSV, XLS, XLSX, JSON)
             if (!in_array($fileType, $allowedTypes)) {
-                $_SESSION['error_message'] = "Sorry, only CSV, Excel (XLS, XLSX), and JSON files are allowed.";
+               $_SESSION['error_message'] = "Sorry, only CSV, Excel (XLS, XLSX), and JSON files are allowed.";
                 $uploadOk = 0;
             }
 // Handle and format the start and end periods (only month and year)

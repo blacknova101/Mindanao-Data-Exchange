@@ -4,11 +4,12 @@ include 'db_connection.php';
 
 // Fetch all datasets (title and description only)
 $sql = "
-    SELECT d.title, d.description, u.first_name, u.last_name
+    SELECT d.title, d.description, d.file_path, u.first_name, u.last_name
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
-    ORDER BY d.user_id DESC
+    ORDER BY d.dataset_id DESC
 ";
+
 $result = mysqli_query($conn, $sql);
 ?>
 
@@ -18,24 +19,22 @@ $result = mysqli_query($conn, $sql);
     <meta charset="UTF-8">
     <title>All Datasets</title>
     <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
+        html, body {
+            height: 100%;
         }
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
         }
         .navbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-top: 10px;
-            padding-bottom: 10px;
+            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
             padding-left: 30px;
-            padding-right: 10px;
             background-color: #0099ff; /* Transparent background */
             color: #cfd9ff;
             border-radius: 20px;
@@ -43,13 +42,16 @@ $result = mysqli_query($conn, $sql);
             position: relative;
             margin: 10px 0;
             backdrop-filter: blur(10px);
+            max-width: 1200px; /* Limit the maximum width */
             width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
             margin-top:30px;
+            margin-left: auto; /* Center align the navbar */
+            margin-right: auto; /* Center align the navbar */
+            font-weight: bold;
         }
         .logo {
-            display: flex;
-            align-items: center;
-            margin-right: 20px;
+        display: flex;
+        align-items: center;
         }
         .logo img {
             height: auto;
@@ -57,25 +59,20 @@ $result = mysqli_query($conn, $sql);
             max-width: 100%;
         }
         .nav-links a {
-            display: inline-block; /* Needed for transform to work */
             color: white;
-            margin-left: 10px;
-            margin-right: 27.5px;
-            padding-right: 20px; /* Add some padding to make hover area bigger */
+            margin-left: 20px;
             text-decoration: none;
             font-size: 18px;
-            transition: transform 0.3s ease, color 0.3s ease;
-            font-weight: bold;
+            transition: transform 0.3s ease; /* Smooth transition for scaling */
         }
         .nav-links a:hover {
             transform: scale(1.2); /* Scale up on hover */
         }
 
-
         h2 {
             text-align: center;
             color: #0c1a36;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
         #wrapper {
             max-width: 1240px;
@@ -100,6 +97,11 @@ $result = mysqli_query($conn, $sql);
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             overflow: hidden;
+            text-align: left; /* Default alignment for text */
+        }
+        .dataset-download {
+            text-align: center; 
+            margin-top: 10px;
         }
 
         .dataset-title {
@@ -148,11 +150,9 @@ $result = mysqli_query($conn, $sql);
             padding-top: 30px;
         }
         .search-bar {
-            flex-grow: 1;
             display: flex;
             position: relative;
-            margin-left: 50px; /* Adjust space for a smaller navbar */
-
+            justify-content: center;
         }
         .search-bar input {
             padding: 20px;
@@ -175,7 +175,7 @@ $result = mysqli_query($conn, $sql);
         .add-data-btn {
             margin-top: 20px;
             padding: 8px 5px;
-            padding-top: 15px;
+            padding-top: 20px;
             background-color: #0099ff;
             color: white;
             border: none;
@@ -194,7 +194,7 @@ $result = mysqli_query($conn, $sql);
         #category-btn {
             margin-top: 20px;
             padding: 8px 5px;
-            padding-top: 15px;
+            padding-top: 20px;
             background-color: #4CAF50; /* Green color */
             color: white;
             border: none;
@@ -212,11 +212,59 @@ $result = mysqli_query($conn, $sql);
         #category-btn:hover {
             background-color: #45a049; /* Darker green on hover */
         }
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* stays behind everything */
+        }
+        .no-datasets {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 500px; /* Full height of the viewport */
+            text-align: center;
+            color: #0c1a36;
+        }
+        .no-datasets p{
+            margin-left: 38px;
+        }
+
+        .no-found-img {
+            width: 250px;
+            max-width: 90%;
+            margin-bottom: 20px;
+        }
+
+        .no-datasets p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background-color: #0099ff;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .download-btn:hover {
+            background-color: #e65c00;
+        }
 
     </style>
 </head>
 <body>
-
+<video autoplay muted loop id="background-video">
+        <source src="videos/background4.mp4" type="video/mp4">
+    </video>
 <div class="container">
 <header class="navbar">
         <div class="logo">
@@ -238,30 +286,41 @@ $result = mysqli_query($conn, $sql);
     <a href="uploadselection.php" id="add-data-btn" class="add-data-btn">ADD DATA</a>
 </div>
 <div id="wrapper">
-    <div class="dataset-grid">
-        <?php if (mysqli_num_rows($result) > 0): ?>
-            <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                <div class="dataset-card">
-                    <div class="dataset-title">
-                        <a href="my_uploaded_dataset.php?title=<?= urlencode($row['title']) ?>">
-                            <?= htmlspecialchars($row['title']) ?>
-                        </a>
+        <div class="dataset-grid">
+            <?php if (mysqli_num_rows($result) > 0): ?>
+                <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                    <div class="dataset-card">
+                        <div class="dataset-title">
+                            <a href="my_uploaded_dataset.php?title=<?= urlencode($row['title']) ?>">
+                                <?= htmlspecialchars($row['title']) ?>
+                            </a>
+                        </div>
+                        <div class="dataset-description">
+                            <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
+                        </div>
+                        <div class="dataset-uploader">
+                            <br><br><br>
+                            Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                        </div>
+                        <div class="dataset-download">
+                        <a href="<?php echo htmlspecialchars($row['file_path']); ?>" download class="download-btn">Download</a>
+                        </div>
                     </div>
-                    <div class="dataset-description">
-                        <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
-                    </div>
-                    <div class="dataset-uploader">
-                    <br><br><br>
-                        Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <p>No datasets found.</p>
+                <?php endwhile; ?>
+            <?php endif; ?>
+        </div>
+        
+        <!-- No datasets found message outside of the grid -->
+        <?php if (mysqli_num_rows($result) == 0): ?>
+            <div class="no-datasets">
+                <img src="images/no-found1.png" alt="No data" class="no-found-img">
+                <p>No dataset found.</p>
+            </div>
         <?php endif; ?>
     </div>
-        </div>
 
+        </div>
+        <br><br>
 </div>
 <?php include 'category_modal.php'; // Include the modal?>
 <script>

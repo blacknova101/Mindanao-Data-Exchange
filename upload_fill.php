@@ -431,20 +431,19 @@ session_start();
     </div>
     <div class="form-group">
     <label>Files</label>
-    <div class="file-upload">
-        <span>📄</span>
-        <?php
-        if (isset($_SESSION['uploaded_file'])) {
-            // Display the uploaded file name
-            echo "<span>" . $_SESSION['uploaded_file'] . "</span>";
-            unset($_SESSION['uploaded_file']); // Clear session variable after displaying
-        } else {
-            echo "<span>No file uploaded yet.</span>";
-        }
-        ?>
+        <div class="file-upload">
+            <span>📄</span>
+            <?php
+            if (isset($_SESSION['uploaded_file'])) {
+                // Display the uploaded file name
+                echo "<span>" . $_SESSION['uploaded_file'] . "</span>";
+            } else {
+                echo "<span>No file uploaded yet.</span>";
+            }
+            ?>
+        </div>
     </div>
-    </div>
-
+    <input type="hidden" name="uploaded_file" value="<?php echo isset($_SESSION['uploaded_file']) ? $_SESSION['uploaded_file'] : ''; ?>">
         <div class="upload">
             <button type="button" id="upld-btn" onclick="document.getElementById('fileToUpload').click();">Upload more files</button>
             <input type="file" name="fileToUpload" id="fileToUpload" onchange="this.form.submit()" required style="display: none;">
