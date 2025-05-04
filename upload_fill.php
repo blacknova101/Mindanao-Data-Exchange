@@ -306,9 +306,21 @@ session_start();
             width: 200px;
             height: 50px;
         }
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* stays behind everything */
+        }
     </style>
 </head>
 <body>
+<video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
+    </video>
 
     <div id="wrapper">
         <header class="navbar">

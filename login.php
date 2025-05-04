@@ -173,7 +173,7 @@ if (isset($_GET['error'])) {
 <div id="flashbang"></div>
 
     <video autoplay muted loop id="background-video">
-        <source src="videos/background.mp4" type="video/mp4">
+        <source src="videos/bg6.mp4" type="video/mp4">
     </video>
     <header class="navbar">
         <div class="logo">

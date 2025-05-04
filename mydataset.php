@@ -251,7 +251,7 @@ $result = mysqli_query($conn, $sql);
 </head>
 <body>
 <video autoplay muted loop id="background-video">
-        <source src="videos/background4.mp4" type="video/mp4">
+        <source src="videos/bg6.mp4" type="video/mp4">
     </video>
 
 <div class="container">
@@ -317,7 +317,6 @@ $result = mysqli_query($conn, $sql);
             document.getElementById("categoryModal").style.display = "none";
         }
         document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("categoryModal").style.display = "none";
     });
     </script>
 </body>

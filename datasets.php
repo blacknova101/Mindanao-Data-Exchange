@@ -263,7 +263,7 @@ $result = mysqli_query($conn, $sql);
 </head>
 <body>
 <video autoplay muted loop id="background-video">
-        <source src="videos/background4.mp4" type="video/mp4">
+        <source src="videos/bg6.mp4" type="video/mp4">
     </video>
 <div class="container">
 <header class="navbar">
@@ -322,6 +322,7 @@ $result = mysqli_query($conn, $sql);
         </div>
         <br><br>
 </div>
+
 <?php include 'category_modal.php'; // Include the modal?>
 <script>
         function showModal() {

@@ -1,12 +1,11 @@
 <style>.modal {
-            display: none;
+            display: none; /* Default to hidden */
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.4);
-            display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -15,13 +14,10 @@
             color: #cfd9ff;
         }
         .modal-content {
-            background: white;
+            background-color: #0c1a36;
             padding: 20px;
             border-radius: 10px;
-            width: 50%;
-            max-width: 600px;
-            text-align: center;
-            background-color: #0c1a36;
+            min-width: 300px;
         }
         .category-grid {
             display: grid;
@@ -49,8 +45,8 @@
             margin-top: 10px;
         }
         </style>
-    <div class="modal" id="categoryModal">
-        <div class="modal-content">
+    <div id="categoryModal" class="modal" onclick="hideModal()">
+    <div class="modal-content" onclick="event.stopPropagation();">
             <h2>Select a Category</h2>
             <div class="category-grid">
                 <div onclick="selectCategory('Business & Finance')">Business & Finance</div>
