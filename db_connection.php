@@ -2,7 +2,7 @@
 // Database connection (can be reused across pages)
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = "12345";
 $dbname = "mangasaydb";
 
 // Create a single connection

@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $_SESSION['verified'] = true;
 
                 // Redirect to account creation page
-                header("Location: login.php");
+                header("Location: registration_success.html");
                 exit();
             } else {
                 $_SESSION['message'] = "Error storing user data in the database.";

@@ -159,30 +159,30 @@ session_start();
             <div class="form-grid">
                 <div class="input-group">
                     <label for="firstname">First Name:</label>
-                    <input type="text" name="firstname" id="firstname" required>
+                    <input type="text" name="firstname" value="<?= htmlspecialchars($_SESSION['form_data']['firstname'] ?? '') ?>">
                 </div>
                 <div class="input-group">
                     <label for="lastname">Last Name:</label>
-                    <input type="text" name="lastname" id="lastname" required>
+                    <input type="text" name="lastname" value="<?= htmlspecialchars($_SESSION['form_data']['lastname'] ?? '') ?>">
                 </div>
 
                 <div class="input-group">
                     <label for="email_address">Email Address:</label>
-                    <input type="text" name="email_address" id="email_address" value="<?php echo isset($_SESSION['email_address']) ? $_SESSION['email_address'] : ''; ?>" required>
+                    <input type="email" name="email_address" value="<?= htmlspecialchars($_SESSION['form_data']['email_address'] ?? '') ?>">
                 </div>
                 <div class="input-group">
                     <label for="re_enter_email">Re-enter Email Address:</label>
-                    <input type="text" name="re_enter_email" id="re_enter_email" value="<?php echo isset($_SESSION['re_enter_email']) ? $_SESSION['re_enter_email'] : ''; ?>" required>
+                    <input type="email" name="re_enter_email" value="<?= htmlspecialchars($_SESSION['form_data']['re_enter_email'] ?? '') ?>">
                     <div id="password-error" class="error-text"></div>
                 </div>
 
                 <div class="input-group">
                     <label for="password">Password:</label>
-                    <input type="password" name="password" id="password" required>
+                    <input type="password" name="password" value="<?= htmlspecialchars($_SESSION['form_data']['password'] ?? '') ?>">
                 </div>
                 <div class="input-group">
                     <label for="re_enter_pass">Re-enter Password:</label>
-                    <input type="password" name="re_enter_pass" id="re_enter_pass" required>
+                    <input type="password" name="re_enter_pass" value="<?= htmlspecialchars($_SESSION['form_data']['re_enter_pass'] ?? '') ?>">
                     <div id="password-error" class="error-text"></div>
                 </div>
             </div>
