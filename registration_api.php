@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             're_enter_email' => $reEnterEmail,
             'password' => $password,
             're_enter_pass' => $reEnterPassword
+
         ];        
         header("Location: registrationdetailsnoorg.php");
         exit();
@@ -43,7 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             'lastname' => $lastName,
             'email_address' => $email,
             're_enter_email' => $reEnterEmail
-        ];        
+
+        ];       
         header("Location: registrationdetailsnoorg.php");
         exit();
     }
@@ -87,14 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $mail->Password = 'zigg xxbk opcb qsob';  
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
                 $mail->Port = 587;  
-
-                $mail->SMTPOptions = [
-                    'ssl' => [
-                        'verify_peer' => false,
-                        'verify_peer_name' => false,
-                        'allow_self_signed' => true
-                    ]
-                ];
 
                 // Recipients
                 $mail->setFrom('wazzupbymindex@gmail.com', 'Mindanao Data Exchange');
