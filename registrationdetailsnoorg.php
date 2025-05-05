@@ -172,11 +172,7 @@ session_start();
                 </div>
                 <div class="input-group">
                     <label for="re_enter_email">Re-enter Email Address:</label>
-                    <input type="text" name="email_address" value="<?= htmlspecialchars($_SESSION['form_data']['email_address'] ?? '') ?>">
-                </div>
-                <div class="input-group">
-                    <label for="re_enter_email">Re-enter Email Address:</label>
-                    <input type="text" name="re_enter_email" value="<?= htmlspecialchars($_SESSION['form_data']['re_enter_email'] ?? '') ?>">
+                    <input type="email" name="re_enter_email" value="<?= htmlspecialchars($_SESSION['form_data']['re_enter_email'] ?? '') ?>">
                     <div id="password-error" class="error-text"></div>
                 </div>
 

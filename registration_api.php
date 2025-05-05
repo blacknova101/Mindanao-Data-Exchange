@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             're_enter_email' => $reEnterEmail,
             'password' => $password,
             're_enter_pass' => $reEnterPassword
-
         ];        
         header("Location: registrationdetailsnoorg.php");
         exit();
@@ -44,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             'lastname' => $lastName,
             'email_address' => $email,
             're_enter_email' => $reEnterEmail
-
         ];       
         header("Location: registrationdetailsnoorg.php");
         exit();
