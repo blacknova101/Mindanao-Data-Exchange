@@ -24,7 +24,7 @@ if (isset($_GET['error'])) {
             justify-content: space-between;
             padding: 10px 5%; /* Adjusted padding for a more compact navbar */
             padding-left: 30px;
-            background-color: rgba(0, 153, 255, 0.5); /* Transparent background */
+            background-color:   #0099ff; /* Transparent background */
             color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -56,6 +56,10 @@ if (isset($_GET['error'])) {
             margin-left: 20px;
             text-decoration: none;
             font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+        .nav-links a:hover {
+            transform: scale(1.2); /* Scale up the link by 20% */
         }
         #background-video {
             position: fixed;

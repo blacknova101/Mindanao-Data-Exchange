@@ -38,7 +38,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         justify-content: space-between;
         padding: 10px 5%; /* Adjusted padding for a more compact navbar */
         padding-left: 30px;
-        background-color: rgba(0, 153, 255, 0.5); /* Transparent background */
+        background-color:  #0099ff; /* Transparent background */
         color: #cfd9ff;
         border-radius: 20px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -133,6 +133,11 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         margin-left: 20px;
         text-decoration: none;
         font-size: 18px;
+        transition: transform 0.3s ease; /* Smooth transition for scaling */
+    }
+
+    .nav-links a:hover {
+        transform: scale(1.2); /* Scale up the link by 20% */
     }
     .wrapper {
         padding: 50px 5%;

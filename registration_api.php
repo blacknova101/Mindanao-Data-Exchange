@@ -16,16 +16,34 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
     if (!preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email)) {
         $_SESSION['error_message'] = 'Error: Invalid email format.';
+        $_SESSION['form_data'] = [
+            'firstname' => $firstName,
+            'lastname' => $lastName,
+            'password' => $password,
+            're_enter_pass' => $reEnterPassword
+        ];  
         header("Location: registrationdetailsnoorg.php");
         exit();
     }
     if (!preg_match("/^[a-zA-Z\s'-]+$/", $firstName) || !preg_match("/^[a-zA-Z\s'-]+$/", $lastName)) {
         $_SESSION['error_message'] = 'Error: Names can only contain letters, spaces, hyphens, and apostrophes.';
+        $_SESSION['form_data'] = [
+            'email_address' => $email,
+            're_enter_email' => $reEnterEmail,
+            'password' => $password,
+            're_enter_pass' => $reEnterPassword
+        ]; 
         header("Location: registrationdetailsnoorg.php");
         exit();
     }
     if (!preg_match("/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
         $_SESSION['error_message'] = 'Error: Password must be at least 8 characters long, contain 1 uppercase letter, 1 number, and 1 special character.';
+        $_SESSION['form_data'] = [
+            'firstname' => $firstName,
+            'lastname' => $lastName,
+            'email_address' => $email,
+            're_enter_email' => $reEnterEmail
+        ]; 
         header("Location: registrationdetailsnoorg.php");
         exit();
     }
