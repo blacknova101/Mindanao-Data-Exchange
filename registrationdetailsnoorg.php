@@ -168,6 +168,10 @@ session_start();
 
                 <div class="input-group">
                     <label for="email_address">Email Address:</label>
+                    <input type="email" name="email_address" value="<?= htmlspecialchars($_SESSION['form_data']['email_address'] ?? '') ?>">
+                </div>
+                <div class="input-group">
+                    <label for="re_enter_email">Re-enter Email Address:</label>
                     <input type="text" name="email_address" value="<?= htmlspecialchars($_SESSION['form_data']['email_address'] ?? '') ?>">
                 </div>
                 <div class="input-group">
