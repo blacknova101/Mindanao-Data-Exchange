@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $row['user_id']; // Store user ID in session
             $_SESSION['first_name'] = $row['first_name']; // Store user's name in session
             $_SESSION['last_name'] = $row['last_name']; // Store user's name in session
+            $_SESSION['organization_id'] = $row['organization_id'];
 
             header("Location: HomeLogin.php"); // Redirect to home page after login
             exit();
