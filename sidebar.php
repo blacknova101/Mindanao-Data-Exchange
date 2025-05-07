@@ -121,7 +121,7 @@
     
     <a href="#" class="menu-item">
         <i class="fa-solid fa-file"></i>
-        <i id="my_datasets" style="cursor: pointer;" onclick="window.location.href='mydataset.php';">My Datasets</i>
+        <i id="my_datasets" style="cursor: pointer;" onclick="window.location.href='mydatasets.php';">My Datasets</i>
     </a>
     
     <a href="#" class="menu-item">

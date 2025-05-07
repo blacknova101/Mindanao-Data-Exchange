@@ -1,24 +1,24 @@
 <?php
 session_start();
 include 'db_connection.php';
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    echo "You must be logged in to view your datasets.";
+    exit;
+}
 
-$category = isset($_GET['category']) ? mysqli_real_escape_string($conn, $_GET['category']) : null;
+$user_id = $_SESSION['user_id'];  // Get logged-in user's ID
 
+// Fetch all datasets (title and description only)
 $sql = "
     SELECT d.dataset_id, d.title, d.description, d.file_path, u.first_name, u.last_name
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
+    WHERE d.user_id = '$user_id'
+    ORDER BY d.title ASC
 ";
-
-if ($category) {
-    $sql .= " WHERE d.category = '$category'"; // Apply the category filter if it exists
-}
-
-$sql .= " ORDER BY d.dataset_id DESC"; // Only one ORDER BY clause
-
 $result = mysqli_query($conn, $sql);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +86,6 @@ $result = mysqli_query($conn, $sql);
             margin: 5px auto;
             padding: 0 20px;
         }
-
         .dataset-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
@@ -105,6 +104,11 @@ $result = mysqli_query($conn, $sql);
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             overflow: hidden;
+            text-align: left; /* Default alignment for text */
+        }
+        .dataset-download {
+            text-align: center; 
+            margin-top: 10px;
         }
 
         .dataset-title {
@@ -247,6 +251,21 @@ $result = mysqli_query($conn, $sql);
             font-size: 28px;
             font-weight: bold;
         }
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background-color: #0099ff;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .download-btn:hover {
+            background-color: #e65c00;
+        }
+
 
     </style>
 </head>
@@ -254,14 +273,12 @@ $result = mysqli_query($conn, $sql);
 <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
+
 <div class="container">
 <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
-            <h2>
-                <?= $category ? 'Category: ' . htmlspecialchars($category) : 'All Datasets' ?>
-            </h2>
-
+            <h2>My Datasets</h2>
         </div>
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
@@ -277,16 +294,16 @@ $result = mysqli_query($conn, $sql);
     <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
     <a href="uploadselection.php" id="add-data-btn" class="add-data-btn">ADD DATA</a>
 </div>
-    <div id="wrapper">
-        <div class="dataset-grid">
+<div id="wrapper">
+<div class="dataset-grid">
             <?php if (mysqli_num_rows($result) > 0): ?>
                 <?php while ($row = mysqli_fetch_assoc($result)): ?>
                     <div class="dataset-card">
-                        <div class="dataset-title">
-                        <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
+                    <div class="dataset-title">
+                        <a href="mydataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
                             <?= htmlspecialchars($row['title']) ?>
                         </a>
-                        </div>
+                    </div>
                         <div class="dataset-description">
                             <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
                         </div>
@@ -294,11 +311,14 @@ $result = mysqli_query($conn, $sql);
                             <br><br><br>
                             Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
                         </div>
+                        <div class="dataset-download">
+                        <a href="<?php echo htmlspecialchars($row['file_path']); ?>" download class="download-btn">Download</a>
+                        </div>
                     </div>
                 <?php endwhile; ?>
             <?php endif; ?>
         </div>
-
+        
         <!-- No datasets found message outside of the grid -->
         <?php if (mysqli_num_rows($result) == 0): ?>
             <div class="no-datasets">
@@ -308,8 +328,9 @@ $result = mysqli_query($conn, $sql);
         <?php endif; ?>
     </div>
 
-        </div>
 
+        </div>
+        <br><br>
 </div>
 <?php include 'category_modal.php'; // Include the modal?>
 <script>
@@ -320,7 +341,6 @@ $result = mysqli_query($conn, $sql);
             document.getElementById("categoryModal").style.display = "none";
         }
         document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("categoryModal").style.display = "none";
     });
     </script>
 </body>

@@ -4,7 +4,7 @@ include 'db_connection.php';
 
 // Fetch all datasets (title and description only)
 $sql = "
-    SELECT d.title, d.description, d.file_path, u.first_name, u.last_name
+    SELECT d.dataset_id, d.title, d.description, d.file_path, u.first_name, u.last_name
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
     ORDER BY d.dataset_id DESC
@@ -284,17 +284,17 @@ $result = mysqli_query($conn, $sql);
     </form>
     <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
     <a href="uploadselection.php" id="add-data-btn" class="add-data-btn">ADD DATA</a>
-</div>
+    </div>
 <div id="wrapper">
         <div class="dataset-grid">
             <?php if (mysqli_num_rows($result) > 0): ?>
                 <?php while ($row = mysqli_fetch_assoc($result)): ?>
                     <div class="dataset-card">
-                        <div class="dataset-title">
-                            <a href="my_uploaded_dataset.php?title=<?= urlencode($row['title']) ?>">
-                                <?= htmlspecialchars($row['title']) ?>
-                            </a>
-                        </div>
+                    <div class="dataset-title">
+                        <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
+                            <?= htmlspecialchars($row['title']) ?>
+                        </a>
+                    </div>
                         <div class="dataset-description">
                             <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
                         </div>

@@ -1,5 +1,19 @@
-<?php 
+<?php
 session_start();
+include 'db_connection.php'; // Make sure this file sets up $conn
+
+$userId = $_SESSION['user_id'];
+
+$sql = "SELECT u.first_name, u.last_name, u.email, o.name AS organization_name
+        FROM users u
+        JOIN organizations o ON u.organization_id = o.organization_id
+        WHERE u.user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$result = $stmt->get_result();
+$userData = $result->fetch_assoc();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -123,7 +137,7 @@ session_start();
         }
         .settings-container h2 {
             margin: 0 auto;
-            font-size: 30px;
+            font-size: 25px;
             font-weight: bold;
             text-align: left;
             color: black;
@@ -247,12 +261,8 @@ session_start();
         }
 
 
-        .settings-container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
 
-        .form-group-container {
+        .profile-container {
             width: 500px;
             display: flex;
             justify-content: space-between; /* Ensure the inputs are spaced out */
@@ -261,6 +271,7 @@ session_start();
 
         .form-group {
             padding-top: 10px;
+            padding-left: 15px;
             display: flex;
             flex-direction: column;
         }
@@ -280,7 +291,7 @@ session_start();
             padding: 5px;
         }
         #email, #current_password, #new_password, #confirm_password {
-            width: 480px; /* Set the width of the email input box */
+            width: 468px; /* Set the width of the email input box */
         }
         #first_name, #last_name {
             width: 200px; /* Ensure both fields fit within their respective containers */
@@ -340,16 +351,56 @@ session_start();
             object-fit: cover;
             z-index: -1; /* stays behind everything */
         }
+        #profile {
+            width: 525px;
+            padding: 25px;
+            background-color: #f2f2f2; /* Light gray background to differentiate from white */
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        #change-password {
+            width: 525px;
+            padding: 25px;
+            background-color: #f2f2f2; /* Light gray background for distinction */
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        #profile-wrapper{
+            display: flex;
+            gap: 50px;
+        }
+        #organization-container {
+            width: 525px;
+            padding: 25px;
+            background-color: #f2f2f2; /* Light gray background for distinction */
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .create-org-btn {
+            background-color: #0099ff;
+            color: white;
+            padding: 10px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+        #org{
+            margin-bottom: 23px;
+        }
 
 
     </style>
 </head>
 <body>
 <video autoplay muted loop id="background-video">
-        <source src="videos/background4.mp4" type="video/mp4">
+        <source src="videos/bg6.mp4" type="video/mp4">
     </video>
-
-
 <div id="wrapper">
     <header class="navbar">
         <div class="logo">
@@ -376,7 +427,6 @@ session_start();
     <!-- User settings section -->
     <div class="settings-container">
         <div id="header">
-            <h2 id="settings">User Settings</h2>
             <form action="save_settings.php" method="POST" enctype="multipart/form-data">
             <div id="profpic-firstname">
                 <div>
@@ -391,42 +441,57 @@ session_start();
             <hr class="section-divider">
 
         </div>
-        <div class="form-group-container">
-            <div id="display1" class="form-group">
-                <label for="first_name">First Name</label>
-                <input type="text" id="first_name" name="first_name" value="<?php echo $_SESSION['first_name']; ?>" required readonly>
+        <div id="profile-wrapper">
+            <div id="profile">
+            <h2>Profile</h2>
+            <div class="profile-container">
+                    <div id="display1" class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" value="<?php echo $_SESSION['first_name']; ?>" required readonly>
+                    </div>
+
+                    <div id="display2" class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" value="<?php echo $_SESSION['last_name']; ?>" required readonly>
+                    </div>
+            </div>
+                <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" value="<?php echo $_SESSION['email']; ?>" required>
+                    </div>
+            </div>
+                <div id="organization-container">
+                <h2 id="org">Organization</h2>
+                <div class="form-group">
+                    <input type="text" id="organization" name="organization" value="<?php echo $userData['organization_name']; ?>" readonly>
+                </div>
+                <button type="button" class="create-org-btn" onclick="window.location.href='create_organization.php'">Create New Organization</button>
+                </div>
             </div>
 
-            <div id="display2" class="form-group">
-                <label for="last_name">Last Name</label>
-                <input type="text" id="last_name" name="last_name" value="<?php echo $_SESSION['last_name']; ?>" required readonly>
-            </div>
-        </div>
-                        
-            <!-- Email Address -->
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" value="<?php echo $_SESSION['email']; ?>" required>
-            </div>
 
-            <!-- Current Password -->
-            <div class="form-group">
-                <label for="current_password">Current Password</label>
-                <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required>
-            </div>
 
-            <!-- New Password -->
-            <div class="form-group">
-                <label for="new_password">New Password</label>
-                <input type="password" id="new_password" name="new_password" placeholder="Enter new password" required>
-            </div>
+        <br><br>
+        <div id="change-password">
+            <h2>Change Password</h2>
+                <!-- Current Password -->
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required>
+                </div>
 
-            <!-- Confirm New Password -->
-            <div id="confirmpass" class="form-group">
-                <label for="confirm_password">Confirm New Password</label>
-                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" required>
-            </div>
+                <!-- New Password -->
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" placeholder="Enter new password" required>
+                </div>
 
+                <!-- Confirm New Password -->
+                <div id="confirmpass" class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" required>
+                </div>
+    </div>
             <!-- Save Changes Button -->
             <button type="submit" class="submit-btn">Save Changes</button>
         </form>
