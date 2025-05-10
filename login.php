@@ -78,7 +78,7 @@ if (isset($_GET['error'])) {
         }
         .login-container {
             margin-top: 100px;
-            background: #cfd9ff;
+            background: white;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
@@ -86,7 +86,7 @@ if (isset($_GET['error'])) {
             text-align: center;
         }
         .logo-container img {
-            background-color: #0c1a36;
+            background-color:#0099ff;
             border-radius: 15px;
             padding: 10px;
             width: 80px;
@@ -94,7 +94,7 @@ if (isset($_GET['error'])) {
         .input-container {
             display: flex;
             align-items: center;
-            background-color: #E3F2FD;
+            background-color: white;
             box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             padding: 10px;
@@ -135,7 +135,7 @@ if (isset($_GET['error'])) {
             background-color: #092045;
         }
         a {
-            color: #0c1a36;
+            color: #0099ff;
             text-decoration: none;
             font-size: 16px;
         }
@@ -144,7 +144,7 @@ if (isset($_GET['error'])) {
         }
         .login {
         display: block;
-        background-color: #0c1a36;
+        background-color: #0099ff;
         color: white;
         padding: 14px 25px;
         text-align: center;
@@ -156,7 +156,7 @@ if (isset($_GET['error'])) {
         }
 
         .login:hover {
-            background-color:rgb(142, 155, 226);
+            background-color:#092045;
         }
         #flashbang {
             position: fixed;
@@ -209,7 +209,7 @@ if (isset($_GET['error'])) {
                     <img src="images/password_icon.png" alt="Password Icon">
                     <input type="password" name="password" placeholder="Password" required>
                 </div>
-                <a href="#" class="forgot-password">Forgot password?</a>
+                <a href="forgot-password.php" class="forgot-password">Forgot password?</a>
                 <button type="submit" class="login">LOGIN</button>
             </form>
             <a href="AccountSelectionPage.php" class="sign-up">Sign up</a>
