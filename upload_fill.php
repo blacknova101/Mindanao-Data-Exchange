@@ -6,9 +6,18 @@ if (!isset($_SESSION['user_id'])) {
     // Redirect to login page if not authenticated
     header("Location: login.php");
     exit();
+} elseif (!isset($_SESSION['has_organization']) || $_SESSION['has_organization'] === false) {
+    // Redirect to an error page if no organization_id is found
+    header("Location: unauthorized.php"); // Or login page if preferred
+    exit();
+} elseif (!isset($_SESSION['uploaded_file']) || empty($_SESSION['uploaded_file'])) {
+    // Handle the case where no file has been uploaded
+    $_SESSION['upload_error'] = "No file has been uploaded yet.";
+    header("Location: uploadselection.php"); // Redirect to a custom error page or show message on the current page
+    exit();
 }
-
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
