@@ -13,6 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $reEnterEmail = $_POST['re_enter_email'];
     $password = $_POST['password'];
     $reEnterPassword = $_POST['re_enter_pass'];
+    
+    if (
+        empty($firstName) || empty($lastName) || empty($email) || empty($reEnterEmail)
+        || empty($password) || empty($reEnterPassword)
+    ) {
+        $_SESSION['error_message'] = 'Error: Please fill in all required fields.';
+        header("Location: registrationdetails.php");
+        exit();
+    }
 
     if (!preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email)) {
         $_SESSION['error_message'] = 'Error: Invalid email format.';
@@ -22,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             'password' => $password,
             're_enter_pass' => $reEnterPassword
         ];        
-        header("Location: registrationdetailsnoorg.php");
+        header("Location: registrationdetails.php");
         exit();
     }
     if (!preg_match("/^[a-zA-Z\s'-]+$/", $firstName) || !preg_match("/^[a-zA-Z\s'-]+$/", $lastName)) {
@@ -33,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             'password' => $password,
             're_enter_pass' => $reEnterPassword
         ];        
-        header("Location: registrationdetailsnoorg.php");
+        header("Location: registrationdetails.php");
         exit();
     }
     if (!preg_match("/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
@@ -44,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             'email_address' => $email,
             're_enter_email' => $reEnterEmail
         ];       
-        header("Location: registrationdetailsnoorg.php");
+        header("Location: registrationdetails.php");
         exit();
     }
     // Check if email and password match
@@ -59,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         if (mysqli_num_rows($result) > 0) {
             // Email already exists, show an error message
             $_SESSION['error_message'] = 'Error: Email is already registered.';
-            header("Location: registrationdetailsnoorg.php"); // use your real form page filename
+            header("Location: registrationdetails.php"); // use your real form page filename
             exit();
         } else {
             // Hash the password for security
@@ -110,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         }
     } else {
         echo $_SESSION['error_message'] = 'Error: Email or Password does not match.';
-        header("Location: registrationdetailsnoorg.php");
+        header("Location: registrationdetails.php");
         exit();        
     }
 }
