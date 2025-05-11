@@ -1,5 +1,13 @@
 <?php
 session_start();
+if (isset($_GET['error'])) {
+    $error_message = htmlspecialchars($_GET['error']); // Sanitize the error message
+}
+if (isset($_SESSION['user_id'])) {
+    // Redirect to login page if already logged in
+    header("Location: homelogin.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
