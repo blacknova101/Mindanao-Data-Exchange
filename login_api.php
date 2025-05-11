@@ -27,7 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $row['user_id']; // Store user ID in session
             $_SESSION['first_name'] = $row['first_name']; // Store user's name in session
             $_SESSION['last_name'] = $row['last_name']; // Store user's name in session
-            $_SESSION['organization_id'] = $row['organization_id'];
+            $_SESSION['organization_id'] = $row['organization_id']; // Store organization ID in session
+
+            // Check if the user has an organization
+            if (empty($row['organization_id'])) {
+                $_SESSION['has_organization'] = false;
+            } else {
+                $_SESSION['has_organization'] = true;
+            }
 
             header("Location: HomeLogin.php"); // Redirect to home page after login
             exit();

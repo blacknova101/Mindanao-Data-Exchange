@@ -140,7 +140,7 @@ session_start();
 
         .input-group input {
             padding: 12px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #0099ff;
             border-radius: 8px;
             font-size: 16px;
             background-color: #f8f9fa;
@@ -166,7 +166,7 @@ session_start();
         }
 
         .btn-next {
-            background-color: #0c2239;
+            background-color: #0099ff;
             color: white;
             padding: 15px 60px;
             border: none;
@@ -214,12 +214,12 @@ session_start();
                 <div id="circle1" class="circle">1</div>
                 <div>Personal details</div>
             </div>
-            <div id="circle2 "class="step active">
-                <div class="circle">2</div>
+            <div class="step active">
+                <div id="circle2 " class="circle">2</div>
                 <div>Verify email</div>
             </div>
-            <div id="circle3" class="step active">
-                <div class="circle">3</div>
+            <div class="step active">
+                <div id="circle3" class="circle">3</div>
                 <div>Account created</div>
             </div>
         </div>
@@ -227,6 +227,7 @@ session_start();
         <h1>Provide the following information</h1>
         
         <form action="registration_api.php" method="POST">
+        <input type="hidden" name="user_type" value="individual">
             <div class="form-grid">
                 <div class="input-group">
                     <label for="firstname">First Name:</label>

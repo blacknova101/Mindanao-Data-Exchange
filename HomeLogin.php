@@ -12,7 +12,7 @@ $sql_sources = "SELECT COUNT(DISTINCT user_id) AS unique_sources FROM datasets";
 $result_sources = mysqli_query($conn, $sql_sources);
 $row_sources = mysqli_fetch_assoc($result_sources);
 $sources_count = $row_sources['unique_sources']; // Store the unique sources count
-
+$upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
 
 ?>
 <!DOCTYPE html>
@@ -221,6 +221,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         border-radius: 8px; /* Rounded corners */
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
         transition: all 0.3s ease;
+        position: relative;
     }
 
     .upload-btn i {
@@ -232,7 +233,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         background-color: #a0b6f3; /* Darker blue when hovered */
         transform: scale(1.1); /* Slightly increase size on hover */
     }
-    }
+    
     .upload-btn p {
         font-size: 16px;
         color: black;
@@ -277,6 +278,41 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         align-items: center;
         gap: 20px;
     }
+    .upload-btn.disabled {
+        pointer-events: none; /* Disable clicking */
+        opacity: 0.5; /* Make it look disabled */
+    }
+    .tooltip-text {
+        position: absolute;
+        top: 50%;
+        right: 110%;
+        transform: translateY(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 5px;
+        font-size: 14px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+        z-index: 100;
+    }
+
+    .upload-btn:hover .tooltip-text {
+        opacity: 1;
+        visibility: visible;
+    }
+    .upload-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .upload-wrapper.has-tooltip:hover .tooltip-text {
+        opacity: 1;
+        visibility: visible;
+    }
+
     /* Cursor Trail Styles */
     .cursor-trail {
         position: absolute;
@@ -367,9 +403,14 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         </main>
 
         <div class="upload-section">
-            <a href="uploadselection.php" class="upload-btn">
-            <i class="fa-solid fa-upload"></i>
-            </a>
+            <div class="upload-wrapper <?php echo $upload_disabled ? 'has-tooltip' : ''; ?>">
+                <a href="uploadselection.php" class="upload-btn <?php echo $upload_disabled ? 'disabled' : ''; ?>">
+                    <i class="fa-solid fa-upload"></i>
+                </a>
+                <?php if ($upload_disabled): ?>
+                    <span class="tooltip-text">You must be part of an organization to upload datasets.</span>
+                <?php endif; ?>
+            </div>
             <p>Upload Data</p>
         </div>
     </div>

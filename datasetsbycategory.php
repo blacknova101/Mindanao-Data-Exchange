@@ -17,6 +17,8 @@ if ($category) {
 $sql .= " ORDER BY d.dataset_id DESC"; // Only one ORDER BY clause
 
 $result = mysqli_query($conn, $sql);
+$upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
+
 ?>
 
 
@@ -179,6 +181,7 @@ $result = mysqli_query($conn, $sql);
             margin-top: 20px;
             padding: 8px 5px;
             padding-top: 20px;
+            padding-bottom: 20px;
             background-color: #0099ff;
             color: white;
             border: none;
@@ -247,6 +250,43 @@ $result = mysqli_query($conn, $sql);
             font-size: 28px;
             font-weight: bold;
         }
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 260px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 80%; /* Position above the button */
+            left: 50%;
+            margin-left: -130px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .tooltip-wrapper:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .add-data-btn.disabled-link {
+            background-color: #e0e0e0;
+            color: #b0b0b0;
+            cursor: not-allowed;
+            pointer-events: none;
+            margin-top: 21px;
+            padding-bottom:19.5px;
+        }
 
     </style>
 </head>
@@ -275,7 +315,16 @@ $result = mysqli_query($conn, $sql);
         </button>
     </form>
     <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
-    <a href="uploadselection.php" id="add-data-btn" class="add-data-btn">ADD DATA</a>
+    <span class="tooltip-wrapper">
+        <a href="<?= $upload_disabled ? '#' : 'uploadselection.php' ?>" 
+        id="add-data-btn" 
+        class="add-data-btn<?= $upload_disabled ? ' disabled-link' : '' ?>">
+            ADD DATA
+        </a>
+        <?php if ($upload_disabled): ?>
+            <span class="tooltip-text">You must be part of an organization to upload datasets.</span>
+        <?php endif; ?>
+    </span>
 </div>
     <div id="wrapper">
         <div class="dataset-grid">

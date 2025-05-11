@@ -86,9 +86,9 @@ session_start();
             padding: 0px 20px;
             display: flex;
             flex-direction: column;
-            height: 700px;
-            margin-bottom:20px;
-            margin-top:30px;
+            height: 750px;
+            margin-bottom:50px;
+            margin-top:0px;
         }
         .content-row {
             margin-top: 200px;
@@ -126,26 +126,28 @@ session_start();
             width: 40px;
             margin-bottom: 10px;
         }
-        
-        .account-individual a, .account-org a {
+        .next-button{
+            margin-top: 50px;
+        }
+        .next-button a{
             background-color:#0099ff;
             text-decoration: none;
             color: white;
-            padding: 10px 20px;
+            padding: 10px 100px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            
+            font-size:30px;
         }
-        .account-individual a:hover, .account-org a:hover {
+        .next-button a:hover {
             background-color: #142850;
         }
         .cancel {
             text-align: center;
-            margin-top: 70px;
+            margin-top: 30px;
         }
         .cancel .cancel-button{
-            font-size: 30px;
+            font-size: 20px;
             background-color: #0099ff;
             text-decoration: none;
             color: white;
@@ -192,7 +194,6 @@ session_start();
                     <h2><strong>Normal MDX account</strong></h2>
                     <img src="images/user_icon.png" alt="User Icon">
                     <br>
-                    <a href="registrationdetailsnoorg.php">Sign Up</a>
                     <p id="checkmark"><img src="images/check.png"></p>
                     <p id="checkmark"><img src="images/check.png"></p>
                 </div>
@@ -200,11 +201,13 @@ session_start();
                     <h2><strong>With organization</strong></h2>
                     <img src="images/user_icon.png" alt="User Icon">
                     <br>
-                    <a href="registrationdetailswithorg.php">Sign Up</a>
                     <p id="checkmark"><img src="images/check.png"></p>
                     <p id="checkmark"><img src="images/check.png"></p>
                     <p id="checkmark"><img src="images/check.png"></p>
                 </div>
+            </div>
+            <div class="next-button">
+            <a href="registrationdetails.php">Next</a>
             </div>
             
             <div class="cancel">

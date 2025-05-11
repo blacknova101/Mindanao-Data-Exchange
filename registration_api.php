@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $mail->send();
 
                 // Redirect to verification page
-                header("Location: verifyemailaddressnoorg.php");
+                header("Location: verifyemailaddress.php");
                 exit();
 
             } catch (Exception $e) {

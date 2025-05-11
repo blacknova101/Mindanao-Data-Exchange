@@ -13,7 +13,7 @@ $stmt->bind_param("i", $userId);
 $stmt->execute();
 $result = $stmt->get_result();
 $userData = $result->fetch_assoc();
-
+$organizationName = $userData['organization_name'] ?? ''; // Default to empty if no organization is found
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -460,13 +460,14 @@ $userData = $result->fetch_assoc();
                         <input type="email" id="email" name="email" value="<?php echo $_SESSION['email']; ?>" required>
                     </div>
             </div>
-                <div id="organization-container">
+            <div id="organization-container">
                 <h2 id="org">Organization</h2>
                 <div class="form-group">
-                    <input type="text" id="organization" name="organization" value="<?php echo $userData['organization_name']; ?>" readonly>
+                    <input type="text" id="organization" name="organization" value="<?php echo $organizationName; ?>" readonly>
                 </div>
                 <button type="button" class="create-org-btn" onclick="window.location.href='create_organization.php'">Create New Organization</button>
-                </div>
+            </div>
+
             </div>
 
 
