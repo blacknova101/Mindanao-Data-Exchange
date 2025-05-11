@@ -1,11 +1,14 @@
 <?php
 session_start();
 include 'db_connection.php';
-// Check if the user is logged in
+
+// Check if the user is logged in (ensure 'user_id' is set in the session)
 if (!isset($_SESSION['user_id'])) {
-    echo "You must be logged in to view your datasets.";
-    exit;
+    // Redirect to login page if not authenticated
+    header("Location: login.php");
+    exit();
 }
+
 
 $user_id = $_SESSION['user_id'];  // Get logged-in user's ID
 

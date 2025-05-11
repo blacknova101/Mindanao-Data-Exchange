@@ -2,6 +2,13 @@
 session_start();
 include 'db_connection.php';
 
+// Check if the user is logged in (ensure 'user_id' is set in the session)
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if not authenticated
+    header("Location: login.php");
+    exit();
+}
+
 // Fetch all datasets (title and description only)
 $sql = "
     SELECT d.dataset_id, d.title, d.description, d.file_path, u.first_name, u.last_name

@@ -1,3 +1,10 @@
+<?php
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if not authenticated
+    header("Location: login.php");
+    exit();
+}
+?>
 <style>
     .sidebar {
         width: 250px;
@@ -129,7 +136,7 @@
         <i id="notifications">Notifications</i>
     </a>
     
-    <a href="#" class="sign-out">
+    <a href="logout.php" class="sign-out">
         <img src="images/signout-icon.png" alt="Sign Out">
         Sign Out
     </a>

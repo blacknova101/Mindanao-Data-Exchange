@@ -2,6 +2,13 @@
 session_start();
 include 'db_connection.php';  // Include your database connection
 
+// Check if the user is logged in (ensure 'user_id' is set in the session)
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if not authenticated
+    header("Location: login.php");
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get the data from the form and check if it's set
     $title = isset($_POST['title']) ? $_POST['title'] : '';

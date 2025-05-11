@@ -1,7 +1,11 @@
 <?php
 session_start();
 include 'db_connection.php'; // Include your database connection file
-
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if not authenticated
+    header("Location: index.php");
+    exit();
+}
 // Query to count the number of datasets in the database
 $sql = "SELECT COUNT(*) AS dataset_count FROM datasets";
 $result = mysqli_query($conn, $sql);

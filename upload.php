@@ -1,4 +1,14 @@
 <?php
+session_start();
+
+// Check if the user is logged in (ensure 'user_id' is set in the session)
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if not authenticated
+    header("Location: login.php");
+    exit();
+}
+?>
+<?php
 session_start(); // Start the session at the top
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $targetDirectory = "uploads/";

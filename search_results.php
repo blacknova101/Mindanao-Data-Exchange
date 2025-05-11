@@ -2,6 +2,13 @@
 session_start();
 include 'db_connection.php';
 
+// Check if the user is logged in (ensure 'user_id' is set in the session)
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if not authenticated
+    header("Location: login.php");
+    exit();
+}
+
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 

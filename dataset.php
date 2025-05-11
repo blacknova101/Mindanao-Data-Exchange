@@ -2,6 +2,13 @@
 session_start();
 include('db_connection.php');
 
+// Check if the user is logged in (ensure 'user_id' is set in the session)
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if not authenticated
+    header("Location: login.php");
+    exit();
+}
+
 $user_id = $_SESSION['user_id'] ?? null;
 
 function formatUrl($url) {
@@ -264,6 +271,15 @@ $dataset = mysqli_fetch_assoc($result);
     form button:hover {
       background-color: #0056b3;
     }
+    #background-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1; /* stays behind everything */
+    }
 
 
     @media (max-width: 768px) {
@@ -277,6 +293,9 @@ $dataset = mysqli_fetch_assoc($result);
   </style>
 </head>
 <body>
+<video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
+    </video>
 <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">

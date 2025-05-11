@@ -2,6 +2,13 @@
 session_start();
 include 'db_connection.php'; // Make sure this file sets up $conn
 
+// Check if the user is logged in (ensure 'user_id' is set in the session)
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if not authenticated
+    header("Location: login.php");
+    exit();
+}
+
 $userId = $_SESSION['user_id'];
 
 $sql = "SELECT u.first_name, u.last_name, u.email, o.name AS organization_name
@@ -414,7 +421,7 @@ $organizationName = $userData['organization_name'] ?? ''; // Default to empty if
                 </button>
                 
             </div>
-            </form>
+        </form>
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">DATASETS</a>
