@@ -27,7 +27,6 @@ $sql = "
     ORDER BY MIN(d.dataset_id) DESC
 ";
 
-
 $result = mysqli_query($conn, $sql);
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
 ?>
