@@ -1,21 +1,29 @@
 <?php
 session_start();
-
-// Check if the user is logged in (ensure 'user_id' is set in the session)
+include 'db_connection.php';
+// Now check login
 if (!isset($_SESSION['user_id'])) {
-    // Redirect to login page if not authenticated
-    header("Location: login.php");
-    exit();
-} elseif (!isset($_SESSION['has_organization']) || $_SESSION['has_organization'] === false) {
-    // Redirect to an error page if no organization_id is found
-    header("Location: unauthorized.php"); // Or login page if preferred
-    exit();
-} elseif (!isset($_SESSION['uploaded_file']) || empty($_SESSION['uploaded_file'])) {
-    // Handle the case where no file has been uploaded
-    $_SESSION['upload_error'] = "No file has been uploaded yet.";
-    header("Location: uploadselection.php"); // Redirect to a custom error page or show message on the current page
+    header("Location: unauthorized.php");
     exit();
 }
+// Check if valid files exist in the session
+if (!isset($_SESSION['valid_files']) || empty($_SESSION['valid_files'])) {
+    $_SESSION['error_message'] = "No valid files found. Please upload files first.";
+    header("Location: uploadselection.php");
+    exit();
+}
+
+// Fetch categories from the datasetcategories table
+$query = "SELECT * FROM datasetcategories";
+$result = mysqli_query($conn, $query);
+
+if (!$result) {
+    $_SESSION['error_message'] = "Error fetching categories: " . mysqli_error($conn);
+    header("Location: uploadselection.php");
+    exit();
+}
+
+$validFiles = $_SESSION['valid_files'];
 ?>
 
 <!DOCTYPE html>
@@ -23,305 +31,174 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Dataset</title>
+    <title>Fill Dataset Details</title>
     <style>
+        html, body {
+            height: 100%;
+        }
+
         body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #E3F2FD;
-        text-align: center;
-    }
-    .navbar {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .navbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 5%;
+            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
             padding-left: 30px;
-            background-color: rgba(0, 153, 255, 0.5);
+            background-color: #0099ff; /* Transparent background */
             color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
             margin: 10px 0;
             backdrop-filter: blur(10px);
-            max-width: 1200px;
-            width: 100%;
+            max-width: 1200px; /* Limit the maximum width */
+            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
             margin-top:30px;
-            margin-left: auto;
-            margin-right: auto;
+            margin-left: auto; /* Center align the navbar */
+            margin-right: auto; /* Center align the navbar */
+            font-weight: bold;
         }
         .logo {
-            display: flex;
-            align-items: center;
-            margin-right: 20px;
+        display: flex;
+        align-items: center;
         }
         .logo img {
             height: auto;
-            width: 80px;
+            width: 80px; /* Adjust logo size */
+            max-width: 100%;
         }
-    .search-bar {
-        flex-grow: 1;
-        margin-left: 20px;
-        display: flex;
-        align-items: center;
-    }
-    .search-bar input {
-        padding: 10px;
-        width: 100%;
-        max-width: 300px;
-        border-radius: 5px;
-        border: none;
-    }
-    .search-bar button {
-        background: none;
-        border: none;
-        cursor: pointer;
-    }
-    .search-bar img {
-        width: 20px;
-        height: 20px;
-        margin-left: -50px;
-    }
-    .nav-links a {
-        color: white;
-        margin-left: 20px;
-        text-decoration: none;
-        font-size: 18px;
-    }
-    
-    .profile-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: white; 
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 70px;
-    }
-    .profile-icon img {
-        width: 150%;
-        height: auto;
-        border-radius: 50%;
-        object-fit: cover;
-        cursor: pointer;
-    }
-    @media (max-width: 768px) {
-        .stats-box {
-            flex-direction: column;
-            width: 80%;
-            font-size: 24px;
+        .nav-links a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: transform 0.3s ease; /* Smooth transition for scaling */
         }
-        .divider {
-            width: 100%;
-            height: 2px;
-            margin: 20px 0;
+        .nav-links a:hover {
+            transform: scale(1.2); /* Scale up on hover */
         }
+
+
         h1 {
-            font-size: 40px;
+            color: #0099ff;
+            margin-bottom: 20px;
+            font-size: 28px;
         }
-        }
-        .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        }
-        .container {
-        width: 60%;
-        margin: 50px auto;
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-        .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between; 
-        padding: 10px;
-        border-bottom: 2px solid #ccc;
-    }
-        .header-left {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .create-btn {
-        padding: 10px;
-        background-color: #ccc;
-        border: none;
-        cursor: pointer;
-    }
-    .close-btn {
-        font-size: 24px;
-        cursor: pointer;
-    }
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        margin-top: 15px;
-    }
-    .form-group label {
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    .form-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-    .flex-container {
-        display: flex;
-        gap: 20px;
-    }
-    .flex-container-1 {
-        display: flex;
-        gap: 20px;
-    }
-    .flex-item {
-        flex: 1;
-    }
-    .form-item {
-        flex: 1;
-        min-width: 45%;
-    }
-    #title{
-        width: 1125px;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 15px;
-    }
-    #title:focus {
-        border-color: #0c1a36;
-        outline: none;
-    }
-    #description {
-        width: 100%;
-        padding: 15px;  /* Increased padding for more space */
-        height: 150px; /* Increased height */
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 15px; /* Increased font size */
-        margin-top: 5px;
-        text-align: left;
-        vertical-align: top;
-        resize: vertical;
-        box-sizing: border-box;
-    }
-    #description:focus {
-        border-color: #0c1a36;
-        outline: none;
-    }
-    #visibility{
-        width: 100%;
-        height: 40px;
-        font-size: 15px;
-    }
-    #category{
-        width: 100%;
-        height: 40px;
-        font-size: 15px;
-    }
-    #category{
-        width: 100%;
-        height: 40px;
-        font-size: 15px;
-    }
-    #start-period{
-        width: 100%;
-        height: 42px;
-        font-size: 15px;
-    }
-    label[for="end-period"] {
-        margin-top: 5px; /* Add spacing below the label */
 
-    }
-    #end-period{
-        width: 100%;
-        height: 42px;
-        font-size: 15px;
-    }
-    #source{
-        width: 100%;
-        height: 40px;
-        font-size: 15px;
-    }
-    #location{
-        width: 100%;
-        height: 40px;
-        font-size: 15px;
-    }
-    #link{
-        width: 100%;
-        height: 40px;
-        font-size: 15px;
-    }
+        h3 {
+            color: #0099ff;
+            text-align: left;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
 
-    .file-upload {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 5px;
-    }
-    .footer {
-        height: 50px;
-        background: #ccc;
-        margin-top: 20px;
-    }
-    .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
+        .error-message {
+            color: red;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .main-wrapper {
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 50%;
-            max-width: 600px;
-            text-align: center;
-        }
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
             margin-top: 20px;
         }
-        .category-grid div {
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* <- changed from space-between to center */
+            align-items: flex-start;
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+        }
+
+
+        .file-list {
+            flex: 1 1 40%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #0099ff;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .file-item a {
+            color: #0099ff;
+            text-decoration: none;
+        }
+
+        .file-item a:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            flex: 1 1 55%;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #0099ff;
+            text-align:left;
+        }
+
+        label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="url"],
+        textarea,
+        select {
+            width: 100%;
             padding: 10px;
-            background: #e3f2fd;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
+            font-size: 16px;
+            box-sizing: border-box;
         }
-        .category-grid div:hover {
-            background: #bbdefb;
+
+        textarea {
+            resize: vertical;
+            height: 100px;
         }
-        .close-btn {
-            background: red;
+
+        button {
+            background-color: #0099ff;
             color: white;
-            padding: 5px 10px;
             border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
             cursor: pointer;
-            border-radius: 5px;
-            margin-top: 10px;
+            width: 100%;
+            transition: background-color 0.3s ease;
         }
-        #upld-btn{
-            width: 200px;
-            height: 50px;
+
+        button:hover {
+            background-color: #007acc;
         }
         #background-video {
             position: fixed;
@@ -332,167 +209,93 @@ if (!isset($_SESSION['user_id'])) {
             object-fit: cover;
             z-index: -1; /* stays behind everything */
         }
-    </style>
+        #error{
+            text-align:center;
+        }
+        </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
+    <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
-
-    <div id="wrapper">
-        <header class="navbar">
-            <div class="logo">
-                <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
-            </div>
-            <div class="search-bar">
-                <input type="text" placeholder="Search datasets">
-                <button>
-                    <img src="images/search_icon.png" alt="Search">
-                </button>
-            </div>
-            <nav class="nav-links">
-            <a href="HomeLogin.php">HOME</a>
-            <a href="datasets.php">DATASETS</a>
-            <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
-            <div class="profile-icon">
-                <img src="images/avatarIconunknown.jpg" alt="Profile">
-            </div>
-            </nav>
-        </header>
-        <div class="modal" id="categoryModal">
-        <div class="modal-content">
-            <h2>Select a Category</h2>
-            <div class="category-grid">
-                <div>Business & Finance</div>
-                <div>Education & Academia</div>
-                <div>Science & Research</div>
-                <div>Agriculture & Environment</div>
-                <div>Technology & IT</div>
-                <div>Government & Public Data</div>
-                <div>Geography & Mapping</div>
-                <div>Commerce & Consumer Data</div>
-                <div>Social & Media</div>
-                <div>Health & Medicine</div>
-            </div>
-            <button class="close-btn" onclick="hideModal()">Close</button>
-        </div>
+<header class="navbar">
+    <div class="logo">
+        <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
+        <h2>Upload Datasets</h2>
     </div>
-    
-    <script>
-        function showModal() {
-            document.getElementById("categoryModal").style.display = "flex";
-        }
-        function hideModal() {
-            document.getElementById("categoryModal").style.display = "none";
-        }
-        document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("categoryModal").style.display = "none";
-    });
-    </script>
-        <div class="container">
-        <div class="header">
-    <div class="header-left">
-        <span class="close-btn">&times;</span>
-        <h2>UPLOAD DATASET</h2>
-    </div>
-    <button type="button" id="create-btn" class="create-btn">Create</button>
-    </div>
-    <form method="POST" action="form-handler.php" enctype="multipart/form-data" id="datasetForm">
-
-    <div class="form-group">
-        <label for="title">DATASET TITLE</label>
-        <input type="text" id="title" name="title" placeholder="Enter dataset title">
-    </div>
-    <div class="form-group">
-        <label for="description">DESCRIPTION</label>
-        <textarea id="description" name="description" placeholder="Enter dataset description"></textarea>
-    </div>
-
-    <div class="flex-container">
-        <div class="form-group flex-item">
-            <label for="visibility">VISIBILITY</label>
-            <select id="visibility" name="visibility">
-                <option>Choose Visibility</option>
-                <option>Public</option>
-                <option>Private</option>
-            </select>
-        </div>
-        <div class="form-group flex-item">
-            <label for="category">CATEGORY</label>
-            <select id="category" name="category">
-                <option>Choose Category</option>
-                <option>Business & Finance</option>
-                <option>Geography & Mapping</option>
-                <option>Education & Academia</option>
-                <option>Science & Research</option>
-                <option>Agriculture & Environment</option>
-                <option>Technology & IT</option>
-                <option>Government & Public Data</option>
-                <option>Commerce & Consumer Data</option>
-                <option>Social & Media</option>
-                <option>Health & Medicine</option>
-            </select>
-        </div>
-    </div>
-    <div class="flex-container-1">
-        <div class="form-group flex-item">
-            <label for="start-period">START PERIOD</label>
-            <input type="month" id="start-period" name="start_period">
-
-            <label for="end-period">END PERIOD</label>
-            <input type="month" id="end-period" name="end_period">
+    <nav class="nav-links">
+        <a href="HomeLogin.php">HOME</a>
+    </nav>
+</header>
+<div class="main-wrapper">
+    <div class="container">
+        <!-- File list on the left -->
+        <div class="file-list">
+        <h3>Uploaded Files:</h3>
+            <ul>
+                <?php foreach ($validFiles as $file): ?>
+                    <li class="file-item"><?php echo basename($file); ?></li>
+                <?php endforeach; ?>
+            </ul>
         </div>
 
-        <div class="form-group flex-item">
-            <label for="source">SOURCE</label>
-            <input type="text" id="source" name="source" placeholder="Add source">
+    <form action="save_dataset.php" method="post">
+     <div id="error">  
+        <?php if (isset($_SESSION['error_message'])): ?>
+            <div class="error-message"><?php echo $_SESSION['error_message']; ?></div>
+            <?php unset($_SESSION['error_message']); ?>
+        <?php endif; ?>
+    </div> 
+    <h1>Dataset Details</h1>
+    <label for="title">Title:</label>
+    <input type="text" name="title" id="title" required>
+
+    <label for="description">Description:</label>
+    <textarea name="description" id="description" required></textarea>
+
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <label for="start_period">Start Period:</label>
+            <input type="date" name="start_period" id="start_period" required>
+        </div>
+        <div style="flex: 1;">
+            <label for="end_period">End Period:</label>
+            <input type="date" name="end_period" id="end_period" required>
         </div>
     </div>
-    <div class="flex-container">
-        <div class="form-group flex-item">
-            <label for="location">LOCATION</label>
-            <input type="text" id="location" name="location" placeholder="Enter location">
+
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <label for="source">Source:</label>
+            <input type="text" name="source" id="source" required>
         </div>
-        <div class="form-group flex-item">
-            <label for="link">LINK</label>
-            <input type="text" id="link" name="link" placeholder="Add link">
-        </div>
-    </div>
-    <div class="form-group">
-    <label>Files</label>
-        <div class="file-upload">
-            <span>📄</span>
-            <?php
-            if (isset($_SESSION['uploaded_file'])) {
-                // Display the uploaded file name
-                echo "<span>" . $_SESSION['uploaded_file'] . "</span>";
-            } else {
-                echo "<span>No file uploaded yet.</span>";
-            }
-            ?>
+        <div style="flex: 1;">
+            <label for="link">Link:</label>
+            <input type="url" name="link" id="link" required>
         </div>
     </div>
-    <input type="hidden" name="uploaded_file" value="<?php echo isset($_SESSION['uploaded_file']) ? $_SESSION['uploaded_file'] : ''; ?>">
-        <div class="upload">
-            <button type="button" id="upld-btn" onclick="document.getElementById('fileToUpload').click();">Upload more files</button>
-            <input type="file" name="fileToUpload" id="fileToUpload" onchange="this.form.submit()" required style="display: none;">
-        </div>
+
+    <label for="location">Location (Mindanao, Philippines):</label>
+    <input type="text" name="location" id="location" required>
+
+    <label for="category">Category:</label>
+    <select name="category" id="category" required>
+        <option value="">Select Category</option>
+        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+            <option value="<?php echo $row['category_id']; ?>"><?php echo $row['name']; ?></option>
+        <?php endwhile; ?>
+    </select>
+
+
+    <label for="visibility">Visibility:</label>
+    <select name="visibility" id="visibility" required>
+        <option value="public">Public</option>
+        <option value="private">Private</option>
+    </select>
+
+    <button type="submit">Add Dataset</button>
     </form>
-    <?php include 'sidebar.php'; ?>
-    <script>
-    // Listen for the button click event
-    document.getElementById("create-btn").addEventListener("click", function() {
-        var form = document.getElementById("datasetForm");
-
-        // You can add your validation here (example: check if title and description are filled)
-        if (document.getElementById('title').value === "" || document.getElementById('description').value === "") {
-            alert('Please fill in all required fields.');
-            return; // Stop form submission if validation fails
-        }
-
-        // Submit the form via JavaScript
-        form.submit();
-    });
-</script>
+    </div>
+</div>
 </body>
 </html>

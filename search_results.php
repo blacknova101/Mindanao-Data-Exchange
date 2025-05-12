@@ -14,46 +14,93 @@ $category = isset($_GET['category']) ? $_GET['category'] : '';
 
 if ($search) {
     $sql = "
-        SELECT d.dataset_id, d.title, d.description, d.file_path, d.category, d.user_id, d.location, u.first_name, u.last_name,
-        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
-        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
-        FROM datasets d
-        JOIN users u ON d.user_id = u.user_id
-        WHERE d.title LIKE '%$search%' 
-        OR d.description LIKE '%$search%' 
-        OR d.category LIKE '%$search%' 
-        OR u.first_name LIKE '%$search%' 
-        OR u.last_name LIKE '%$search%' 
-        OR d.location LIKE '%$search%' 
-        ORDER BY d.dataset_id DESC";
+        SELECT 
+            db.dataset_batch_id,
+            db.user_id,
+            db.organization_id,
+            u.first_name, u.last_name,
+            o.name AS org_name,
+            d.dataset_id,
+            d.title AS dataset_title,
+            d.description AS dataset_description,
+            d.file_path,
+            c.name AS category_name,
+            (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = db.dataset_batch_id) AS upvotes,
+            (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = db.dataset_batch_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
+        FROM dataset_batches db
+        JOIN users u ON db.user_id = u.user_id
+        LEFT JOIN organizations o ON db.organization_id = o.organization_id
+        LEFT JOIN datasets d ON d.dataset_id = (
+            SELECT MIN(dataset_id) FROM datasets WHERE dataset_batch_id = db.dataset_batch_id
+        )
+        LEFT JOIN datasetcategories c ON d.category_id = c.category_id
+        WHERE 
+            u.first_name ILIKE '%$search%'
+            OR u.last_name ILIKE '%$search%'
+            OR o.name ILIKE '%$search%'
+            OR d.title ILIKE '%$search%'
+            OR d.description ILIKE '%$search%'
+            OR c.name ILIKE '%$search%'
+        ORDER BY db.dataset_batch_id DESC
+    ";
     $page_title = "Search results for: " . htmlspecialchars($search);
 } elseif ($category) {
     $sql = "
-        SELECT d.dataset_id, d.title, d.description, d.file_path, d.user_id, u.first_name, u.last_name,
-        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
-        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
-        FROM datasets d 
-        JOIN users u ON d.user_id = u.user_id 
-        WHERE d.category = '$category' 
-        ORDER BY d.dataset_id DESC";
+        SELECT 
+            db.dataset_batch_id,
+            db.user_id,
+            db.organization_id,
+            u.first_name, u.last_name,
+            o.name AS org_name,
+            d.dataset_id,
+            d.title AS dataset_title,
+            d.description AS dataset_description,
+            d.file_path,
+            c.name AS category_name,
+            (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = db.dataset_batch_id) AS upvotes,
+            (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = db.dataset_batch_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
+        FROM dataset_batches db
+        JOIN users u ON db.user_id = u.user_id
+        LEFT JOIN organizations o ON db.organization_id = o.organization_id
+        LEFT JOIN datasets d ON d.dataset_id = (
+            SELECT MIN(dataset_id) FROM datasets WHERE dataset_batch_id = db.dataset_batch_id
+        )
+        LEFT JOIN datasetcategories c ON d.category_id = c.category_id
+        WHERE c.name = '$category'
+        ORDER BY db.dataset_batch_id DESC
+    ";
     $page_title = htmlspecialchars($category);
 } else {
     $sql = "
-        SELECT d.dataset_id, d.title, d.description, d.file_path, d.user_id, u.first_name, u.last_name,
-        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
-        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
-        FROM datasets d 
-        JOIN users u ON d.user_id = u.user_id 
-        ORDER BY d.dataset_id DESC";
+        SELECT 
+            db.dataset_batch_id,
+            db.user_id,
+            db.organization_id,
+            u.first_name, u.last_name,
+            o.name AS org_name,
+            d.dataset_id,
+            d.title AS dataset_title,
+            d.description AS dataset_description,
+            d.file_path,
+            c.name AS category_name,
+            (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = db.dataset_batch_id) AS upvotes,
+            (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = db.dataset_batch_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
+        FROM dataset_batches db
+        JOIN users u ON db.user_id = u.user_id
+        LEFT JOIN organizations o ON db.organization_id = o.organization_id
+        LEFT JOIN datasets d ON d.dataset_id = (
+            SELECT MIN(dataset_id) FROM datasets WHERE dataset_batch_id = db.dataset_batch_id
+        )
+        LEFT JOIN datasetcategories c ON d.category_id = c.category_id
+        ORDER BY db.dataset_batch_id DESC
+    ";
     $page_title = "All Datasets";
 }
 
-
-
 $result = mysqli_query($conn, $sql);
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
-
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -164,9 +211,8 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
         .dataset-uploader {
             font-size: 12px;
             color: #666;
-            margin-top: 10px;
+            height:12px;
         }
-
 
         .dataset-card:hover {
             transform: translateY(-5px);
@@ -439,13 +485,13 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
                 <?php while ($row = mysqli_fetch_assoc($result)): ?>
                     <div class="dataset-card">
                     <div class="dataset-title">
-                        <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
-                            <?= htmlspecialchars($row['title']) ?>
-                        </a>
+                    <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['dataset_title']) ?>">
+                        <?= htmlspecialchars($row['dataset_title']) ?>
+                    </a>
                     </div>
-                        <div class="dataset-description">
-                            <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
-                        </div>
+                    <div class="dataset-description">
+                        <?= htmlspecialchars(mb_strimwidth($row['dataset_description'], 0, 255, '...')) ?>
+                    </div>
                         <div class="dataset-uploader">
                             <br><br><br>
                             Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>

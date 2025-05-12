@@ -11,13 +11,22 @@ if (!isset($_SESSION['user_id'])) {
 
 // Fetch all datasets (title and description only)
 $sql = "
-    SELECT d.dataset_id, d.title, d.description, d.file_path, u.first_name, u.last_name,
-    (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
-    (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
+    SELECT 
+        MIN(d.dataset_id) AS dataset_id,
+        d.dataset_batch_id,
+        d.title,
+        d.description, 
+        MAX(d.file_path) AS file_path,
+        u.first_name, 
+        u.last_name,
+        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = MIN(d.dataset_id)) AS upvotes,
+        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = MIN(d.dataset_id) AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
-    ORDER BY d.dataset_id DESC
+    GROUP BY d.dataset_batch_id
+    ORDER BY MIN(d.dataset_id) DESC
 ";
+
 
 $result = mysqli_query($conn, $sql);
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
@@ -417,7 +426,7 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
                             </div>
                             <div class="dataset-actions">
                                 <div class="dataset-download">
-                                    <a href="<?php echo htmlspecialchars($row['file_path']); ?>" download class="download-btn">Download</a>
+                                <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
                                 </div>
                                 <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
                                     <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">

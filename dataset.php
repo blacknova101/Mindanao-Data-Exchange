@@ -44,11 +44,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_text'])) {
 }
 
 $sql = "
-    SELECT d.*, u.first_name, u.last_name 
+    SELECT 
+        d.*, 
+        u.first_name, 
+        u.last_name,
+        DATE_FORMAT(d.start_period, '%M %e, %Y') AS formatted_start_period,
+        DATE_FORMAT(d.end_period, '%M %e, %Y') AS formatted_end_period
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id 
     WHERE d.dataset_id = $dataset_id
 ";
+
+
+$result = mysqli_query($conn, $sql); // <--- Moved here
+
+if (!$result || mysqli_num_rows($result) === 0) {
+    echo "Dataset not found.";
+    exit;
+}
+
+$dataset = mysqli_fetch_assoc($result);
+$batch_id = $dataset['dataset_batch_id']; // Assuming correct column name
+
+$batchDatasetsSql = "
+    SELECT * FROM datasets
+    WHERE dataset_batch_id = $batch_id
+";
+$batchDatasetsResult = mysqli_query($conn, $batchDatasetsSql);
+
 
 $result = mysqli_query($conn, $sql);
 
@@ -234,16 +257,14 @@ $dataset = mysqli_fetch_assoc($result);
     }
 
     .download-btn {
-        display: inline-block;
-        padding: 10px 15px;
         background-color: #0099ff;
         color: white;
         font-weight: bold;
-        border-radius: 5px;
+        padding: 8px 14px;
+        border-radius: 6px;
         text-decoration: none;
         transition: background-color 0.3s ease;
     }
-
     .download-btn:hover {
         background-color: #007acc;
     }
@@ -271,6 +292,12 @@ $dataset = mysqli_fetch_assoc($result);
     form button:hover {
       background-color: #0056b3;
     }
+    .resources-scrollable {
+      max-height: 300px; /* Adjust height as needed */
+      overflow-y: auto;
+      padding-right: 10px; /* Optional: to avoid scrollbar overlapping text */
+    }
+
     #background-video {
       position: fixed;
       top: 0;
@@ -324,19 +351,9 @@ $dataset = mysqli_fetch_assoc($result);
         <div class="info-item">
           <strong>Time Period</strong>
           <?php 
-              function formatPeriod($period) {
-                  if (!$period || $period === '0000-00') {
-                      return 'Unknown';
-                  }
-
-                  $date = DateTime::createFromFormat('Y-m', $period);
-                  return $date ? $date->format('F Y') : 'Invalid date';
-              }
-
-              $start = formatPeriod($dataset['start_period']);
-              $end = formatPeriod($dataset['end_period']);
-
-              echo htmlspecialchars("$start – $end");
+            $start = !empty($dataset['formatted_start_period']) ? $dataset['formatted_start_period'] : 'Unknown';
+            $end = !empty($dataset['formatted_end_period']) ? $dataset['formatted_end_period'] : 'Unknown';
+            echo htmlspecialchars("$start – $end");
           ?>
         </div>
         <div class="info-item">
@@ -357,19 +374,24 @@ $dataset = mysqli_fetch_assoc($result);
 
       <div class="resources-box">
         <h3>Data and Resources</h3>
-        <div class="file-item">
-          <i>📄</i>
-            <a href="<?php echo !empty($dataset['file_path']) ? htmlspecialchars($dataset['file_path']) : '#'; ?>">
-              <?php echo !empty($dataset['file_path']) ? basename($dataset['file_path']) : 'No file uploaded'; ?>
-            </a>
-            <div class="dataset-download">
-            <a href="<?php echo !empty($dataset['file_path']) ? htmlspecialchars($dataset['file_path']) : '#'; ?>" download class="download-btn">
-                  <span class="file-download">⬇️</span> Download
-              </a>
+        <?php if ($batchDatasetsResult && mysqli_num_rows($batchDatasetsResult) > 0): ?>
+          <div class="resources-scrollable" style="display: flex; flex-direction: column; gap: 10px;">
+            <?php while ($ds = mysqli_fetch_assoc($batchDatasetsResult)): ?>
+              <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <a href="<?php echo htmlspecialchars($ds['file_path']); ?>" download style="color: #007BFF; text-decoration: none;">
+                    <?php echo htmlspecialchars(basename($ds['file_path'])); ?>
+                </a>
+                </div>
+                <a href="<?php echo htmlspecialchars($ds['file_path']); ?>" download class="download-btn">⬇️ Download</a>
+              </div>
+            <?php endwhile; ?>
           </div>
-        </div>
-        
+        <?php else: ?>
+          <p>No other datasets in this batch.</p>
+        <?php endif; ?>
       </div>
+
       
     </div>
 <div id="form">

@@ -9,27 +9,44 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$category = isset($_GET['category']) ? mysqli_real_escape_string($conn, $_GET['category']) : null;
+// Get the category ID from the URL if available
+$category_id = isset($_GET['category_id']) ? $_GET['category_id'] : null;
+$category_name = "";
 
+// Start the SQL query
 $sql = "
-    SELECT d.dataset_id, d.title, d.description, d.file_path, u.first_name, u.last_name,
-    (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
-    (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
+    SELECT 
+        d.dataset_id,
+        d.dataset_batch_id,
+        d.title,
+        d.description, 
+        d.file_path,
+        u.first_name, 
+        u.last_name,
+        (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id) AS upvotes,
+        (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted,
+        c.name AS category_name
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
+    JOIN datasetcategories c ON d.category_id = c.category_id
+    WHERE d.dataset_id = (
+        SELECT MIN(d2.dataset_id) FROM datasets d2 WHERE d2.dataset_batch_id = d.dataset_batch_id
+    )
 ";
-
-if ($category) {
-    $sql .= " WHERE d.category = '$category'"; // Apply the category filter if it exists
+// If category is selected, add the condition for category filtering
+if ($category_id) {
+    $category_name_sql = "SELECT name FROM datasetcategories WHERE category_id = '$category_id'";
+    $category_name_result = mysqli_query($conn, $category_name_sql);
+    $category_row = mysqli_fetch_assoc($category_name_result);
+    $category_name = $category_row['name']; // Get the category name based on category_id
+    $sql .= " AND c.category_id = '$category_id'"; // Apply the category filter
 }
-
-$sql .= " ORDER BY d.dataset_id DESC"; // Only one ORDER BY clause
+$sql .= " ORDER BY d.dataset_id DESC";
 
 $result = mysqli_query($conn, $sql);
+
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -366,7 +383,7 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
             box-shadow: inset 0 0 0 1px black; /* Add a shadow instead of border */
         }
 
-    </style>
+        </style>
 </head>
 <body>
 <video autoplay muted loop id="background-video">
@@ -377,9 +394,8 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
             <h2>
-                <?= $category ? 'Category: ' . htmlspecialchars($category) : 'All Datasets' ?>
+                 <?= $category_name ? 'Category: ' . htmlspecialchars($category_name) : 'All Datasets' ?>
             </h2>
-
         </div>
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
@@ -404,26 +420,26 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
         <?php endif; ?>
     </span>
 </div>
-    <div id="wrapper">
+<div id="wrapper">
         <div class="dataset-grid">
             <?php if (mysqli_num_rows($result) > 0): ?>
                 <?php while ($row = mysqli_fetch_assoc($result)): ?>
                     <div class="dataset-card">
                         <div class="dataset-title">
-                        <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
-                            <?= htmlspecialchars($row['title']) ?>
-                        </a>
+                            <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
+                                <?= htmlspecialchars($row['title']) ?>
+                            </a>
                         </div>
-                        <div class="dataset-description">
-                            <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
-                        </div>
-                        <div class="dataset-uploader">
-                            <br><br><br>
-                            Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
-                        </div>
-                        <div class="dataset-actions">
+                            <div class="dataset-description">
+                                <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
+                            </div>
+                            <div class="dataset-uploader">
+                                <br><br><br>
+                                Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                            </div>
+                            <div class="dataset-actions">
                                 <div class="dataset-download">
-                                    <a href="<?php echo htmlspecialchars($row['file_path']); ?>" download class="download-btn">Download</a>
+                                <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
                                 </div>
                                 <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
                                     <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
@@ -445,9 +461,6 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
             </div>
         <?php endif; ?>
     </div>
-
-        </div>
-
 </div>
 <?php include 'category_modal.php'; // Include the modal?>
 <script>
@@ -497,6 +510,6 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
             }
         });
     }
-    </script>
+</script>
 </body>
 </html>

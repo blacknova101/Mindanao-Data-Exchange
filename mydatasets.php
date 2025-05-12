@@ -10,25 +10,34 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 
-$user_id = $_SESSION['user_id'];  // Get logged-in user's ID
+$user_id = $_SESSION['user_id'];
 
-// Fetch all datasets (title and description only)
 $sql = "
-    SELECT d.dataset_id, d.title, d.description, d.file_path, u.first_name, u.last_name,
-    (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
-    (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = ?) AS user_upvoted
+    SELECT 
+        d.dataset_id,
+        d.dataset_batch_id,
+        d.title,
+        d.description, 
+        d.file_path,
+        u.first_name, 
+        u.last_name,
+        (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id) AS upvotes,
+        (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id AND r.user_id = ?) AS user_upvoted
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
     WHERE d.user_id = ?
-    ORDER BY d.title ASC
+      AND d.dataset_id = (
+          SELECT MIN(d2.dataset_id) FROM datasets d2 WHERE d2.dataset_batch_id = d.dataset_batch_id AND d2.user_id = ?
+      )
+    ORDER BY d.dataset_id DESC
 ";
+
 $stmt = mysqli_prepare($conn, $sql);
-
-// Bind the parameters (assuming $user_id is the user ID you want to filter by)
-mysqli_stmt_bind_param($stmt, 'ii', $_SESSION['user_id'], $user_id);
+mysqli_stmt_bind_param($stmt, 'iii', $user_id, $user_id, $user_id);
 mysqli_stmt_execute($stmt);
-
 $result = mysqli_stmt_get_result($stmt);
+$upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
+
 ?>
 
 <!DOCTYPE html>
@@ -194,6 +203,7 @@ $result = mysqli_stmt_get_result($stmt);
             margin-top: 20px;
             padding: 8px 5px;
             padding-top: 20px;
+            padding-bottom: 20px;
             background-color: #0099ff;
             color: white;
             border: none;
@@ -276,6 +286,43 @@ $result = mysqli_stmt_get_result($stmt);
         .download-btn:hover {
             background-color: #e65c00;
         }
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 260px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 80%; /* Position above the button */
+            left: 50%;
+            margin-left: -130px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .tooltip-wrapper:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .add-data-btn.disabled-link {
+            background-color: #e0e0e0;
+            color: #b0b0b0;
+            cursor: not-allowed;
+            pointer-events: none;
+            margin-top: 21px;
+            padding-bottom:19.5px;
+        }
         .dataset-actions {
             display: flex;
             justify-content: space-between;
@@ -354,7 +401,16 @@ $result = mysqli_stmt_get_result($stmt);
         </button>
     </form>
     <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
-    <a href="uploadselection.php" id="add-data-btn" class="add-data-btn">ADD DATA</a>
+    <span class="tooltip-wrapper">
+        <a href="<?= $upload_disabled ? '#' : 'uploadselection.php' ?>" 
+        id="add-data-btn" 
+        class="add-data-btn<?= $upload_disabled ? ' disabled-link' : '' ?>">
+            ADD DATA
+        </a>
+        <?php if ($upload_disabled): ?>
+            <span class="tooltip-text">You must be part of an organization to upload datasets.</span>
+        <?php endif; ?>
+    </span>
 </div>
 <div id="wrapper">
 <div class="dataset-grid">

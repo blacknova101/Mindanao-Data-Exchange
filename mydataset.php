@@ -293,6 +293,7 @@ $dataset = mysqli_fetch_assoc($result);
             <a href="HomeLogin.php">HOME</a>
         </nav>
     </header>
+    
   <div class="container">
     
   <div class="header-section">
@@ -303,7 +304,7 @@ $dataset = mysqli_fetch_assoc($result);
     </div>
     <div class="title-section">
       <p><?php echo !empty($dataset['description']) ? nl2br(htmlspecialchars($dataset['description'])) : 'No description available.'; ?></p>
-      </div>
+    </div>
       
 
     <div class="info-grid">
