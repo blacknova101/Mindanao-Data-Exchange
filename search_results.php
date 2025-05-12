@@ -35,12 +35,12 @@ if ($search) {
         )
         LEFT JOIN datasetcategories c ON d.category_id = c.category_id
         WHERE 
-            u.first_name ILIKE '%$search%'
-            OR u.last_name ILIKE '%$search%'
-            OR o.name ILIKE '%$search%'
-            OR d.title ILIKE '%$search%'
-            OR d.description ILIKE '%$search%'
-            OR c.name ILIKE '%$search%'
+            u.first_name LIKE '%$search%'
+            OR u.last_name LIKE '%$search%'
+            OR o.name LIKE '%$search%'
+            OR d.title LIKE '%$search%'
+            OR d.description LIKE '%$search%'
+            OR c.name LIKE '%$search%'
         ORDER BY db.dataset_batch_id DESC
     ";
     $page_title = "Search results for: " . htmlspecialchars($search);
