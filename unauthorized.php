@@ -99,5 +99,20 @@
         }, 5000);
     }
 </script>
+<script>
+  function scareThenRedirectToLogin() {
+    document.getElementById("jumpscare").style.display = "flex";
+
+    const scream = document.getElementById("scream-audio");
+    scream.play().catch((error) => {
+      console.warn("Autoplay prevented:", error);
+    });
+
+    setTimeout(() => {
+      window.location.href = "login.php";
+    }, 5000);
+  }
+</script>
+
 </body>
 </html>
