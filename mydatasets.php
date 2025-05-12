@@ -14,13 +14,21 @@ $user_id = $_SESSION['user_id'];  // Get logged-in user's ID
 
 // Fetch all datasets (title and description only)
 $sql = "
-    SELECT d.dataset_id, d.title, d.description, d.file_path, u.first_name, u.last_name
+    SELECT d.dataset_id, d.title, d.description, d.file_path, u.first_name, u.last_name,
+    (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
+    (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = ?) AS user_upvoted
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
-    WHERE d.user_id = '$user_id'
+    WHERE d.user_id = ?
     ORDER BY d.title ASC
 ";
-$result = mysqli_query($conn, $sql);
+$stmt = mysqli_prepare($conn, $sql);
+
+// Bind the parameters (assuming $user_id is the user ID you want to filter by)
+mysqli_stmt_bind_param($stmt, 'ii', $_SESSION['user_id'], $user_id);
+mysqli_stmt_execute($stmt);
+
+$result = mysqli_stmt_get_result($stmt);
 ?>
 
 <!DOCTYPE html>
@@ -268,6 +276,57 @@ $result = mysqli_query($conn, $sql);
         .download-btn:hover {
             background-color: #e65c00;
         }
+        .dataset-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+
+        .dataset-download {
+            flex: 1;
+            text-align: center;
+            padding-left: 70px;
+        }
+
+        .dataset-upvote {
+            padding-top: 20px;
+            text-align: right;
+        }
+
+        .dataset-upvote button {
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            width: 80px; /* Ensure a consistent button width */
+            height: 30px; /* Set a fixed height for the button */
+            box-sizing: border-box; /* Prevent padding from affecting size */
+            display: inline-block; /* Keep the button inline to prevent shifting */
+        }
+
+
+        .dataset-upvote button:hover {
+            background-color: #f0f0f0;  /* Light gray background on hover */
+        }
+
+        .dataset-upvote span {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .dataset-upvote button.upvoted {
+            border: 1px solid; /* Avoid layout shift */
+            background-color: #f0f0f0; /* Change background color when upvoted */
+            box-shadow: inset 0 0 0 1px black; /* Add a shadow instead of border */
+        }
 
 
     </style>
@@ -314,9 +373,17 @@ $result = mysqli_query($conn, $sql);
                             <br><br><br>
                             Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
                         </div>
-                        <div class="dataset-download">
-                        <a href="<?php echo htmlspecialchars($row['file_path']); ?>" download class="download-btn">Download</a>
-                        </div>
+                        <div class="dataset-actions">
+                                <div class="dataset-download">
+                                    <a href="<?php echo htmlspecialchars($row['file_path']); ?>" download class="download-btn">Download</a>
+                                </div>
+                                <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
+                                    <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
+                                        <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
+                                    </button>
+                                    <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
+                                </div>
+                            </div>
                     </div>
                 <?php endwhile; ?>
             <?php endif; ?>
@@ -345,6 +412,43 @@ $result = mysqli_query($conn, $sql);
         }
         document.addEventListener("DOMContentLoaded", function () {
     });
+
+    function upvoteDataset(datasetId) {
+        const upvoteButton = document.querySelector(`[data-id="${datasetId}"] button`);
+        const countSpan = document.getElementById(`upvote-count-${datasetId}`);
+        
+        // Check if the button is already upvoted (has 'upvoted' class)
+        const isUpvoted = upvoteButton.classList.contains('upvoted');
+
+        // Toggle the class based on the upvote state
+        if (isUpvoted) {
+            upvoteButton.classList.remove('upvoted');
+            upvoteButton.textContent = '⬆ Upvote'; // Change text to 'Upvote' when unvoted
+        } else {
+            upvoteButton.classList.add('upvoted');
+            upvoteButton.textContent = '⬆ Upvoted'; // Change text to 'Upvoted' when clicked
+        }
+
+        fetch('upvote.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `dataset_id=${datasetId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            let current = parseInt(countSpan.textContent);
+
+            if (data.status === 'voted' && !isUpvoted) {
+                countSpan.textContent = current + 1;
+            } else if (data.status === 'unvoted' && isUpvoted) {
+                countSpan.textContent = current - 1;
+            } else if (data.status === 'unauthorized') {
+                alert('You must be logged in to upvote.');
+            } else {
+                alert('Something went wrong.');
+            }
+        });
+    }
     </script>
 </body>
 </html>

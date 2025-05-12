@@ -13,31 +13,42 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 
 if ($search) {
-    $sql = "SELECT d.dataset_id, d.title, d.description, d.file_path, d.category, d.user_id, d.location, u.first_name, u.last_name
-            FROM datasets d
-            JOIN users u ON d.user_id = u.user_id
-            WHERE d.title LIKE '%$search%' 
-            OR d.description LIKE '%$search%' 
-            OR d.category LIKE '%$search%' 
-            OR u.first_name LIKE '%$search%' 
-            OR u.last_name LIKE '%$search%' 
-            OR d.location LIKE '%$search%' 
-            ORDER BY d.user_id DESC";
+    $sql = "
+        SELECT d.dataset_id, d.title, d.description, d.file_path, d.category, d.user_id, d.location, u.first_name, u.last_name,
+        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
+        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
+        FROM datasets d
+        JOIN users u ON d.user_id = u.user_id
+        WHERE d.title LIKE '%$search%' 
+        OR d.description LIKE '%$search%' 
+        OR d.category LIKE '%$search%' 
+        OR u.first_name LIKE '%$search%' 
+        OR u.last_name LIKE '%$search%' 
+        OR d.location LIKE '%$search%' 
+        ORDER BY d.dataset_id DESC";
     $page_title = "Search results for: " . htmlspecialchars($search);
 } elseif ($category) {
-    $sql = "SELECT d.dataset_id, d.title, d.description, d.file_path, d.user_id, u.first_name, u.last_name 
-            FROM datasets d 
-            JOIN users u ON d.user_id = u.user_id 
-            WHERE d.category = '$category' 
-            ORDER BY d.user_id DESC";
+    $sql = "
+        SELECT d.dataset_id, d.title, d.description, d.file_path, d.user_id, u.first_name, u.last_name,
+        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
+        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
+        FROM datasets d 
+        JOIN users u ON d.user_id = u.user_id 
+        WHERE d.category = '$category' 
+        ORDER BY d.dataset_id DESC";
     $page_title = htmlspecialchars($category);
 } else {
-    $sql = "SELECT d.dataset_id, d.title, d.description, d.file_path, d.user_id, u.first_name, u.last_name 
-            FROM datasets d 
-            JOIN users u ON d.user_id = u.user_id 
-            ORDER BY d.user_id DESC";
+    $sql = "
+        SELECT d.dataset_id, d.title, d.description, d.file_path, d.user_id, u.first_name, u.last_name,
+        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id) AS upvotes,
+        (SELECT COUNT(*) FROM datasetratings r WHERE r.dataset_id = d.dataset_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted
+        FROM datasets d 
+        JOIN users u ON d.user_id = u.user_id 
+        ORDER BY d.dataset_id DESC";
     $page_title = "All Datasets";
 }
+
+
 
 $result = mysqli_query($conn, $sql);
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
@@ -335,6 +346,57 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
             margin-top: 21px;
             padding-bottom:19.5px;
         }
+        .dataset-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+
+        .dataset-download {
+            flex: 1;
+            text-align: center;
+            padding-left: 70px;
+        }
+
+        .dataset-upvote {
+            padding-top: 20px;
+            text-align: right;
+        }
+
+        .dataset-upvote button {
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            width: 80px; /* Ensure a consistent button width */
+            height: 30px; /* Set a fixed height for the button */
+            box-sizing: border-box; /* Prevent padding from affecting size */
+            display: inline-block; /* Keep the button inline to prevent shifting */
+        }
+
+
+        .dataset-upvote button:hover {
+            background-color: #f0f0f0;  /* Light gray background on hover */
+        }
+
+        .dataset-upvote span {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .dataset-upvote button.upvoted {
+            border: 1px solid; /* Avoid layout shift */
+            background-color: #f0f0f0; /* Change background color when upvoted */
+            box-shadow: inset 0 0 0 1px black; /* Add a shadow instead of border */
+        }
     </style>
 </head>
 <body>
@@ -388,9 +450,17 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
                             <br><br><br>
                             Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
                         </div>
-                        <div class="dataset-download">
-                        <a href="<?php echo htmlspecialchars($row['file_path']); ?>" download class="download-btn">Download</a>
-                        </div>
+                        <div class="dataset-actions">
+                                <div class="dataset-download">
+                                    <a href="<?php echo htmlspecialchars($row['file_path']); ?>" download class="download-btn">Download</a>
+                                </div>
+                                <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
+                                    <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
+                                        <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
+                                    </button>
+                                    <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
+                                </div>
+                            </div>
                     </div>
                 <?php endwhile; ?>
             <?php endif; ?>
@@ -420,6 +490,43 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
         document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("categoryModal").style.display = "none";
     });
+
+    function upvoteDataset(datasetId) {
+        const upvoteButton = document.querySelector(`[data-id="${datasetId}"] button`);
+        const countSpan = document.getElementById(`upvote-count-${datasetId}`);
+        
+        // Check if the button is already upvoted (has 'upvoted' class)
+        const isUpvoted = upvoteButton.classList.contains('upvoted');
+
+        // Toggle the class based on the upvote state
+        if (isUpvoted) {
+            upvoteButton.classList.remove('upvoted');
+            upvoteButton.textContent = '⬆ Upvote'; // Change text to 'Upvote' when unvoted
+        } else {
+            upvoteButton.classList.add('upvoted');
+            upvoteButton.textContent = '⬆ Upvoted'; // Change text to 'Upvoted' when clicked
+        }
+
+        fetch('upvote.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `dataset_id=${datasetId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            let current = parseInt(countSpan.textContent);
+
+            if (data.status === 'voted' && !isUpvoted) {
+                countSpan.textContent = current + 1;
+            } else if (data.status === 'unvoted' && isUpvoted) {
+                countSpan.textContent = current - 1;
+            } else if (data.status === 'unauthorized') {
+                alert('You must be logged in to upvote.');
+            } else {
+                alert('Something went wrong.');
+            }
+        });
+    }
     </script>
 
 </body>
