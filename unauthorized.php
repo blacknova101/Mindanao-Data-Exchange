@@ -36,6 +36,7 @@
 </head>
 <body>
     <h1>Unauthorized Access</h1>
+    <img src="images/jn.png" alt="Unauthorized Access" style="max-width: 200px; margin: 20px 0;">
     <p>You do not have the necessary permissions to view this page.</p>
     <p>If you believe this is an error, please <a href="login.php">log in</a> again.</p>
     <p><a href="HomeLogin.php" class="btn">Go Back to Home</a></p>
