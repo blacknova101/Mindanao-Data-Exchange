@@ -4,6 +4,20 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+
+// Get user data if not already in session
+if (!isset($_SESSION['first_name'])) {
+    include 'db_connection.php';
+    $sql = "SELECT first_name, last_name FROM users WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($user = $result->fetch_assoc()) {
+        $_SESSION['first_name'] = $user['first_name'];
+        $_SESSION['last_name'] = $user['last_name'];
+    }
+}
 ?>
 <style>
     .sidebar {
@@ -118,8 +132,7 @@ if (!isset($_SESSION['user_id'])) {
 <div class="sidebar">
     <div class="profile">
         <img src="images/avatarIconunknown.jpg" alt="Profile">
-         <span><?php echo isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'Guest'; ?></span> 
-         <span><?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'Guest'; ?></span> 
+        <span><?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></span>
     </div>
     <a href="user_settings.php" class="menu-item">
         <i id="gear"class="fa-solid fa-gear"></i>

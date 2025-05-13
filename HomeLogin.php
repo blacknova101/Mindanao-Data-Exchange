@@ -26,7 +26,7 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MDX</title>
     <style>
-        html, body {
+    html, body {
             height: 100%;
             overflow: hidden;
         }

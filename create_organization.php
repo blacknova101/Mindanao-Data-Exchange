@@ -36,7 +36,7 @@ if ($organization_id) {
         $error = "Name and contact email are required.";
     } elseif (!filter_var($contact_email, FILTER_VALIDATE_EMAIL)) {
         $error = "Invalid email format.";
-    } elseif (!isset($error)) {
+    } else {
         // Check if organization already exists
         $check_query = "SELECT COUNT(*) as count FROM organizations WHERE name = ?";
         $stmt = mysqli_prepare($conn, $check_query);
@@ -60,19 +60,23 @@ if ($organization_id) {
                 $update_user_query = "UPDATE users SET organization_id = ?, user_type = 'with_organization' WHERE user_id = ?";
                 $stmt = mysqli_prepare($conn, $update_user_query);
                 mysqli_stmt_bind_param($stmt, "ii", $organization_id, $user_id);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_close($stmt);
-        
-                // Update session variables so UI updates immediately
-                $_SESSION['organization_id'] = $organization_id;
-                $_SESSION['user_type'] = 'with_organization';
-        
-                $success = "Organization created successfully.";
-                // Optionally redirect to settings or another page:
-                // header("Location: user_settings.php");
-                // exit();
+                
+                if (mysqli_stmt_execute($stmt)) {
+                    // Update session variables so UI updates immediately
+                    $_SESSION['organization_id'] = $organization_id;
+                    $_SESSION['user_type'] = 'with_organization';
+            
+                    // Set success message in session and redirect
+                    $_SESSION['success_message'] = "Organization created successfully.";
+                    header("Location: user_settings.php");
+                    exit();
+                } else {
+                    $error = "Error updating user record: " . mysqli_error($conn);
+                    error_log("Error updating user record: " . mysqli_error($conn));
+                }
             } else {
                 $error = "Error creating organization: " . mysqli_error($conn);
+                error_log("Error creating organization: " . mysqli_error($conn));
             }
         }
     }
@@ -84,55 +88,191 @@ if ($organization_id) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Organization</title>
     <style>
-        body { font-family: Arial; padding: 2rem; background-color: #f8f8f8; }
-        form { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; }
-        .message { margin-top: 1rem; color: red; }
-        .success { color: green; }
-        label { margin-top: 10px; display: block; font-weight: bold; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 5%;
+            padding-left: 30px;
+            background-color: #0099ff;
+            color: #cfd9ff;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            margin: 10px 0;
+            backdrop-filter: blur(10px);
+            max-width: 1200px;
+            width: 100%;
+            margin-top: 30px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: bold;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        .logo img {
+            height: auto;
+            width: 80px;
+            max-width: 100%;
+        }
+        .nav-links a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+        .nav-links a:hover {
+            transform: scale(1.2);
+        }
+        .navbar h2 {
+            color: white;
+        }
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        form { 
+            max-width: 800px;  /* Increased from 500px to 800px */
+            width: 90%;  /* Added width percentage for responsiveness */
+            margin: 40px auto; 
+            background: white; 
+            padding: 40px;  /* Increased padding from 30px to 40px */
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0 20px 0; 
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0099ff;
+            box-shadow: 0 0 5px rgba(0, 153, 255, 0.3);
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 20px 0 10px 0; 
+            background-color: #0099ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #007acc;
+        }
+        .message { 
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 16px;
+        }
+        .message.error {
+            color: #ff4d4d;
+        }
+        .message.success { 
+            color: #00cc00;
+        }
+        label { 
+            margin-top: 10px; 
+            display: block; 
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+        select {
+            background-color: white;
+            cursor: pointer;
+        }
+        #specifyContainer {
+            margin-top: -10px;
+        }
     </style>
 </head>
 <body>
+    <video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
+    </video>
 
-<h2 style="text-align: center;">Create an Organization</h2>
+    <header class="navbar">
+        <div class="logo">
+            <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
+            <h2>Create Organization</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="HomeLogin.php">HOME</a>
+        </nav>
+    </header>
 
-<?php if (!empty($error)): ?>
-    <div class="message"><?php echo $error; ?></div>
-<?php elseif (!empty($success)): ?>
-    <div class="message success"><?php echo $success; ?></div>
-<?php endif; ?>
+    <form method="POST" action="">
+        <?php if (!empty($error)): ?>
+            <div class="message error"><?php echo $error; ?></div>
+        <?php elseif (!empty($success)): ?>
+            <div class="message success"><?php echo $success; ?></div>
+        <?php endif; ?>
 
-<form method="POST" action="">
-    <input type="text" name="name" placeholder="Organization Name" required>
-    <input type="email" name="contact_email" placeholder="Contact Email" required>
-    <input type="url" name="website_url" placeholder="Website URL (optional)">
-    
-    <label for="org_type">Organization Type</label>
-    <select name="org_type" id="org_type" required onchange="toggleSpecifyField()">
-        <option value="">-- Select Type --</option>
-        <option value="Academic">Academic</option>
-        <option value="Government">Government</option>
-        <option value="Non-Profit">Non-Profit</option>
-        <option value="Commercial">Commercial</option>
-        <option value="Other">Other</option>
-    </select>
+        <label for="name">Organization Name</label>
+        <input type="text" id="name" name="name" placeholder="Enter organization name" required>
+        
+        <label for="contact_email">Contact Email</label>
+        <input type="email" id="contact_email" name="contact_email" placeholder="Enter contact email" required>
+        
+        <label for="website_url">Website URL (optional)</label>
+        <input type="url" id="website_url" name="website_url" placeholder="Enter website URL">
+        
+        <label for="org_type">Organization Type</label>
+        <select name="org_type" id="org_type" required onchange="toggleSpecifyField()">
+            <option value="">-- Select Type --</option>
+            <option value="Academic">Academic</option>
+            <option value="Government">Government</option>
+            <option value="Non-Profit">Non-Profit</option>
+            <option value="Commercial">Commercial</option>
+            <option value="Other">Other</option>
+        </select>
 
-    <div id="specifyContainer" style="display:none;">
-        <input type="text" name="org_type_specify" placeholder="Please specify">
-    </div>
+        <div id="specifyContainer" style="display:none;">
+            <label for="org_type_specify">Specify Organization Type</label>
+            <input type="text" id="org_type_specify" name="org_type_specify" placeholder="Please specify organization type">
+        </div>
 
-    <button type="submit">Create</button>
-</form>
+        <button type="submit">Create Organization</button>
+    </form>
 
-<script>
-function toggleSpecifyField() {
-    const select = document.getElementById('org_type');
-    const specify = document.getElementById('specifyContainer');
-    specify.style.display = (select.value === 'Other') ? 'block' : 'none';
-}
-</script>
-
+    <script>
+    function toggleSpecifyField() {
+        const select = document.getElementById('org_type');
+        const specify = document.getElementById('specifyContainer');
+        specify.style.display = (select.value === 'Other') ? 'block' : 'none';
+    }
+    </script>
 </body>
 </html>

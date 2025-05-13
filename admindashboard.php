@@ -114,7 +114,7 @@ body {
                 <li>Data Uploads & Approvals</li>
                 <li>Transactions & Logs</li>
                 <li>Reports & Analytics</li>
-                <li>Logout</li>
+                <li><a href="admin_logout.php" style="color: white; text-decoration: none;">Logout</a></li>
             </ul>
         </div>
 

@@ -9,21 +9,31 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$userId = $_SESSION['user_id'];
-
-
-$sql = "SELECT u.first_name, u.last_name, u.email, o.name AS organization_name, o.organization_id
-        FROM users u
-        LEFT JOIN organizations o ON u.organization_id = o.organization_id
+// Get user data
+$user_id = $_SESSION['user_id'];
+$sql = "SELECT u.*, o.name as organization_name, o.organization_id 
+        FROM users u 
+        LEFT JOIN organizations o ON u.organization_id = o.organization_id 
         WHERE u.user_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $userId);
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$userData = $result->fetch_assoc();
-$organizationName = $userData['organization_name'] ?? '';
-$organizationId = $userData['organization_id'] ?? null; // <-- Add this line
-$hasOrganization = !empty($organizationName);
+$user = $stmt->get_result()->fetch_assoc();
+
+// Debug information
+error_log("User Settings - User ID: " . $user_id);
+error_log("User Settings - Organization ID: " . ($user['organization_id'] ?? 'NULL'));
+error_log("User Settings - Organization Name: " . ($user['organization_name'] ?? 'NULL'));
+
+// If user not found, redirect to login
+if (!$user) {
+    header("Location: login.php");
+    exit();
+}
+
+$organizationName = $user['organization_name'] ?? '';
+$organizationId = $user['organization_id'] ?? null;
+$hasOrganization = !empty($organizationId);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -311,14 +321,16 @@ $hasOrganization = !empty($organizationName);
         }
 
         .submit-btn {
-            padding: 12px 20px;
+            padding: 10px 20px;
             background-color: #0099ff;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            width: 100%;
+            height: 42px; /* Match input height */
+            min-width: 120px; /* Set minimum width */
+            max-width: 200px; /* Set maximum width */
         }
 
         .submit-btn:hover {
@@ -473,122 +485,282 @@ $hasOrganization = !empty($organizationName);
             display: block;
         }
 
-        </style>
+        /* Floating Success Message */
+        .floating-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #00cc00;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease-in-out;
+            font-weight: bold;
+        }
+        .floating-message.show {
+            transform: translateX(0);
+        }
+        .floating-message.hide {
+            transform: translateX(150%);
+        }
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Update password button specific style */
+        #change-password .submit-btn {
+            width: 200px; /* Fixed width for password update button */
+            margin: 0 auto; /* Center the button */
+            display: block; /* Make it block level */
+        }
+
+        .email-update-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .email-update-btn {
+            width: auto;
+            padding: 10px 20px;
+            height: 42px;
+            white-space: nowrap;
+        }
+
+        .submit-btn {
+            padding: 10px 20px;
+            background-color: #0099ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            height: 42px;
+            min-width: 120px;
+            max-width: 200px;
+        }
+
+        .submit-btn:hover {
+            background-color: #007acc;
+        }
+
+        #change-password .submit-btn {
+            width: 200px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
     <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
 
-<div id="wrapper">
-<header class="navbar">
-        <div class="logo">
-            <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
-        </div>
-        <form id="searchForm" action="search_results.php" method="GET">
-            <div class="search-bar">
-                <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
-                <button>
-                    <img src="images/search_icon.png" alt="Search">
-                </button>
-                
-            </div>
-        </form>
-        <nav class="nav-links">
-            <a href="HomeLogin.php">HOME</a>
-            <a href="datasets.php">DATASETS</a>
-            <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
-            <div class="profile-icon">
-                <img src="images/avatarIconunknown.jpg" alt="Profile">
-            </div>
-        </nav>
-    </header> 
-    <div class="settings-container">
-        <div id="header">
-        <h2>User Settings</h2>
-            <form action="save_settings.php" method="POST" enctype="multipart/form-data">
-                <div id="profpic-firstname">
-                    <div>
-                        <img id="avatar" src="images/user_icon.png" alt="User Icon">
-                    </div>
-                    <div>
-                        <span id="first_name"><?php echo $_SESSION['first_name']; ?></span>
-                        <span id="last_name"><?php echo $_SESSION['last_name']; ?></span>
-                    </div>
-                </div>
-                <hr class="section-divider">
-            </div>
-            <div id="profile-wrapper">
-                <div id="profile">
-                    <h2>Profile</h2>
-                    <div class="profile-container">
-                        <div id="display1" class="form-group">
-                            <label for="first_name">First Name</label>
-                            <input type="text" id="first_name" name="first_name" value="<?php echo $_SESSION['first_name']; ?>" required readonly>
-                        </div>
-                        <div id="display2" class="form-group">
-                            <label for="last_name">Last Name</label>
-                            <input type="text" id="last_name" name="last_name" value="<?php echo $_SESSION['last_name']; ?>" required readonly>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" value="<?php echo $_SESSION['email']; ?>" required>
-                    </div>
-                </div>
-
-                <div id="organization-container">
-                    <h2 id="org">Organization</h2>
-                    <div class="form-group">
-                        <input type="text" id="organization" name="organization" value="<?php echo $organizationName; ?>" readonly>
-                    </div>
-                    <!-- Disable the 'Create New Organization' button if the user has an organization -->
-                    <?php if (!$hasOrganization): ?>
-                        <button type="button" class="create-org-btn" onclick="window.location.href='join_organization.php'">Join an Organization</button>
-                    <?php else: ?>
-                        <!-- If user has org, show leave button -->
-                        <button type="button" class="create-org-btn" onclick="showLeaveOrgModal()">Leave Organization</button>
-                    <?php endif; ?>
-                </div>
-
-            </div>
-
-            <br><br>
-            <div id="change-password">
-                <h2>Change Password</h2>
-                <div class="form-group">
-                    <label for="current_password">Current Password</label>
-                    <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="new_password">New Password</label>
-                    <input type="password" id="new_password" name="new_password" placeholder="Enter new password" required>
-                </div>
-
-                <div id="confirmpass" class="form-group">
-                    <label for="confirm_password">Confirm New Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" required>
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn">Save Changes</button>
-        </form>
+    <?php if (isset($_SESSION['success_message'])): ?>
+    <div class="floating-message" id="successMessage">
+        <?php 
+            echo $_SESSION['success_message'];
+            unset($_SESSION['success_message']);
+        ?>
     </div>
-</div>
-<?php include('leave_orgmodal.php');?>
-<?php include('sidebar.php');?>
-<?php include('category_modal.php');?>
-<script>
-    function showModal() {
-        document.getElementById("categoryModal").style.display = "flex";
-    }
-    function hideModal() {
-        document.getElementById("categoryModal").style.display = "none";
-     }
-        document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("categoryModal").style.display = "none";
-    });
+    <?php endif; ?>
+
+    <div id="wrapper">
+    <header class="navbar">
+            <div class="logo">
+                <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
+            </div>
+            <form id="searchForm" action="search_results.php" method="GET">
+                <div class="search-bar">
+                    <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
+                    <button>
+                        <img src="images/search_icon.png" alt="Search">
+                    </button>
+                    
+                </div>
+            </form>
+            <nav class="nav-links">
+                <a href="HomeLogin.php">HOME</a>
+                <a href="datasets.php">DATASETS</a>
+                <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
+                <div class="profile-icon">
+                    <img src="images/avatarIconunknown.jpg" alt="Profile">
+                </div>
+            </nav>
+        </header> 
+        <div class="settings-container">
+            <div id="header">
+            <h2>User Settings</h2>
+                <form action="verify_changes.php" method="POST" enctype="multipart/form-data">
+                    <div id="profpic-firstname">
+                        <div>
+                            <img id="avatar" src="images/user_icon.png" alt="User Icon">
+                        </div>
+                        <div>
+                            <span id="first_name"><?php echo $user['first_name']; ?></span>
+                            <span id="last_name"><?php echo $user['last_name']; ?></span>
+                        </div>
+                    </div>
+                    <hr class="section-divider">
+                </div>
+                <div id="profile-wrapper">
+                    <div id="profile">
+                        <h2>Profile</h2>
+                        <div class="profile-container">
+                            <div id="display1" class="form-group">
+                                <label for="first_name">First Name</label>
+                                <input type="text" id="first_name" name="first_name" value="<?php echo $user['first_name']; ?>" required readonly>
+                            </div>
+                            <div id="display2" class="form-group">
+                                <label for="last_name">Last Name</label>
+                                <input type="text" id="last_name" name="last_name" value="<?php echo $user['last_name']; ?>" required readonly>
+                            </div>
+                        </div>
+                        <form action="verify_changes.php" method="POST">
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <div class="email-update-container">
+                                    <input type="email" id="email" name="new_value" value="<?php echo $user['email']; ?>" required>
+                                    <input type="hidden" name="change_type" value="email">
+                                    <button type="submit" class="submit-btn email-update-btn">Update Email</button>
+                                </div>
+                                <?php if (isset($_SESSION['error_message']) && isset($_SESSION['error_type']) && $_SESSION['error_type'] === 'email'): ?>
+                                    <div class="error-message"><?php echo $_SESSION['error_message']; ?></div>
+                                    <?php unset($_SESSION['error_message'], $_SESSION['error_type']); ?>
+                                <?php endif; ?>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="organization-container">
+                        <h2 id="org">Organization</h2>
+                        <div class="form-group">
+                            <input type="text" id="organization" name="organization" value="<?php echo $organizationName; ?>" readonly>
+                        </div>
+                        <!-- Disable the 'Create New Organization' button if the user has an organization -->
+                        <?php if (!$hasOrganization): ?>
+                            <button type="button" class="create-org-btn" onclick="window.location.href='join_organization.php'">Join an Organization</button>
+                        <?php else: ?>
+                            <!-- If user has org, show leave button -->
+                            <button type="button" class="create-org-btn" onclick="showLeaveOrgModal()">Leave Organization</button>
+                        <?php endif; ?>
+                    </div>
+
+                </div>
+
+                <br><br>
+                <div id="change-password">
+                    <h2>Change Password</h2>
+                    <form action="verify_changes.php" method="POST" id="passwordForm">
+                        <div class="form-group">
+                            <label for="current_password">Current Password</label>
+                            <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new_password">New Password</label>
+                            <input type="password" id="new_password" name="new_value" placeholder="Enter new password" required>
+                            <input type="hidden" name="change_type" value="password">
+                        </div>
+
+                        <div id="confirmpass" class="form-group">
+                            <label for="confirm_password">Confirm New Password</label>
+                            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" required>
+                        </div>
+
+                        <?php if (isset($_SESSION['error_message']) && isset($_SESSION['error_type']) && $_SESSION['error_type'] === 'password'): ?>
+                            <div class="error-message"><?php echo $_SESSION['error_message']; ?></div>
+                            <?php unset($_SESSION['error_message'], $_SESSION['error_type']); ?>
+                        <?php endif; ?>
+
+                        <button type="submit" class="submit-btn">Update Password</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <?php include('leave_orgmodal.php');?>
+    <?php include('sidebar.php');?>
+    <?php include('category_modal.php');?>
+    <script>
+        function showModal() {
+            document.getElementById("categoryModal").style.display = "flex";
+        }
+        function hideModal() {
+            document.getElementById("categoryModal").style.display = "none";
+         }
+            document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("categoryModal").style.display = "none";
+        });
+
+        // Success Message Animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const successMessage = document.getElementById('successMessage');
+            if (successMessage) {
+                setTimeout(() => {
+                    successMessage.classList.add('show');
+                }, 100);
+
+                setTimeout(() => {
+                    successMessage.classList.add('hide');
+                    setTimeout(() => {
+                        successMessage.remove();
+                    }, 300);
+                }, 3000);
+            }
+
+            // Password validation
+            const passwordForm = document.getElementById('passwordForm');
+            const newPassword = document.getElementById('new_password');
+            const confirmPassword = document.getElementById('confirm_password');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.style.display = 'none';
+            passwordForm.insertBefore(errorDiv, passwordForm.querySelector('button'));
+
+            passwordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                errorDiv.style.display = 'none';
+
+                // Check if passwords match
+                if (newPassword.value !== confirmPassword.value) {
+                    errorDiv.textContent = 'New password and confirm password do not match.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                // Check password strength
+                const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+                if (!passwordRegex.test(newPassword.value)) {
+                    errorDiv.textContent = 'Password must be at least 8 characters long, contain 1 uppercase letter, 1 number, and 1 special character.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                // If all validations pass, submit the form
+                this.submit();
+            });
+        });
     </script>
 </body>
 </html>
