@@ -10,12 +10,14 @@ if (!isset($_SESSION['user_id'])) {
     // Redirect to an error page if no organization_id is found
     header("Location: unauthorized.php"); // Or login page if preferred
     exit();
-} elseif (!isset($_SESSION['uploaded_file']) || empty($_SESSION['uploaded_file'])) {
-    // Handle the case where no file has been uploaded
-    $_SESSION['upload_error'] = "No file has been uploaded yet.";
-    header("Location: uploadselection.php"); // Redirect to a custom error page or show message on the current page
+} elseif (!isset($_SESSION['upload_success']) || $_SESSION['upload_success'] !== true) {
+    // Prevent direct URL access
+    header("Location: uploadselection.php");
     exit();
 }
+
+// Clear the success flag after checking
+unset($_SESSION['upload_success']);
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -90,6 +90,7 @@ foreach ($_SESSION['valid_files'] as $temp_path) {
 
 unset($_SESSION['valid_files']);
 $_SESSION['success_message'] = "Dataset added successfully!";
+$_SESSION['upload_success'] = true;
 header("Location: dataset_success.php");
 exit();
 
