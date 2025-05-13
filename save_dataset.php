@@ -29,6 +29,7 @@ if (!$result || !$result->num_rows) {
 $row = $result->fetch_assoc();
 if (isset($row['organization_id'])) {
     $organization_id = $row['organization_id']; // Fetch organization_id
+    $_SESSION['organization_id'] = $organization_id; // <-- Fix: update session variable!
     $org_name = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); // Clean for filesystem
     $first_name = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['first_name']);
     $last_name = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['last_name']);

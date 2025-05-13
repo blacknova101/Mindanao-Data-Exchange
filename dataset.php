@@ -80,7 +80,17 @@ if (!$result || mysqli_num_rows($result) === 0) {
     exit;
 }
 
-$dataset = mysqli_fetch_assoc($result);
+include 'batch_analytics.php';
+
+if (!isset($_SESSION['viewed_batches'])) {
+    $_SESSION['viewed_batches'] = [];
+}
+
+if (!in_array($batch_id, $_SESSION['viewed_batches'])) {
+    increment_batch_views($conn, $batch_id);
+    $_SESSION['viewed_batches'][] = $batch_id;
+}
+$analytics = get_batch_analytics($conn, $batch_id);
 ?>
 
 
@@ -371,7 +381,6 @@ $dataset = mysqli_fetch_assoc($result);
             </a>
         </div>
       </div>
-
       <div class="resources-box">
         <h3>Data and Resources</h3>
         <?php if ($batchDatasetsResult && mysqli_num_rows($batchDatasetsResult) > 0): ?>
@@ -383,7 +392,7 @@ $dataset = mysqli_fetch_assoc($result);
                     <?php echo htmlspecialchars(basename($ds['file_path'])); ?>
                 </a>
                 </div>
-                <a href="<?php echo htmlspecialchars($ds['file_path']); ?>" download class="download-btn">⬇️ Download</a>
+                <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" class="download-btn">⬇️ Download</a>              
               </div>
             <?php endwhile; ?>
           </div>
@@ -433,6 +442,5 @@ $dataset = mysqli_fetch_assoc($result);
       </div>
 
   </div>
-  
 </body>
 </html>

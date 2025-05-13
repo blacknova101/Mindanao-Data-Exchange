@@ -58,6 +58,18 @@ if (!$result || mysqli_num_rows($result) === 0) {
 }
 
 $dataset = mysqli_fetch_assoc($result);
+$batch_id = $dataset['dataset_batch_id'];
+include 'batch_analytics.php';
+
+if (!isset($_SESSION['viewed_batches'])) {
+    $_SESSION['viewed_batches'] = [];
+}
+
+if (!in_array($batch_id, $_SESSION['viewed_batches'])) {
+    increment_batch_views($conn, $batch_id);
+    $_SESSION['viewed_batches'][] = $batch_id;
+}
+$analytics = get_batch_analytics($conn, $batch_id);
 ?>
 
 
@@ -271,6 +283,15 @@ $dataset = mysqli_fetch_assoc($result);
     form button:hover {
       background-color: #0056b3;
     }
+    #background-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1; /* stays behind everything */
+    }
 
 
     @media (max-width: 768px) {
@@ -284,6 +305,9 @@ $dataset = mysqli_fetch_assoc($result);
   </style>
 </head>
 <body>
+<video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
+    </video>
 <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
@@ -352,9 +376,9 @@ $dataset = mysqli_fetch_assoc($result);
               <?php echo !empty($dataset['file_path']) ? basename($dataset['file_path']) : 'No file uploaded'; ?>
             </a>
             <div class="dataset-download">
-            <a href="<?php echo !empty($dataset['file_path']) ? htmlspecialchars($dataset['file_path']) : '#'; ?>" download class="download-btn">
-                  <span class="file-download">⬇️</span> Download
-              </a>
+            <a href="download.php?dataset_id=<?php echo $dataset['dataset_id']; ?>" class="download-btn">
+              <span class="file-download">⬇️</span> Download
+          </a>
           </div>
         </div>
         

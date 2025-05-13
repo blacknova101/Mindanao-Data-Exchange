@@ -261,7 +261,7 @@ session_start();
             
             <div class="button-group">
                 <button type="submit" class="btn-next">Next</button>
-                <button type="button" class="btn-cancel">Cancel</button>
+                <button type="button" class="btn-cancel" onclick="window.location.href='index.php'">Cancel</button>
             </div>
         </form>
     </div>

@@ -11,23 +11,26 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
-$sql = "SELECT u.first_name, u.last_name, u.email, o.name AS organization_name
+
+$sql = "SELECT u.first_name, u.last_name, u.email, o.name AS organization_name, o.organization_id
         FROM users u
-        JOIN organizations o ON u.organization_id = o.organization_id
+        LEFT JOIN organizations o ON u.organization_id = o.organization_id
         WHERE u.user_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $userId);
 $stmt->execute();
 $result = $stmt->get_result();
 $userData = $result->fetch_assoc();
-$organizationName = $userData['organization_name'] ?? ''; // Default to empty if no organization is found
+$organizationName = $userData['organization_name'] ?? '';
+$organizationId = $userData['organization_id'] ?? null; // <-- Add this line
+$hasOrganization = !empty($organizationName);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Dataset</title>
+    <title>User Settings</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -400,16 +403,85 @@ $organizationName = $userData['organization_name'] ?? ''; // Default to empty if
         #org{
             margin-bottom: 23px;
         }
+        /* Add this for disabled state */
+        .create-org-btn:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+        }
+        .leave-org-modal-content {
+            background: #fff; /* white background */
+            border: 2px solid #0099ff; /* blue border */
+            color: #ff4d4d; /* red text for caution */
+            box-shadow: 0 0 20px #0099ff22; /* subtle blue shadow */
+            padding: 30px 20px;
+            border-radius: 16px;
+            max-width: 400px;
+            margin: auto;
+            text-align: center;
+            position: relative;
+        }
+        .leave-org-modal-content h3 {
+            color: #ff4d4d; /* red for caution */
+            margin-bottom: 10px;
+        }
+        .leave-org-modal-content p {
+            color: #0099ff; /* blue for instructions */
+            margin-bottom: 20px;
+        }
+        .leave-org-modal-content input[type="text"] {
+            border: 1.5px solid #0099ff; /* blue border */
+            border-radius: 5px;
+            padding: 8px;
+            width: 80%;
+            margin-bottom: 15px;
+            color: #222;
+            background: #fff;
+        }
+        .leave-org-modal-content button[type="submit"] {
+            background: #0099ff; /* blue button */
+            color: #fff;         /* white text */
+            border: none;
+            border-radius: 5px;
+            padding: 10px 18px;
+            font-weight: bold;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .leave-org-modal-content button[type="submit"]:hover {
+            background: #007acc;
+        }
+        .leave-org-modal-content button[type="button"] {
+            background: #fff; /* white background */
+            color: #0099ff;   /* blue text */
+            border: 1.5px solid #0099ff; /* blue border */
+            border-radius: 5px;
+            padding: 10px 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .leave-org-modal-content button[type="button"]:hover {
+            background: #0099ff;
+            color: #fff;
+        }
+        .leave-org-modal-content .warning-icon {
+            font-size: 40px;
+            color: #ff4d4d; /* red icon */
+            margin-bottom: 10px;
+            display: block;
+        }
 
-
-    </style>
+        </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
+    <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
+
 <div id="wrapper">
-    <header class="navbar">
+<header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
         </div>
@@ -430,95 +502,93 @@ $organizationName = $userData['organization_name'] ?? ''; // Default to empty if
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
             </div>
         </nav>
-    </header>
-    <!-- User settings section -->
+    </header> 
     <div class="settings-container">
         <div id="header">
+        <h2>User Settings</h2>
             <form action="save_settings.php" method="POST" enctype="multipart/form-data">
-            <div id="profpic-firstname">
-                <div>
-                    <img id="avatar" src="images/user_icon.png" alt="User Icon">
-                </div>
-                <div>
-                    <span id="first_name"><?php echo $_SESSION['first_name']; ?></span>
-                    <span id="last_name"><?php echo $_SESSION['last_name']; ?></span>
-                </div>
-            </div>
-
-            <hr class="section-divider">
-
-        </div>
-        <div id="profile-wrapper">
-            <div id="profile">
-            <h2>Profile</h2>
-            <div class="profile-container">
-                    <div id="display1" class="form-group">
-                        <label for="first_name">First Name</label>
-                        <input type="text" id="first_name" name="first_name" value="<?php echo $_SESSION['first_name']; ?>" required readonly>
+                <div id="profpic-firstname">
+                    <div>
+                        <img id="avatar" src="images/user_icon.png" alt="User Icon">
                     </div>
-
-                    <div id="display2" class="form-group">
-                        <label for="last_name">Last Name</label>
-                        <input type="text" id="last_name" name="last_name" value="<?php echo $_SESSION['last_name']; ?>" required readonly>
+                    <div>
+                        <span id="first_name"><?php echo $_SESSION['first_name']; ?></span>
+                        <span id="last_name"><?php echo $_SESSION['last_name']; ?></span>
                     </div>
+                </div>
+                <hr class="section-divider">
             </div>
-                <div class="form-group">
+            <div id="profile-wrapper">
+                <div id="profile">
+                    <h2>Profile</h2>
+                    <div class="profile-container">
+                        <div id="display1" class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input type="text" id="first_name" name="first_name" value="<?php echo $_SESSION['first_name']; ?>" required readonly>
+                        </div>
+                        <div id="display2" class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" id="last_name" name="last_name" value="<?php echo $_SESSION['last_name']; ?>" required readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="email">Email Address</label>
                         <input type="email" id="email" name="email" value="<?php echo $_SESSION['email']; ?>" required>
                     </div>
-            </div>
-            <div id="organization-container">
-                <h2 id="org">Organization</h2>
-                <div class="form-group">
-                    <input type="text" id="organization" name="organization" value="<?php echo $organizationName; ?>" readonly>
                 </div>
-                <button type="button" class="create-org-btn" onclick="window.location.href='create_organization.php'">Create New Organization</button>
-            </div>
+
+                <div id="organization-container">
+                    <h2 id="org">Organization</h2>
+                    <div class="form-group">
+                        <input type="text" id="organization" name="organization" value="<?php echo $organizationName; ?>" readonly>
+                    </div>
+                    <!-- Disable the 'Create New Organization' button if the user has an organization -->
+                    <?php if (!$hasOrganization): ?>
+                        <button type="button" class="create-org-btn" onclick="window.location.href='join_organization.php'">Join an Organization</button>
+                    <?php else: ?>
+                        <!-- If user has org, show leave button -->
+                        <button type="button" class="create-org-btn" onclick="showLeaveOrgModal()">Leave Organization</button>
+                    <?php endif; ?>
+                </div>
 
             </div>
 
-
-
-        <br><br>
-        <div id="change-password">
-            <h2>Change Password</h2>
-                <!-- Current Password -->
+            <br><br>
+            <div id="change-password">
+                <h2>Change Password</h2>
                 <div class="form-group">
                     <label for="current_password">Current Password</label>
                     <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required>
                 </div>
 
-                <!-- New Password -->
                 <div class="form-group">
                     <label for="new_password">New Password</label>
                     <input type="password" id="new_password" name="new_password" placeholder="Enter new password" required>
                 </div>
 
-                <!-- Confirm New Password -->
                 <div id="confirmpass" class="form-group">
                     <label for="confirm_password">Confirm New Password</label>
                     <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" required>
                 </div>
-    </div>
-            <!-- Save Changes Button -->
+            </div>
+
             <button type="submit" class="submit-btn">Save Changes</button>
         </form>
     </div>
-
-    <?php include 'sidebar.php'; ?>
-    <?php include 'category_modal.php'; // Include the modal?>
 </div>
+<?php include('leave_orgmodal.php');?>
+<?php include('sidebar.php');?>
+<?php include('category_modal.php');?>
 <script>
-        function showModal() {
-            document.getElementById("categoryModal").style.display = "flex";
-        }
-        function hideModal() {
-            document.getElementById("categoryModal").style.display = "none";
-        }
+    function showModal() {
+        document.getElementById("categoryModal").style.display = "flex";
+    }
+    function hideModal() {
+        document.getElementById("categoryModal").style.display = "none";
+     }
         document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("categoryModal").style.display = "none";
+        document.getElementById("categoryModal").style.display = "none";
     });
     </script>
-
 </body>
 </html>

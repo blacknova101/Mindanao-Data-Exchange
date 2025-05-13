@@ -46,6 +46,7 @@ $sql .= " ORDER BY d.dataset_id DESC";
 $result = mysqli_query($conn, $sql);
 
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
+include 'batch_analytics.php';
 ?>
 
 <!DOCTYPE html>
@@ -53,6 +54,7 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
 <head>
     <meta charset="UTF-8">
     <title>All Datasets</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body {
             height: 100%;
@@ -382,6 +384,22 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
             background-color: #f0f0f0; /* Change background color when upvoted */
             box-shadow: inset 0 0 0 1px black; /* Add a shadow instead of border */
         }
+        .dataset-analytics {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        .dataset-analytics .analytics-item {
+            display: flex;
+            align-items: center;
+            color: #888;
+        }
+
+        .dataset-analytics .analytics-item i {
+            margin-right: 4px;
+        }
 
         </style>
 </head>
@@ -424,30 +442,44 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
         <div class="dataset-grid">
             <?php if (mysqli_num_rows($result) > 0): ?>
                 <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                    <?php
+                        $batch_id = $row['dataset_batch_id'];
+                        $analytics = get_batch_analytics($conn, $batch_id);
+                    ?>
                     <div class="dataset-card">
                         <div class="dataset-title">
                             <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
                                 <?= htmlspecialchars($row['title']) ?>
                             </a>
                         </div>
-                            <div class="dataset-description">
-                                <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
+                        <div class="dataset-description">
+                            <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
+                        </div>
+                        <div class="dataset-uploader">
+                            <br><br><br>
+                            Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                        </div>
+                        <div class="dataset-actions">
+                            <div class="dataset-analytics">
+                                <span class="analytics-item" title="Views">
+                                    <i class="fa-regular fa-eye"></i>
+                                    <?= $analytics['total_views'] ?>
+                                </span>
+                                <span class="analytics-item" title="Downloads">
+                                    <i class="fa-solid fa-download"></i>
+                                    <?= $analytics['total_downloads'] ?>
+                                </span>
                             </div>
-                            <div class="dataset-uploader">
-                                <br><br><br>
-                                Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
-                            </div>
-                            <div class="dataset-actions">
-                                <div class="dataset-download">
+                            <div class="dataset-download">
                                 <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
-                                </div>
-                                <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
-                                    <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
-                                        <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
-                                    </button>
-                                    <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
-                                </div>
                             </div>
+                            <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
+                                <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
+                                    <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
+                                </button>
+                                <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
+                            </div>
+                        </div>
                     </div>
                 <?php endwhile; ?>
             <?php endif; ?>

@@ -29,6 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['last_name'] = $row['last_name']; // Store user's name in session
             $_SESSION['organization_id'] = $row['organization_id']; // Store organization ID in session
 
+            $updateSql = "UPDATE users SET last_login = NOW() WHERE user_id = ?";
+            $updateStmt = $conn->prepare($updateSql);
+            $updateStmt->bind_param("i", $row['user_id']);
+            $updateStmt->execute();
+            $updateStmt->close();
+            
             // Check if the user has an organization
             if (empty($row['organization_id'])) {
                 $_SESSION['has_organization'] = false;

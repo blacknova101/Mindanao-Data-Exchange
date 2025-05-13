@@ -1,12 +1,16 @@
 <?php
 session_start();
 include 'db_connection.php';
+include 'batch_analytics.php'; // <-- Add this line
 
 if (!isset($_GET['batch_id'])) {
     die('Batch ID not specified.');
 }
 
 $batch_id = intval($_GET['batch_id']);
+
+// Increment batch downloads
+increment_batch_downloads($conn, $batch_id); // <-- Add this line
 
 $sql = "SELECT file_path FROM datasets WHERE dataset_batch_id = $batch_id";
 $result = mysqli_query($conn, $sql);
