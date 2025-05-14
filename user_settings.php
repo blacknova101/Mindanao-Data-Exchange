@@ -626,6 +626,7 @@ $hasOrganization = !empty($organizationId);
                 <div id="profile-wrapper">
                     <div id="profile">
                         <h2>Profile</h2>
+                        
                         <div class="profile-container">
                             <div id="display1" class="form-group">
                                 <label for="first_name">First Name</label>

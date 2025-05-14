@@ -21,10 +21,13 @@ $sql = "
         d.file_path,
         u.first_name, 
         u.last_name,
+        c.name AS category_name,
+        c.category_id,
         (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id) AS upvotes,
         (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id AND r.user_id = ?) AS user_upvoted
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
+    LEFT JOIN datasetcategories c ON d.category_id = c.category_id
     WHERE d.user_id = ?
       AND d.dataset_id = (
           SELECT MIN(d2.dataset_id) FROM datasets d2 WHERE d2.dataset_batch_id = d.dataset_batch_id AND d2.user_id = ?
@@ -394,6 +397,48 @@ include 'batch_analytics.php';
             margin-right: 4px;
         }
 
+        .dataset-actions-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .edit-btn {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .table-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        .edit-btn {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background-color: #45a049;
+        }
 
     </style>
 </head>
@@ -432,60 +477,136 @@ include 'batch_analytics.php';
     </span>
 </div>
 <div id="wrapper">
-<div class="dataset-grid">
-            <?php if (mysqli_num_rows($result) > 0): ?>
-                <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                    <?php
-                        $batch_id = $row['dataset_batch_id'];
-                        $analytics = get_batch_analytics($conn, $batch_id);
-                    ?>
-                    <div class="dataset-card">
-                    <div class="dataset-title">
+    <?php include 'view_toggle.php'; ?>
+    
+    <!-- Card View -->
+    <div class="dataset-grid">
+        <?php if (mysqli_num_rows($result) > 0): ?>
+            <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                <?php
+                    $batch_id = $row['dataset_batch_id'];
+                    $analytics = get_batch_analytics($conn, $batch_id);
+                ?>
+                <div class="dataset-card">
+                <div class="dataset-title">
+                    <a href="mydataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
+                        <?= htmlspecialchars($row['title']) ?>
+                    </a>
+                </div>
+                    <div class="dataset-description">
+                        <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
+                    </div>
+                    <div class="dataset-uploader">
+                        <br><br><br>
+                        Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                    </div>
+                    <div class="dataset-actions">
+                        <div class="dataset-analytics">
+                            <span class="analytics-item" title="Views">
+                                <i class="fa-regular fa-eye"></i>
+                                <?= $analytics['total_views'] ?>
+                            </span>
+                            <span class="analytics-item" title="Downloads">
+                                <i class="fa-solid fa-download"></i>
+                                <?= $analytics['total_downloads'] ?>
+                            </span>
+                        </div>
+                        <div class="dataset-download">
+                            <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                        </div>
+                        <div class="dataset-actions-buttons">
+                            <a href="edit_dataset.php?id=<?= $row['dataset_id'] ?>" class="edit-btn">Edit</a>
+                            <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
+                                <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
+                                    <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
+                                </button>
+                                <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php endif; ?>
+    </div>
+    
+    <!-- Table View -->
+    <table class="dataset-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Analytics</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php 
+            // Reset the result pointer to the beginning
+            mysqli_data_seek($result, 0);
+            
+            if (mysqli_num_rows($result) > 0): 
+                while ($row = mysqli_fetch_assoc($result)): 
+                    $batch_id = $row['dataset_batch_id'];
+                    $analytics = get_batch_analytics($conn, $batch_id);
+            ?>
+                <tr>
+                    <td>
                         <a href="mydataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
                             <?= htmlspecialchars($row['title']) ?>
                         </a>
-                    </div>
-                        <div class="dataset-description">
-                            <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
+                    </td>
+                    <td><?= htmlspecialchars(mb_strimwidth($row['description'], 0, 100, '...')) ?></td>
+                    <td>
+                        <?php if (!empty($row['category_name'])): ?>
+                            <span class="category-badge"><?= htmlspecialchars($row['category_name']) ?></span>
+                        <?php else: ?>
+                            <span class="category-badge">Uncategorized</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <div class="table-analytics">
+                            <span class="analytics-item" title="Views">
+                                <i class="fa-regular fa-eye"></i> <?= $analytics['total_views'] ?>
+                            </span>
+                            <span class="analytics-item" title="Downloads">
+                                <i class="fa-solid fa-download"></i> <?= $analytics['total_downloads'] ?>
+                            </span>
+                            <span class="analytics-item" title="Upvotes">
+                                <i class="fa-solid fa-arrow-up"></i> <?= $row['upvotes'] ?>
+                            </span>
                         </div>
-                        <div class="dataset-uploader">
-                            <br><br><br>
-                            Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
-                        </div>
-                        <div class="dataset-actions">
-                            <div class="dataset-analytics">
-                                <span class="analytics-item" title="Views">
-                                    <i class="fa-regular fa-eye"></i>
-                                    <?= $analytics['total_views'] ?>
-                                </span>
-                                <span class="analytics-item" title="Downloads">
-                                    <i class="fa-solid fa-download"></i>
-                                    <?= $analytics['total_downloads'] ?>
-                                </span>
-                            </div>
-                                <div class="dataset-download">
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <div class="table-download">
                                 <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
-                                </div>
-                                <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
-                                    <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
-                                        <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
-                                    </button>
-                                    <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
-                                </div>
                             </div>
-                    </div>
-                <?php endwhile; ?>
-            <?php endif; ?>
+                            <a href="edit_dataset.php?id=<?= $row['dataset_id'] ?>" class="edit-btn">Edit</a>
+                            <div class="table-upvote" data-id="<?= $row['dataset_id'] ?>">
+                                <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
+                                    <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
+                                </button>
+                                <span class="table-upvote-count"><?= $row['upvotes'] ?></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            <?php 
+                endwhile; 
+            endif; 
+            ?>
+        </tbody>
+    </table>
+    
+    <!-- No datasets found message outside of the grid -->
+    <?php if (mysqli_num_rows($result) == 0): ?>
+        <div class="no-datasets">
+            <img src="images/no-found1.png" alt="No data" class="no-found-img">
+            <p>No dataset found.</p>
         </div>
-        
-        <!-- No datasets found message outside of the grid -->
-        <?php if (mysqli_num_rows($result) == 0): ?>
-            <div class="no-datasets">
-                <img src="images/no-found1.png" alt="No data" class="no-found-img">
-                <p>No dataset found.</p>
-            </div>
-        <?php endif; ?>
-    </div>
+    <?php endif; ?>
+</div>
 
 
         </div>
@@ -500,7 +621,8 @@ include 'batch_analytics.php';
             document.getElementById("categoryModal").style.display = "none";
         }
         document.addEventListener("DOMContentLoaded", function () {
-    });
+            document.getElementById("categoryModal").style.display = "none";
+        });
 
     function upvoteDataset(datasetId) {
         const upvoteButton = document.querySelector(`[data-id="${datasetId}"] button`);

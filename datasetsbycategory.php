@@ -558,68 +558,146 @@ include 'batch_analytics.php';
 </div>
 
 <div id="wrapper">
+    <?php include 'view_toggle.php'; ?>
+    
+    <!-- Card View -->
     <div class="dataset-grid">
-            <?php if (mysqli_num_rows($result) > 0): ?>
-                <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                    <?php
-                        $batch_id = $row['dataset_batch_id'];
-                        $analytics = get_batch_analytics($conn, $batch_id);
-                        $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
-                    ?>
-                    <div class="dataset-card">
-                        <div class="dataset-title">
-                            <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
-                                <?= htmlspecialchars($row['title']) ?>
-                            </a>
-                            <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
-                                <?= $row['visibility'] ?>
+        <?php if (mysqli_num_rows($result) > 0): ?>
+            <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                <?php
+                    $batch_id = $row['dataset_batch_id'];
+                    $analytics = get_batch_analytics($conn, $batch_id);
+                    $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
+                ?>
+                <div class="dataset-card">
+                    <div class="dataset-title">
+                        <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
+                            <?= htmlspecialchars($row['title']) ?>
+                        </a>
+                        <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
+                            <?= $row['visibility'] ?>
+                        </span>
+                    </div>
+                    <div class="dataset-description">
+                        <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
+                    </div>
+                    <div class="dataset-uploader">
+                        <br><br><br>
+                        Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                    </div>
+                    <div class="dataset-actions">
+                        <div class="dataset-analytics">
+                            <span class="analytics-item" title="Views">
+                                <i class="fa-regular fa-eye"></i>
+                                <?= $analytics['total_views'] ?>
+                            </span>
+                            <span class="analytics-item" title="Downloads">
+                                <i class="fa-solid fa-download"></i>
+                                <?= $analytics['total_downloads'] ?>
                             </span>
                         </div>
-                        <div class="dataset-description">
-                            <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
+                        <div class="dataset-download">
+                            <?php if (!$is_private_unowned): ?>
+                            <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                            <?php else: ?>
+                            <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
+                            <?php endif; ?>
                         </div>
-                        <div class="dataset-uploader">
-                            <br><br><br>
-                            Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                        <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
+                            <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
+                                <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
+                            </button>
+                            <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
                         </div>
-                        <div class="dataset-actions">
-                            <div class="dataset-analytics">
-                                <span class="analytics-item" title="Views">
-                                    <i class="fa-regular fa-eye"></i>
-                                    <?= $analytics['total_views'] ?>
-                                </span>
-                                <span class="analytics-item" title="Downloads">
-                                    <i class="fa-solid fa-download"></i>
-                                    <?= $analytics['total_downloads'] ?>
-                                </span>
-                            </div>
-                            <div class="dataset-download">
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php endif; ?>
+    </div>
+    
+    <!-- Table View -->
+    <table class="dataset-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Visibility</th>
+                <th>Analytics</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php 
+            // Reset the result pointer to the beginning
+            mysqli_data_seek($result, 0);
+            
+            if (mysqli_num_rows($result) > 0): 
+                while ($row = mysqli_fetch_assoc($result)): 
+                    $batch_id = $row['dataset_batch_id'];
+                    $analytics = get_batch_analytics($conn, $batch_id);
+                    $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
+            ?>
+                <tr>
+                    <td>
+                        <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
+                            <?= htmlspecialchars($row['title']) ?>
+                        </a>
+                    </td>
+                    <td><?= htmlspecialchars(mb_strimwidth($row['description'], 0, 100, '...')) ?></td>
+                    <td>
+                        <span class="category-badge"><?= htmlspecialchars($row['category_name']) ?></span>
+                    </td>
+                    <td>
+                        <span class="table-visibility <?= strtolower($row['visibility']) ?>">
+                            <?= $row['visibility'] ?>
+                        </span>
+                    </td>
+                    <td>
+                        <div class="table-analytics">
+                            <span class="analytics-item" title="Views">
+                                <i class="fa-regular fa-eye"></i> <?= $analytics['total_views'] ?>
+                            </span>
+                            <span class="analytics-item" title="Downloads">
+                                <i class="fa-solid fa-download"></i> <?= $analytics['total_downloads'] ?>
+                            </span>
+                            <span class="analytics-item" title="Upvotes">
+                                <i class="fa-solid fa-arrow-up"></i> <?= $row['upvotes'] ?>
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <div class="table-download">
                                 <?php if (!$is_private_unowned): ?>
-                                <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                                    <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
                                 <?php else: ?>
-                                <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
+                                    <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
                                 <?php endif; ?>
                             </div>
-                            <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
+                            <div class="table-upvote" data-id="<?= $row['dataset_id'] ?>">
                                 <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
                                     <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
                                 </button>
-                                <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
+                                <span class="table-upvote-count"><?= $row['upvotes'] ?></span>
                             </div>
                         </div>
-                    </div>
-                <?php endwhile; ?>
-            <?php endif; ?>
+                    </td>
+                </tr>
+            <?php 
+                endwhile; 
+            endif; 
+            ?>
+        </tbody>
+    </table>
+    
+    <!-- No datasets found message outside of the grid -->
+    <?php if (mysqli_num_rows($result) == 0): ?>
+        <div class="no-datasets">
+            <img src="images/no-found1.png" alt="No data" class="no-found-img">
+            <p>No dataset found.</p>
         </div>
-
-        <!-- No datasets found message outside of the grid -->
-        <?php if (mysqli_num_rows($result) == 0): ?>
-            <div class="no-datasets">
-                <img src="images/no-found1.png" alt="No data" class="no-found-img">
-                <p>No dataset found.</p>
-            </div>
-        <?php endif; ?>
-    </div>
+    <?php endif; ?>
 </div>
 <?php include 'category_modal.php'; // Include the modal?>
 <script>
