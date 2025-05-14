@@ -59,40 +59,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $location = trim($_POST['location']);
     $visibility = $_POST['visibility'];
 
-    $update_sql = "
-        UPDATE datasets 
-        SET title = ?, 
-            description = ?, 
-            start_period = ?,
-            end_period = ?,
-            category_id = ?,
-            source = ?,
-            link = ?,
-            location = ?,
-            visibility = ?
-        WHERE dataset_id = ? AND user_id = ?
-    ";
+    // Start a transaction to ensure both updates happen or none
+    mysqli_begin_transaction($conn);
 
-    $update_stmt = mysqli_prepare($conn, $update_sql);
-    mysqli_stmt_bind_param($update_stmt, 'ssssissssii', 
-        $title, 
-        $description, 
-        $start_period,
-        $end_period,
-        $category_id,
-        $source,
-        $link,
-        $location,
-        $visibility,
-        $dataset_id, 
-        $user_id
-    );
-    
-    if (mysqli_stmt_execute($update_stmt)) {
+    try {
+        // Update datasets table
+        $update_sql = "
+            UPDATE datasets 
+            SET title = ?, 
+                description = ?, 
+                start_period = ?,
+                end_period = ?,
+                category_id = ?,
+                source = ?,
+                link = ?,
+                location = ?,
+                visibility = ?
+            WHERE dataset_id = ? AND user_id = ?
+        ";
+
+        $update_stmt = mysqli_prepare($conn, $update_sql);
+        mysqli_stmt_bind_param($update_stmt, 'ssssissssii', 
+            $title, 
+            $description, 
+            $start_period,
+            $end_period,
+            $category_id,
+            $source,
+            $link,
+            $location,
+            $visibility,
+            $dataset_id, 
+            $user_id
+        );
+        mysqli_stmt_execute($update_stmt);
+        
+        // Also update the visibility in the dataset_batches table
+        $batch_update_sql = "
+            UPDATE dataset_batches 
+            SET visibility = ?
+            WHERE dataset_batch_id = ?
+        ";
+        
+        $batch_update_stmt = mysqli_prepare($conn, $batch_update_sql);
+        mysqli_stmt_bind_param($batch_update_stmt, 'si', 
+            $visibility,
+            $dataset['dataset_batch_id']
+        );
+        mysqli_stmt_execute($batch_update_stmt);
+        
+        // Also update all other datasets with the same batch_id
+        $all_datasets_update_sql = "
+            UPDATE datasets 
+            SET visibility = ?
+            WHERE dataset_batch_id = ? AND user_id = ?
+        ";
+        
+        $all_datasets_update_stmt = mysqli_prepare($conn, $all_datasets_update_sql);
+        mysqli_stmt_bind_param($all_datasets_update_stmt, 'sii', 
+            $visibility,
+            $dataset['dataset_batch_id'], 
+            $user_id
+        );
+        mysqli_stmt_execute($all_datasets_update_stmt);
+        
+        // Commit the transaction
+        mysqli_commit($conn);
+        
         header("Location: mydatasets.php");
         exit();
-    } else {
-        $error = "Failed to update dataset. Please try again.";
+    } catch (Exception $e) {
+        // Roll back the transaction if any query fails
+        mysqli_rollback($conn);
+        $error = "Failed to update dataset. Please try again. Error: " . $e->getMessage();
     }
 }
 ?>
@@ -305,7 +344,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2>Edit Dataset</h2>
             </div>
             <nav class="nav-links">
-                <a href="mydatasets.php">BACK TO MY DATASETS</a>
+                <a href="index.php">HOME</a>
+                <a href="mydatasets.php">MY DATASETS</a>
             </nav>
         </header>
 

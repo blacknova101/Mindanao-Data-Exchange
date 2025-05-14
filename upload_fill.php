@@ -275,8 +275,24 @@ $validFiles = $_SESSION['valid_files'];
         </div>
     </div>
 
-    <label for="location">Location (Mindanao, Philippines):</label>
-    <input type="text" name="location" id="location" required>
+    <label for="locations">Location(s) in Mindanao:</label>
+    <div id="location-container">
+        <div class="location-entry">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                <select name="locations[0][province]" class="province-select" style="flex: 1;" required>
+                    <option value="">Select Province</option>
+                </select>
+                <select name="locations[0][city]" class="city-select" style="flex: 1;" required disabled>
+                    <option value="">Select City/Municipality</option>
+                </select>
+                <select name="locations[0][barangay]" class="barangay-select" style="flex: 1;" required disabled>
+                    <option value="">Select Barangay</option>
+                </select>
+                <button type="button" class="remove-location" onclick="removeLocation(this)" style="background-color: #dc3545; padding: 10px; border-radius: 5px; color: white; border: none; cursor: pointer; display: none;">Remove</button>
+            </div>
+        </div>
+    </div>
+    <button type="button" id="add-location" onclick="addLocation()" style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">Add More Location</button>
 
     <label for="category">Category:</label>
     <select name="category" id="category" required>
@@ -297,5 +313,143 @@ $validFiles = $_SESSION['valid_files'];
     </form>
     </div>
 </div>
+
+<script>
+let locationCount = 1;
+let mindanaoLocations = {};
+
+// Load Mindanao locations data
+fetch('mindanao_locations.json')
+    .then(response => response.json())
+    .then(data => {
+        mindanaoLocations = data;
+        populateProvinces();
+    })
+    .catch(error => {
+        console.error('Error loading location data:', error);
+        // Fallback with basic data
+        mindanaoLocations = {
+            "Davao Region": {
+                "Davao City": ["Buhangin", "Panacan", "Poblacion", "Tugbok"],
+                "Tagum City": ["Apokon", "Pagsabangan", "San Miguel", "Visayan Village"]
+            },
+            "Northern Mindanao": {
+                "Cagayan de Oro City": ["Carmen", "Gusa", "Lapasan", "Nazareth"],
+                "Iligan City": ["Poblacion", "Tibanga", "Pala-o", "Bagong Silang"]
+            }
+        };
+        populateProvinces();
+    });
+
+function populateProvinces() {
+    const provinceSelects = document.querySelectorAll('.province-select');
+    provinceSelects.forEach(select => {
+        select.innerHTML = '<option value="">Select Province</option>';
+        Object.keys(mindanaoLocations).forEach(province => {
+            select.innerHTML += `<option value="${province}">${province}</option>`;
+        });
+    });
+}
+
+function populateCities(provinceSelect) {
+    const locationEntry = provinceSelect.closest('.location-entry');
+    const citySelect = locationEntry.querySelector('.city-select');
+    const barangaySelect = locationEntry.querySelector('.barangay-select');
+    
+    citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+    barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+    barangaySelect.disabled = true;
+    
+    if (provinceSelect.value) {
+        citySelect.disabled = false;
+        const cities = mindanaoLocations[provinceSelect.value];
+        Object.keys(cities).forEach(city => {
+            citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+        });
+    } else {
+        citySelect.disabled = true;
+    }
+}
+
+function populateBarangays(citySelect) {
+    const locationEntry = citySelect.closest('.location-entry');
+    const provinceSelect = locationEntry.querySelector('.province-select');
+    const barangaySelect = locationEntry.querySelector('.barangay-select');
+    
+    barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+    
+    if (citySelect.value && provinceSelect.value) {
+        barangaySelect.disabled = false;
+        const barangays = mindanaoLocations[provinceSelect.value][citySelect.value];
+        barangays.forEach(barangay => {
+            barangaySelect.innerHTML += `<option value="${barangay}">${barangay}</option>`;
+        });
+    } else {
+        barangaySelect.disabled = true;
+    }
+}
+
+function addLocation() {
+    const container = document.getElementById('location-container');
+    const locationEntry = document.createElement('div');
+    locationEntry.className = 'location-entry';
+    
+    locationEntry.innerHTML = `
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+            <select name="locations[${locationCount}][province]" class="province-select" style="flex: 1;" required>
+                <option value="">Select Province</option>
+            </select>
+            <select name="locations[${locationCount}][city]" class="city-select" style="flex: 1;" required disabled>
+                <option value="">Select City/Municipality</option>
+            </select>
+            <select name="locations[${locationCount}][barangay]" class="barangay-select" style="flex: 1;" required disabled>
+                <option value="">Select Barangay</option>
+            </select>
+            <button type="button" class="remove-location" onclick="removeLocation(this)" style="background-color: #dc3545; padding: 10px; border-radius: 5px; color: white; border: none; cursor: pointer;">Remove</button>
+        </div>
+    `;
+    
+    container.appendChild(locationEntry);
+    locationCount++;
+    
+    // Populate provinces for the new entry
+    const newProvinceSelect = locationEntry.querySelector('.province-select');
+    Object.keys(mindanaoLocations).forEach(province => {
+        newProvinceSelect.innerHTML += `<option value="${province}">${province}</option>`;
+    });
+    
+    // Show remove button for all entries
+    updateRemoveButtons();
+}
+
+function removeLocation(button) {
+    const locationEntry = button.closest('.location-entry');
+    locationEntry.remove();
+    updateRemoveButtons();
+}
+
+function updateRemoveButtons() {
+    const removeButtons = document.querySelectorAll('.remove-location');
+    const locationEntries = document.querySelectorAll('.location-entry');
+    
+    removeButtons.forEach((button, index) => {
+        button.style.display = locationEntries.length > 1 ? 'block' : 'none';
+    });
+}
+
+// Event delegation for dynamically added selects
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('province-select')) {
+        populateCities(e.target);
+    } else if (e.target.classList.contains('city-select')) {
+        populateBarangays(e.target);
+    }
+});
+
+// Initialize first province select when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(populateProvinces, 100);
+});
+</script>
 </body>
 </html>

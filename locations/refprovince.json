@@ -1,0 +1,207 @@
+{
+"RECORDS":[
+{
+"id":49,
+"psgcCode":"097200000",
+"provDesc":"ZAMBOANGA DEL NORTE",
+"regCode":"09",
+"provCode":"0972"
+},
+{
+"id":50,
+"psgcCode":"097300000",
+"provDesc":"ZAMBOANGA DEL SUR",
+"regCode":"09",
+"provCode":"0973"
+},
+{
+"id":51,
+"psgcCode":"098300000",
+"provDesc":"ZAMBOANGA SIBUGAY",
+"regCode":"09",
+"provCode":"0983"
+},
+{
+"id":52,
+"psgcCode":"099700000",
+"provDesc":"CITY OF ISABELA",
+"regCode":"09",
+"provCode":"0997"
+},
+{
+"id":53,
+"psgcCode":"101300000",
+"provDesc":"BUKIDNON",
+"regCode":"10",
+"provCode":"1013"
+},
+{
+"id":54,
+"psgcCode":"101800000",
+"provDesc":"CAMIGUIN",
+"regCode":"10",
+"provCode":"1018"
+},
+{
+"id":55,
+"psgcCode":"103500000",
+"provDesc":"LANAO DEL NORTE",
+"regCode":"10",
+"provCode":"1035"
+},
+{
+"id":56,
+"psgcCode":"104200000",
+"provDesc":"MISAMIS OCCIDENTAL",
+"regCode":"10",
+"provCode":"1042"
+},
+{
+"id":57,
+"psgcCode":"104300000",
+"provDesc":"MISAMIS ORIENTAL",
+"regCode":"10",
+"provCode":"1043"
+},
+{
+"id":58,
+"psgcCode":"112300000",
+"provDesc":"DAVAO DEL NORTE",
+"regCode":"11",
+"provCode":"1123"
+},
+{
+"id":59,
+"psgcCode":"112400000",
+"provDesc":"DAVAO DEL SUR",
+"regCode":"11",
+"provCode":"1124"
+},
+{
+"id":60,
+"psgcCode":"112500000",
+"provDesc":"DAVAO ORIENTAL",
+"regCode":"11",
+"provCode":"1125"
+},
+{
+"id":61,
+"psgcCode":"118200000",
+"provDesc":"COMPOSTELA VALLEY",
+"regCode":"11",
+"provCode":"1182"
+},
+{
+"id":62,
+"psgcCode":"118600000",
+"provDesc":"DAVAO OCCIDENTAL",
+"regCode":"11",
+"provCode":"1186"
+},
+{
+"id":63,
+"psgcCode":"124700000",
+"provDesc":"COTABATO (NORTH COTABATO)",
+"regCode":"12",
+"provCode":"1247"
+},
+{
+"id":64,
+"psgcCode":"126300000",
+"provDesc":"SOUTH COTABATO",
+"regCode":"12",
+"provCode":"1263"
+},
+{
+"id":65,
+"psgcCode":"126500000",
+"provDesc":"SULTAN KUDARAT",
+"regCode":"12",
+"provCode":"1265"
+},
+{
+"id":66,
+"psgcCode":"128000000",
+"provDesc":"SARANGANI",
+"regCode":"12",
+"provCode":"1280"
+},
+{
+"id":67,
+"psgcCode":"129800000",
+"provDesc":"COTABATO CITY",
+"regCode":"12",
+"provCode":"1298"
+},
+{
+"id":79,
+"psgcCode":"150700000",
+"provDesc":"BASILAN",
+"regCode":"15",
+"provCode":"1507"
+},
+{
+"id":80,
+"psgcCode":"153600000",
+"provDesc":"LANAO DEL SUR",
+"regCode":"15",
+"provCode":"1536"
+},
+{
+"id":81,
+"psgcCode":"153800000",
+"provDesc":"MAGUINDANAO",
+"regCode":"15",
+"provCode":"1538"
+},
+{
+"id":82,
+"psgcCode":"156600000",
+"provDesc":"SULU",
+"regCode":"15",
+"provCode":"1566"
+},
+{
+"id":83,
+"psgcCode":"157000000",
+"provDesc":"TAWI-TAWI",
+"regCode":"15",
+"provCode":"1570"
+},
+{
+"id":84,
+"psgcCode":"160200000",
+"provDesc":"AGUSAN DEL NORTE",
+"regCode":"16",
+"provCode":"1602"
+},
+{
+"id":85,
+"psgcCode":"160300000",
+"provDesc":"AGUSAN DEL SUR",
+"regCode":"16",
+"provCode":"1603"
+},
+{
+"id":86,
+"psgcCode":"166700000",
+"provDesc":"SURIGAO DEL NORTE",
+"regCode":"16",
+"provCode":"1667"
+},
+{
+"id":87,
+"psgcCode":"166800000",
+"provDesc":"SURIGAO DEL SUR",
+"regCode":"16",
+"provCode":"1668"
+},
+{
+"id":88,
+"psgcCode":"168500000",
+"provDesc":"DINAGAT ISLANDS",
+"regCode":"16",
+"provCode":"1685"
+}
+]
+}

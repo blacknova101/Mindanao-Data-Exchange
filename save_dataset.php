@@ -47,9 +47,19 @@ $start_period = $_POST['start_period'];
 $end_period = $_POST['end_period'];
 $source = $_POST['source'];
 $link = $_POST['link'];
-$location = $_POST['location'];
 $visibility = ucfirst($_POST['visibility']); // Capitalize first letter to match database enum
 $category_id = $_POST['category'];  // Capture the selected category ID
+
+// Handle locations
+$locations = [];
+if (isset($_POST['locations']) && is_array($_POST['locations'])) {
+    foreach ($_POST['locations'] as $location) {
+        if (!empty($location['province']) && !empty($location['city']) && !empty($location['barangay'])) {
+            $locations[] = $location['province'] . ' - ' . $location['city'] . ' - ' . $location['barangay'];
+        }
+    }
+}
+$location_string = implode('; ', $locations);
 
 if (strtotime($start_period) > strtotime($end_period)) {
     $_SESSION['error_message'] = "Start date must be earlier than end date.";
@@ -83,7 +93,7 @@ foreach ($_SESSION['valid_files'] as $temp_path) {
         $query = "INSERT INTO datasets (dataset_batch_id, user_id, file_path, title, description, start_period, end_period, source, link, location, category_id, visibility)
                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("iissssssssis", $dataset_batch_id, $user_id, $new_path, $title, $description, $start_period, $end_period, $source, $link, $location, $category_id, $visibility);
+        $stmt->bind_param("iissssssssis", $dataset_batch_id, $user_id, $new_path, $title, $description, $start_period, $end_period, $source, $link, $location_string, $category_id, $visibility);
         $stmt->execute();
     }
 }

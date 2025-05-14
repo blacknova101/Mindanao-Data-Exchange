@@ -507,6 +507,7 @@ include 'batch_analytics.php';
         </div>
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
+            <a href="mydatasets.php">MY DATASETS</a>
         </nav>
     </header>
     <form id="searchForm" action="search_results.php" method="GET">

@@ -1,0 +1,668 @@
+{
+  "Davao Region": {
+    "Davao City": [
+      "Agdao", "Alejandra Navarro", "Angalan", "Angliongto", "Antulang", "Apo Sandawa",
+      "Bago Gallera", "Bago Oshiro", "Baguio", "Baracatan", "Benda", "Binokan",
+      "Bucana", "Buhangin", "Bunawan", "Callawa", "Calinan", "Carmen", "Catitipan",
+      "Centro San Antonio", "Communal", "Dacudao", "Daliaon Plantation", "Datu Odin Sinsuat",
+      "Eden", "Fatima", "Gatungan", "Gumalang", "Inayawan", "Lacson", "Lamanan",
+      "Lampianao", "Leon Garcia", "Lizada", "Los Amigos", "Lubogan", "Magsaysay",
+      "Mahayag", "Malabog", "Manambulan", "Mandug", "Mankilam", "Matina Aplaya",
+      "Matina Crossing", "Matina Pangi", "Mintal", "Mudiang", "New Valencia",
+      "Pampanga", "Panacan", "Paquibato", "Paradise Embac", "Riverside",
+      "San Antonio", "Sirawan", "Sirib", "Subasta", "Tacunan", "Tagakpan",
+      "Tagurano", "Talomo", "Tibuloy", "Tibungco", "Tigatto", "Toril",
+      "Tugbok", "Ula", "Waan", "Wilfredo Aquino"
+    ],
+    "Tagum City": [
+      "Apokon", "Bincungan", "Busaon", "Canocotan", "Cuambogan", "La Filipina",
+      "Liboganon", "Magdum", "Mankilam", "New Balamban", "Nueva Fuerza", "Pagsabangan",
+      "San Miguel", "San Agustin", "Visayan Village"
+    ],
+    "Panabo City": [
+      "A.O. Floirendo", "Buenavista", "Cagangohan", "Dapco", "Gredu", "J.P. Laurel",
+      "Katulan", "Katipunan", "Little Panay", "Mabunao", "Nanyo", "New Malaga",
+      "New Malitbog", "New Pandan", "Quezon", "Salvacion", "San Francisco",
+      "San Nicolas", "San Pedro", "San Roque", "San Vicente", "Santa Cruz", "Santo Niño"
+    ],
+    "Samal": [
+      "Adecor", "Aumbay", "Babak", "Caliclic", "Camudmud", "Cogon", "Dadiangas",
+      "Kaputian", "Kitagas", "Libertad", "Limao", "Miranda", "Peñaplata",
+      "San Isidro", "San Jose", "San Miguel", "San Remigio", "Tagpopongan",
+      "Talicud", "Tambo"
+    ],
+    "Digos City": [
+      "Aplaya", "Balabag", "Biao", "Binaton", "Colorado", "Cogon", "Dawis",
+      "Dulian", "Goma", "Hagonoy", "Igpit", "Kapatagan", "Kiagot", "Lungag",
+      "Mahayag", "Matti", "Palkan", "San Jose", "San Miguel", "Soong",
+      "Tiguman", "Tres de Mayo", "Zone I", "Zone II", "Zone III"
+    ],
+    "Mati City": [
+      "Badas", "Bobon", "Buso", "Central", "Dahican", "Dawan", "Don Enrique Lopez",
+      "Don Martin Marundan", "Lawigan", "Libudon", "Lupon", "Mamali", "Matiao",
+      "Mayo", "Saintz", "Tagabakid", "Tagbinonga", "Tamisan", "Tawan-Tawan"
+    ],
+    "Bansalan Municipality": [
+      "Anonang", "Bituan", "Darapuay", "Dolo", "Katipunan", "Kinuskusan",
+      "Linawan", "Managa", "Maragusan", "Poblacion", "Santo Niño", "Sibun",
+      "Tinongcop", "Tubod"
+    ],
+    "Carmen Municipality": [
+      "Arakan", "Asuncion", "Ising", "Poblacion", "Salvacion"
+    ],
+    "Compostela Municipality": [
+      "Babag", "Bagong Silang", "Bayabas", "Cogon", "Esperanza", "Gabi",
+      "Lagab", "Magdum", "Mangayon", "New Panay", "Poblacion", "Sasa",
+      "Tamogan", "Tupaz"
+    ],
+    "Kapalong Municipality": [
+      "Agripina", "Angus", "Cut-cut", "Dawis", "Gupitan", "Lacson",
+      "Lungag", "Mahayag", "New Albay", "Pangyan", "Poblacion",
+      "Santa Martha", "Sua-on", "Tablon", "Vicente Hizon"
+    ],
+    "Magsaysay Municipality": [
+      "Amagos", "Bogak", "Dalisay", "Kaputian", "Kibangloy", "Libona",
+      "Lower Olave", "Mabuhay", "Magugpo", "Manat", "Mudiang", "Poblacion",
+      "Tagugpo", "Upper Olave"
+    ],
+    "Mawab Municipality": [
+      "Andap", "Bawani", "Concepcion", "Di-os", "Inampacan", "Joson",
+      "Magading", "Manat", "Monobo", "Pindugangan", "Poblacion", "Sampaloc",
+      "Tampakong", "San Juan", "Taliguban", "Tarusan", "Toril"
+    ],
+    "Montevista Municipality": [
+      "Bagong Laon", "Bantuanon", "Butong", "Macasing", "Maragusan",
+      "Mayag", "Poblacion", "Sibulan", "Vega"
+    ],
+    "Nabunturan Municipality": [
+      "Anislagon", "Antequera", "Basak", "Cabidianan", "Camp Mckinley",
+      "Kanapnapan", "Katipunan", "Naboc", "Poblacion", "San Jose",
+      "San Roque", "Santa Cruz", "UEP", "Wangan"
+    ],
+    "New Bataan Municipality": [
+      "Andap", "Batinao", "Cabgan", "Cambagang", "Fatima", "Kahayag",
+      "Katawagan", "Magangit", "Maparat", "Patpat", "Poblacion",
+      "San Roque", "Santol", "Sulit"
+    ],
+    "New Corella Municipality": [
+      "Datu Abdul Dadia", "Kipadada", "New Visayas", "Poblacion",
+      "San Roque", "Tabontabon"
+    ],
+    "San Isidro Municipality": [
+      "Bohoran", "Colao", "Dawis", "Datu Danggalan", "Inampacan",
+      "Kianhay", "Mabuhay", "New Lucban", "Poblacion", "San Jose",
+      "Sipawan", "South Cawayanan", "Sindaton"
+    ],
+    "Santo Tomas Municipality": [
+      "Casoon", "Danlog", "Gabi", "Hamputang", "Maganda", "Montana",
+      "New Camiling", "New Katipunan", "New Sumlog", "Poblacion",
+      "San Jose", "San Juan", "San Miguel", "Tetuan", "Tienda", "Tulalian"
+    ],
+    "Talaingod Municipality": [
+      "Dagohoy", "Mangguntan", "Palma Gil", "Poblacion"
+    ],
+    "Banaybanay Municipality": [
+      "Calubihan", "Cabangcalan", "Lambajon", "Maputi", "Mogbongcogon",
+      "Pindasan", "Poblacion", "San Antonio", "San Vicente", "Santo Niño"
+    ],
+    "Cateel Municipality": [
+      "Aliwagwag", "Bagyan", "Cabadbaran", "Cateel", "Cuabo", "Dapnan",
+      "Luna", "Pag-ayo", "Tandag"
+    ],
+    "Lupon Municipality": [
+      "Baculin", "Dapdap", "Gupitan", "Kinuat", "Langka", "Lupon",
+      "Macambol", "Magsaysay", "Mahayag", "Pitugo", "Sasa", "Sumlao",
+      "Tag-ibo", "Taguibo"
+    ],
+    "Manay Municipality": [
+      "Cabuaya", "Doyongon", "Lambajon", "Maputi", "Rizal", "San Ignacio",
+      "Panumahin", "Bagumbayan", "Manay", "Tagapangi"
+    ],
+    "Tarragona Municipality": [
+      "Cabog", "Cabuyao", "Limot", "Narra", "Poblacion", "San Carlos",
+      "San Isidro", "Son-ot", "Tagotongan", "Tanglaw"
+    ]
+  },
+  "Northern Mindanao": {
+    "Cagayan de Oro City": [
+      "Agusan", "Balubal", "Balulang", "Bayabas", "Bayanga", "Besigan", "Baikingon",
+      "Bugo", "Bulua", "Camaman-an", "Carmen", "Consolacion", "F.S. Catanico",
+      "Gusa", "Iponan", "Kauswagan", "Lapasan", "Lumbia", "Macabalan", "Macasandig",
+      "Nazareth", "Pagalungan", "Pagatpat", "Patag", "Puerto", "San Simon",
+      "Tablon", "Tagpangi", "Tumpagon", "Tugbok", "19 de Enero", "9 de Enero"
+    ],
+    "Butuan City": [
+      "Agusan Pequeño", "Ambago", "Amparo", "Anticala", "Antongalon", "Aupagan",
+      "Baan K.M. 3", "Bading", "Bancasi", "Banza", "Baobaoan", "Basag",
+      "Bilay", "Bit-os", "Bitan-agan", "Bobon", "Buenavista", "Bugabus",
+      "Cabcabon", "Dagohoy", "Diego Silang", "Dumalagan", "Dumpas", "Durian",
+      "Lapu-lapu", "Langihan", "Lemon", "Leon Kilat", "Liberty", "Libertad",
+      "Los Angeles", "Lumbocan", "Maguinda", "Mahay", "Maon", "Masao",
+      "New Society Village", "Nongnong", "Obrero", "Ong Yiu", "Pagatpatan",
+      "Pangabugan", "Pianing", "Pinamankulan", "Port Poyohon", "Rajah Soliman",
+      "San Ignacio", "San Mateo", "San Vicente", "Sikatuna", "Silongan",
+      "Sumilao", "Tagabaca", "Taguibo", "Tandang Sora", "Tiniwisan", "Tungao"
+    ],
+    "Iligan City": [
+      "Abuno", "Acmac", "Bagong Silang", "Bonbonon", "Bunawan", "Buru-un",
+      "Dalipuga", "Del Carmen", "Digkilaan", "Dulag", "Hinaplanon", "Kabacsanan",
+      "Kalilangan", "Kiwalan", "Lanipao", "Luinab", "Mahayahay", "Mainit",
+      "Mandulog", "Maria Cristina", "Panoragaon", "Poblacion", "Puga-an",
+      "Rogongon", "San Miguel", "San Roque", "Santa Elena", "Santa Filomena",
+      "Santiago", "Santo Rosario", "Saray", "Suarez", "Tambacan", "Taguanao",
+      "Tipanoy", "Tubod", "Ubaldo Laya", "Upper Hinaplanon", "Upper Tominobo",
+      "Villa Verde"
+    ],
+    "Malaybalay City": [
+      "Aglayan", "Bangcud", "Barangay 1", "Barangay 2", "Barangay 3", "Barangay 4",
+      "Barangay 5", "Barangay 6", "Barangay 7", "Barangay 8", "Barangay 9",
+      "Barangay 10", "Busdi", "Cabangahan", "Caburacanan", "Casisang", "Dalwangan",
+      "Imbayao", "Kalasungay", "Kulaman", "Laguitas", "Linabo", "Managok",
+      "Maramag", "Miglamin", "Nasuli", "Patpat", "San Jose", "San Martin",
+      "Sankanan", "Santo Niño", "Silae", "Simaya", "Sumpong", "Violeta"
+    ],
+    "Valencia City": [
+      "Banlag", "Bagontaas", "Banlag", "Catumbalon", "Concepcion", "Dumalag",
+      "Lourdes", "Lumbo", "Mailag", "Mount Nebo", "Poblacion", "San Carlos",
+      "Simaya", "Sugcad", "Tongantongan"
+    ],
+    "Aloran Municipality": [
+      "Batayon", "Boros", "Calaran", "Camote", "Capucao", "Dao", "Esperanza",
+      "Gumahan", "Pines", "Poblacion", "Tubigan", "Tubod"
+    ],
+    "Baliangao Municipality": [
+      "Baliangao", "Batabat", "Busayin", "Calbuyan", "Camp 1", "Canibol",
+      "Lical", "Linay", "Matugas", "Poblacion"
+    ],
+    "Balingasag Municipality": [
+      "Alimono", "Baybay", "Buisan", "Ginood", "Kinoguitan", "Langoanan",
+      "Lower Kalabakan", "Mauswagon", "Naal", "Osokan", "Palayan",
+      "Poblacion", "Sagpao", "Saguindan", "Santa Cruz", "Upper Kalabakan"
+    ],
+    "Binuangan Municipality": [
+      "Balanban", "Binuangan", "Cala-an", "Capurictan", "Cumama",
+      "Gingoyon", "Matin-aw", "Nipa", "Poblacion"
+    ],
+    "Claveria Municipality": [
+      "Apil", "Bulua", "Cabacungan", "Calakmam", "Camam-onan", "Camayaan",
+      "Gaas", "General Luna", "Harubay", "Kayonganan", "Kawit", "Legaspi",
+      "Lunao", "Magaso", "Mararing", "Marahoy", "Molobolo", "Napaliran",
+      "Nazareth", "Poblacion", "Pundol", "Rebucon", "Rizal", "San Jose",
+      "San Simon", "Tagbak", "Talisayan", "Velez"
+    ],
+    "El Salvador Municipality": [
+      "Angas", "Calacar", "Camarin", "Catabaran", "Kinuman", "La Concepcion",
+      "La Paz", "Lunotan", "Mialong", "Poblacion", "Sagpao", "San Agustin",
+      "Sanipaan", "Senit", "Tomado", "Tumpaan"
+    ],
+    "Gingoog City": [
+      "Agay-ayan", "Anakan", "Bangkerohan", "Bunawan", "Calamba",
+      "Ciudadela", "Gingoog", "Lumbia", "Magsaysay", "Mintabon",
+      "Murciano", "Odiongan", "Poblacion", "Tancinco", "Yacapin"
+    ],
+    "Gitagum Municipality": [
+      "Aniongon", "Bagongan", "Buenasuerte", "Santa Cruz", "Danayao",
+      "Flores", "Golong", "Hineleban", "L. Tiama", "Poblacion", "Tagbinonga",
+      "Tinago", "Tomado", "Verde"
+    ],
+    "Initao Municipality": [
+      "Abaga", "Albayan", "Bagongon", "Kinoguitan", "Langaran", "Lagonglong",
+      "Poblacion", "San Lorenzo", "Tubigan", "Tubod", "Ubos", "Verdol"
+    ],
+    "Jasaan Municipality": [
+      "Aplaya", "Awang", "Bobonawan", "Bugo", "Luz Banzon", "Kimaya",
+      "Danao", "Iglesia", "Lower Jasaan", "Natubo", "Poblacion", "San Antonio",
+      "Solana", "Upper Jasaan"
+    ],
+    "Kinoguitan Municipality": [
+      "Aningalan", "Bangbangon", "Mabago", "Matalambo", "Poblacion",
+      "Tagpore", "Tulimbo"
+    ],
+    "Lagonglong Municipality": [
+      "Cancuas", "Candaui", "Datag", "Lindol", "Macabasag", "Mambatag",
+      "Marawi", "Pacasum", "Palisoc", "Poblacion", "Tres Marias", "Turtok"
+    ],
+    "Laguindingan Municipality": [
+      "Caboy", "Dinaoloan", "Kiwalan", "Lag-isan", "Magsaysay", "Moog",
+      "Poblacion", "Quintin Salas", "Tolosa", "Tubajon", "Tubulo"
+    ],
+    "Libertad Municipality": [
+      "Alubijid", "Bagacay", "Campaong", "Consuelo", "Gumagay", "Lapaw",
+      "Libertad", "Liloan", "Litapan", "Mauyamot", "Poblacion", "Sabang",
+      "San Roque", "Siocon", "Tolosa"
+    ],
+    "Lugait Municipality": [
+      "Baay", "Baluarte", "Dulong", "Giloro", "Kimmamon", "Luyong Bonbon",
+      "Luyong-Kimmamon", "Maag", "Magsaysay", "Poblacion", "Saang", "Santa Cruz",
+      "Talisayan"
+    ],
+    "Magsaysay Municipality": [
+      "Magsaysay", "Poblacion", "Tagitmon"
+    ],
+    "Manticao Municipality": [
+      "Bag-ong Sikat", "Balonan", "Lanipao", "Lucad", "Napalikon",
+      "Poblacion", "Sablong", "San Jose", "Taywanak"
+    ],
+    "Medina Municipality": [
+      "Aniongon", "Bariis", "Butuan", "Kapatagan", "Mabuhay", "Magpatong",
+      "Poblacion", "San Carlos", "San Miguel", "Tugook"
+    ],
+    "Naawan Municipality": [
+      "Dulong Bayan", "Kapatagan", "Naawan", "Poblacion", "San Roque",
+      "Santa Ana", "Sinabacan", "Talisayan"
+    ],
+    "Opol Municipality": [
+      "Apolon", "Biasong", "Gatub", "Kalawit", "Kinuguitang", "Luyong Dahon",
+      "Magsaysay", "Patag", "Poblacion", "San Antonio", "Santa Fe", "Tingalan"
+    ],
+    "Plaridel Municipality": [
+      "Dagakpan", "Dumalinao", "Labuanbajo", "Libacao", "Poblacion", "Tagbak"
+    ],
+    "Salay Municipality": [
+      "Cabullan", "Manambal", "Poblacion", "Robocon"
+    ],
+    "Sugbongcogon Municipality": [
+      "Bongbong", "Cagaitan", "Calacar", "Camam-onan", "Poblacion",
+      "Suggbong", "Tagpore"
+    ],
+    "Tagoloan Municipality": [
+      "Argao", "Bangay", "Iponan", "Lapao", "Lower Tigaman", "Lusong",
+      "Peñaplata", "Poblacion", "San Aurelio", "San Miguel", "Taboc",
+      "Upper Tigaman"
+    ],
+    "Talisayan Municipality": [
+      "Bagumbayan", "Bonifacio", "Cabal-asan", "Daulayan", "Del Pilar",
+      "Legaspi", "Mankayan", "Palalan", "Poblacion", "Villaflor"
+    ],
+    "Villanueva Municipality": [
+      "Bobuntugan", "Dayawan", "Imelda", "Looc", "Poblacion", "Sto. Domingo",
+      "Tamayo"
+    ]
+  },
+  "Zamboanga Peninsula": {
+    "Zamboanga City": [
+      "Arena Blanco", "Ayala", "Baliwasan", "Boalan", "Bolong", "Buenavista",
+      "Bunguiao", "Cabaluay", "Cabatangan", "Cacao", "Calabaza", "Calamito",
+      "Camino Nuevo", "Campo Islam", "Canelar", "Capisan", "Cawit", "Culianan",
+      "Curuan", "Divisoria", "Dulian", "Guisao", "Guiwan", "La Paz", "Labuan",
+      "Lamisahan", "Landang Gua", "Landang Laum", "Latuan", "Licomo", "Limaong",
+      "Limpapa", "Lubigan", "Lunzuran", "Maasin", "Manicahan", "Mangusu",
+      "Manicahan", "Mercedes", "Muti", "Pamucutan", "Panubigan", "Pasilmaca",
+      "Pasonanca", "Patalon", "Putik", "Quiniput", "Recodo", "Rio Hondo",
+      "Rusalan", "Salaan", "San Jose Cawa-cawa", "San Jose Gusu", "San Roque",
+      "Sangali", "Santa Barbara", "Santa Catalina", "Santa Maria", "Santo Niño",
+      "Sibulao", "Sinubung", "Sinunuc", "Tagasilay", "Taguiti", "Talabaan",
+      "Talisayan", "Talon-talon", "Tetuan", "Tictapul", "Tigbalabag", "Tugbungan",
+      "Tulungatung", "Tumaga", "Upper Calarian", "Upper Pasonanca", "Victoria",
+      "Vitali", "Zambowood", "Zone I", "Zone II", "Zone III", "Zone IV"
+    ],
+    "Pagadian City": [
+      "Balangasan", "Baloyboan", "Bogo", "Bomba", "Bunk House", "Danlugan",
+      "Datagan", "Dauwan", "White Beach", "Gubac", "Kagawasan", "Kahayagan",
+      "Kawit", "Lenienza", "Lison Valley", "Lower Sibatang", "Lumad",
+      "Macasing", "Muricay", "Napolan", "Poloyagan", "San Francisco",
+      "San Pedro", "Santa Lucia", "Santa Maria", "Santiago", "Tiguma",
+      "Tuburan", "Tulod", "Upper Lison", "Upper Sibatang"
+    ],
+    "Dipolog City": [
+      "Barra", "Biasong", "Central", "Cogon", "Dalipe", "Dicayas", "Diwan",
+      "Estaca", "Galas", "Gulayon", "Lugdungan", "Minaog", "Olingan",
+      "Pili", "San Vicente", "Santa Isabel", "Sicayab", "Sinaman", "Turno"
+    ],
+    "Dapitan City": [
+      "Bagting", "Banbanan", "Barcelona", "Bato", "Bautuanan", "Burgos",
+      "Carang", "Cawa-cawa", "Dayang", "Dapitan", "Dampalan", "Gregorio",
+      "Ilipagan", "Linabo", "Liyang", "Mampang", "Owakon", "Polo",
+      "Potol", "Potot", "San Nicolas", "San Vicente", "Silinog", "Sulangon",
+      "Tampilisan", "Tanza", "Villa San Antonio", "Waling-waling"
+    ],
+    "Aurora Municipality": [
+      "Alicia", "Bagay", "Matain", "Poblacion", "San Teodoro", "Siari",
+      "Tampilisan"
+    ],
+    "Bayog Municipality": [
+      "Balian", "Biswangan", "Depore", "Dipili", "Diwan", "Gubac", "Kapatagan",
+      "Laga", "Lagoy", "Poblacion", "Pulot", "Salomonague", "Sanito",
+      "Santo Niño", "Sinuda", "Tabako", "Tinibar"
+    ],
+    "Dimataling Municipality": [
+      "Balotbacol", "Bangaan", "Canoman", "Dapawan", "Gotokan", "Mayo", "Olib",
+      "Palacat", "Poblacion", "Taliangan", "Tiguian", "Tres de Mayo"
+    ],
+    "Dinas Municipality": [
+      "Buang", "Dinas", "Gapas", "Liba", "Mabuhay", "Poblacion", "Tongo"
+    ],
+    "Dumalinao Municipality": [
+      "Bagumbayan", "Dumalinao", "Guinoman", "Guintubdan", "Mahayag",
+      "Palang", "Poblacion", "San Roque", "Santa Filomena", "Sugod"
+    ],
+    "Dumingag Municipality": [
+      "Bucana", "Cadandagan", "Camandagalog", "Datagan", "Dulao", "Dumingag",
+      "Kalumam", "Lanisag", "Laya", "Mahayag", "Mallorca", "Mina",
+      "Poblacion"
+    ],
+    "Josefina Municipality": [
+      "Ambulang", "Bantulinao", "Capayan", "Diwa", "Josefina", "Kumalarang",
+      "Mamad", "Miguel", "Poblacion", "Rosales", "Santo Niño"
+    ],
+    "Kumalarang Municipality": [
+      "Gumalum", "Kumalarang", "Lower Simaril", "Mapag-in", "Piñaz",
+      "Poblacion", "San Antonio", "San Miguel", "Sugod", "Upper Simaril"
+    ],
+    "Labangan Municipality": [
+      "Bangot", "Bugoy", "Cagampang", "Labangan", "Litibin", "Lubo",
+      "Mabisa", "Mapalo", "Marayag", "Poblacion", "Salambuyan",
+      "Santa Cruz", "Sugod"
+    ],
+    "Lakewood Municipality": [
+      "Batorampon", "Bulawan", "Gagaan", "Loya", "Poblacion", "Villa"
+    ],
+    "Lapuyan Municipality": [
+      "Buluan", "Gampong", "Ganing", "Julo", "Lapuyan", "Magkawas",
+      "Magkawan", "Malimamak", "Matagol", "Poblacion", "Salar", "Santa Ana",
+      "Tinay"
+    ],
+    "Mahayag Municipality": [
+      "Doldol", "Imelda", "Mahayag", "Maliti", "Poblacion", "San Miguel",
+      "Simayag", "Tolibang", "Tubol"
+    ],
+    "Margosatubig Municipality": [
+      "Bandera", "Bulante", "Daluan", "Gongon", "Gubac", "Igat", "Katipunan",
+      "Labanoon", "Margosatubig", "New Cebu", "Pamatan", "Poblacion",
+      "San Vicente", "Santo Niño", "Tiguian"
+    ],
+    "Molave Municipality": [
+      "Balong", "Baniaga", "Bubuan", "Banan", "Baybay", "Buenavista",
+      "Datagan", "Laniti", "Lupa", "Poblacion", "Ramay", "Salawagan",
+      "Sinonok"
+    ],
+    "Pitogo Municipality": [
+      "Baguio", "Banabanan", "Binantong", "Bolong", "Dalisayon", "Esperanza",
+      "Guminta", "Libyan", "Lilingyon", "Manga", "Maralag", "Pitogo",
+      "Poblacion", "San Jose", "Santa Cruz", "Tangay", "Tilawen"
+    ],
+    "San Miguel Municipality": [
+      "Bagong Barangay", "Bansalan", "Canilo", "Canito", "Carmen",
+      "Doña Ramona T. Pedro", "Poblacion", "San Miguel"
+    ],
+    "San Pablo Municipality": [
+      "Guisoc", "Lower Limpapa", "Poblacion", "San Pablo", "Suquib",
+      "Upper Limpapa", "Victoria"
+    ],
+    "Sominot Municipality": [
+      "Bakat", "Bagong Silang", "Benliw", "Caburan", "Pinamalisan",
+      "Poblacion", "Sominot", "Sugod"
+    ],
+    "Tabina Municipality": [
+      "Blok", "Cogon", "Debolok", "Gansing", "Kahayagan", "Lintagan",
+      "Mahing", "Membolanon", "Poblacion", "San Nicolas", "Tamlang",
+      "Tawagan"
+    ],
+    "Tambulig Municipality": [
+      "Bayog", "Bonifacio", "Bucana", "Capimbahan", "Daguan", "Daragay",
+      "Domogok", "Esperanza", "Labugan", "Poblacion", "Rufenol"
+    ],
+    "Tigbao Municipality": [
+      "Baga-as", "Bangkulawo", "Bantukon", "Bubot", "Calagan", "Cumipas",
+      "Datagan", "Dungca", "Guinoman", "Kembang", "Labangan", "Lebang",
+      "Libi", "Manlayang", "Poblacion", "San Martin", "Santa Maria", "Tigbao"
+    ],
+    "Tukuran Municipality": [
+      "Bonifacio", "Delian", "Katipunan", "Manaol", "Nicdao", "Poblacion",
+      "Tokonan", "Tucuman", "Upper Lamari"
+    ],
+    "Vincenzo A. Sagun Municipality": [
+      "Baganian", "Biawao", "Bulaan", "Concepcion", "Poblacion",
+      "San Francisco", "San Jose"
+    ]
+  },
+  "Soccsksargen": {
+    "General Santos City": [
+      "Apopong", "Baluan", "Batomelong", "Buayan", "Bula", "Calumpang", "City Heights",
+      "Conel", "Dadiangas East", "Dadiangas North", "Dadiangas South", "Dadiangas West",
+      "Fatima", "Katangawan", "Labangal", "Lagao", "Ligaya", "Mabuhay", "Olympog",
+      "San Isidro", "San Jose", "Siguel", "Sinawal", "Tambler", "Tinagacan", "Upper Labay"
+    ],
+    "Koronadal City": [
+      "Assumption", "Avanceña", "Bantog", "Caloocan", "Carpenter Hill", "Concepcion",
+      "Esperanza", "General Paulino Santos", "Mabini", "Magsaysay", "Mambucal",
+      "Morales", "New Pangasinan", "Palmera", "Paraiso", "Rotonda", "San Jose",
+      "San Roque", "Santa Cruz", "Santo Niño", "Saravia", "Topland", "Zone I",
+      "Zone II", "Zone III", "Zone IV"
+    ],
+    "Kidapawan City": [
+      "Amazion", "Amas", "Balabag", "Balindog", "Binoligan", "Ginatilan",
+      "Gayola", "Junction", "Kalaisan", "Katipunan", "Lanao", "Landan",
+      "Linangcoon", "Luvimin", "Macabolig", "Magsaysay", "Malinan",
+      "Manongol", "Mateo", "Mua-an", "Nursery", "Onica", "Osias",
+      "Paco", "Perez", "Poblacion", "San Roque", "Sibawan", "Sikitan",
+      "Singao", "Sudapin", "Sumbac"
+    ],
+    "Tacurong City": [
+      "Baras", "Buenaflor", "EJC Montilla", "Griño", "Kalandagan", "Katipunan",
+      "Laconon", "Lamian", "Lower Katungal", "New Isabela", "New Lagao",
+      "Poblacion", "San Antonio", "San Emmanuel", "San Pablo", "San Rafael",
+      "Santa Cruz", "Talakag", "Talisay", "Tanang", "Tina", "Upper Katungal"
+    ],
+    "Alabel Municipality": [
+      "Alegria", "Bagacay", "Balaan", "Baluntay", "Big Margus", "Datal Anggas",
+      "Kawas", "Maasim", "Pag-asa", "Poblacion", "Spring", "Tokawal"
+    ],
+    "Banga Municipality": [
+      "Brgy. 1", "Brgy. 2", "Brgy. 3", "Brgy. 4", "Rizal", "San Miguel",
+      "Santo Niño"
+    ],
+    "General Santos City": [
+      "Apopong", "Baluan", "Batomelong", "Buayan", "Bula", "Calumpang",
+      "City Heights", "Conel", "Dadiangas East", "Dadiangas North",
+      "Dadiangas South", "Dadiangas West", "Fatima", "Katangawan",
+      "Labangal", "Lagao", "Ligaya", "Mabuhay", "Olympog", "San Isidro",
+      "San Jose", "Siguel", "Sinawal", "Tambler", "Tinagacan", "Upper Labay"
+    ],
+    "Glan Municipality": [
+      "Balangonan", "Baliton", "Calpan", "Congan", "Cross", "Datalbokbok",
+      "E. Antonino", "Glan", "Kapatan", "Laguimit", "Pangyan", "Poblacion",
+      "Rio Grande", "San Jose", "Su-ok", "Taluya"
+    ],
+    "Kiamba Municipality": [
+      "Kapok", "Kayupo", "Kiamudlong", "Kling", "Klubi", "Lagundi",
+      "Lebe", "Lomuyon", "Luma", "Mabay", "Poblacion"
+    ],
+    "Maasim Municipality": [
+      "Amsipit", "Bales", "Balong", "Dumpingan", "Kamanga", "Kiamba",
+      "Lumatil", "Maasim", "Pangi", "Poblacion", "Taluya", "Wasi"
+    ],
+    "Malapatan Municipality": [
+      "Datal Blao", "Kongo", "Lamba", "Landomine", "Lourdes", "Malapatan",
+      "Malita", "Popolon", "Sapu Masla", "Wak"
+    ],
+    "Malungon Municipality": [
+      "Kalgayon", "Kalipi", "Kamanga", "Malungon", "New Lambunao",
+      "New Panay", "Palkan", "Poblacion", "Ragandang"
+    ],
+    "Maitum Municipality": [
+      "Datu Danggay Ayunan", "Duyong", "Kauran", "Kiambing", "Maitum",
+      "Poblacion", "Zion"
+    ],
+    "Norala Municipality": [
+      "Bonifacio", "Esperanza", "Lala", "Poblacion", "San Isidro"
+    ],
+    "Polomolok Municipality": [
+      "Bentung", "Cannery Site", "Crossing Rubber", "Kinco", "Koronadal",
+      "Landan", "Lumakoy", "Muya", "Palkan", "Poblacion", "Polo",
+      "Rabago", "Rejil"
+    ],
+    "Santo Niño Municipality": [
+      "Daliao", "Minapan", "Poblacion", "Tolongopos"
+    ],
+    "Surallah Municipality": [
+      "Bagumbayan", "Centrala", "Colongolo", "Dajay", "Luma",
+      "Mediano", "Moloy", "Poblacion", "Rajah Muda"
+    ],
+    "T'boli Municipality": [
+      "Aflek", "Lamdalag", "Lamlahak", "Poblacion", "Tudok"
+    ],
+    "Tantangan Municipality": [
+      "Bukay Pait", "Dungguan", "New Lambunao", "Poblacion", "Tallang"
+    ],
+    "Tboli Municipality": [
+      "Aflek", "Lamdalag", "Lamlahak", "Poblacion", "Tudok"
+    ],
+    "Tupi Municipality": [
+      "Acmonan", "Cebuano", "Crossing Palkan", "Miasong", "Poblacion",
+      "Tupi Proper"
+    ]
+  },
+  "Caraga": {
+    "Surigao City": [
+      "Alang-alang", "Anomar", "Baybay", "Bilang-bilang", "Bonifacio", "Canlanipa",
+      "Capalayan", "Danao", "Desamparados", "Ipil", "Lipata", "Mactang",
+      "Mapua", "Mat-i", "Nabago", "Nonoc", "Orok", "Punta Bilar", "Quezon",
+      "Rizal", "San Jose", "San Juan", "San Roque", "San Pedro", "Santa Cruz",
+      "Silop", "Sukailang", "Taft", "Togbongon", "Washington"
+    ],
+    "Bayugan City": [
+      "Babatea", "Bayugan 3", "Bucac", "Bunawan", "Calaitan", "Calamba",
+      "Claver", "Ebro", "Grace Village", "Marcelita", "Natividad", "New Visayas",
+      "Pinagalaan", "Prosperidad", "Salvacion", "San Agustin", "San Isidro",
+      "San Luis", "San Roque", "Santa Cruz", "Villa Undayon", "Wawa"
+    ],
+    "Bislig City": [
+      "Adlay", "Burboanan", "Compostela", "Cumawas", "Labisma", "Lawigan",
+      "Maharlika", "Mangagoy", "Pamaypayan", "Poblacion", "Sibalon",
+      "Tabon", "Tag-ilo", "Tumanan"
+    ],
+    "Tandag City": [
+      "Bag-ong Lungsod", "Bagua-bagua", "Bao", "Bioto", "Dagocdoc",
+      "Madrid", "Matin-ao", "Pandanon", "Poblacion", "Telaje", "Voluntusan"
+    ],
+    "Gingoog City": [
+      "Agay-ayan", "Anakan", "Bangkerohan", "Bunawan", "Calamba",
+      "Ciudadela", "Gingoog", "Lumbia", "Magsaysay", "Mintabon",
+      "Murciano", "Odiongan", "Poblacion", "Tancinco", "Yacapin"
+    ],
+    "Alegria Municipality": [
+      "Aliwayway", "Azucena", "Cabonghari", "Ibawan", "Kauswagan",
+      "Libuac", "Mahaba", "Poblacion", "Sugar Central"
+    ],
+    "Bacuag Municipality": [
+      "Cabul-anonan", "Dadang", "Gango", "La Janosa", "Miranda",
+      "Payapag", "Poblacion", "Pungtol", "Ray-an"
+    ],
+    "Burgos Municipality": [
+      "Batang", "Capalayan", "Del Pilar", "General Island", "Gregorio del Pilar",
+      "Malinao", "Poblacion", "San Vicente"
+    ],
+    "Claver Municipality": [
+      "Cagdianao", "Calagdaan", "Claver", "Hayanggabon", "Poblacion",
+      "Taganito", "Urbiztondo"
+    ],
+    "Del Carmen Municipality": [
+      "Agtas", "Albito", "Bolod", "Cabadbadan", "Fabiana", "Guyangan",
+      "Legaspi", "Magbuaya", "Pantukan", "Poblacion", "Tadeo"
+    ],
+    "General Luna Municipality": [
+      "Cabongaoan", "Catangnan", "Dapa", "Dianowan", "General Luna",
+      "Pilar", "Poblacion", "San Benito"
+    ],
+    "Gigaquit Municipality": [
+      "Baliguian", "Bitaugan", "Gigaquit", "Ipil", "Lourdes", "Magsaysay",
+      "Poblacion", "Sibajay", "Talisay", "Villaflor"
+    ],
+    "Mainit Municipality": [
+      "Alegria", "Atipolo", "Bobongon", "Dayatan", "Duglunan", "Jimalalud",
+      "Magpayang", "Maliwaliw", "Pan-an", "Poblacion", "Tubaon", "Tuboran"
+    ],
+    "Malimono Municipality": [
+      "Malimono", "Poblacion", "Siana", "Tagbina", "Tigbao"
+    ],
+    "Pilar Municipality": [
+      "Concepcion", "Dayang", "Gubang", "Malinao", "Navarro", "Pilar",
+      "Poblacion", "San Isidro", "Santa Cruz"
+    ],
+    "Placer Municipality": [
+      "Gigaquit", "Ibapah", "Poblacion", "Placer", "Soring"
+    ],
+    "San Francisco Municipality": [
+      "Anao-aon", "Aurora", "Cantugas", "Capalayan", "Esperanza", "Ikot",
+      "Libuac", "Poblacion", "San Antonio", "San Roque"
+    ],
+    "San Isidro Municipality": [
+      "Bitoon", "Cagwait", "Cabadbaran", "Consuelo", "Magsaysay",
+      "Poblacion", "Sanchez"
+    ],
+    "Santa Monica Municipality": [
+      "Cabas", "Maninang", "Poblacion", "Santa Monica", "Tagburos"
+    ],
+    "Sison Municipality": [
+      "Calagdaan", "Guinalaban", "Legaspi", "Leron", "Poblacion",
+      "Sison", "Songkoy"
+    ],
+    "Socorro Municipality": [
+      "Blanco", "Divina Gracia", "Navarro", "Nueva Estrella", "Poblacion",
+      "Rizal", "Saub", "Socorro"
+    ],
+    "Surigao del Norte - Tubod Municipality": [
+      "Candijay", "Gomintan", "Lourdes", "Poblacion", "Tubod"
+    ],
+    "Agusan del Norte - Tubay Municipality": [
+      "Compostela", "Poblacion", "Tagbina", "Tubay", "Villaflor"
+    ]
+  },
+  "BARMM": {
+    "Cotabato City": [
+      "Bagua 1", "Bagua 2", "Bagua 3", "Kalanganan 1", "Kalanganan 2",
+      "Poblacion 1", "Poblacion 2", "Poblacion 3", "Poblacion 4", "Poblacion 5",
+      "Poblacion 6", "Poblacion 7", "Poblacion 8", "Poblacion 9", "Rosary Heights 1",
+      "Rosary Heights 2", "Rosary Heights 3", "Rosary Heights 4", "Rosary Heights 5",
+      "Rosary Heights 6", "Rosary Heights 7", "Rosary Heights 8", "Rosary Heights 9",
+      "Rosary Heights 10", "Rosary Heights 11", "Rosary Heights 12", "Rosary Heights 13"
+    ],
+    "Marawi City": [
+      "Amito Marantao", "Bangon", "Basak Malutlut", "Bito Buadi Itowa",
+      "Bito Buadi Paridi", "Boganga", "Bubonga Lilod Madaya", "Bubonga Punod",
+      "Bubonga Raya Madaya", "Bubong Dinaig", "Bubong Lilod", "Bubong Punod",
+      "Cabingan", "Cadayonan", "Calocan East", "Calocan West", "Campong",
+      "Da-ludas", "Dansalan", "Datu Naga", "Datu Saber", "Dulay",
+      "East Basak", "Fort", "Gadongan", "Ganacsana", "Garawan", "Guimba",
+      "Katipunan", "Lilod Madaya", "Lilod Sadiri", "Lumbac", "Lumbatan",
+      "Mabebaran", "Maguindanao", "Malimono", "Mapandi", "Marantao",
+      "Matas", "Matampay", "Morales", "Navarro", "Olawa Ambolong",
+      "Pagalamatan", "Pagayawan", "Pangarungan", "Pantaon", "Papandayan",
+      "Poblacion", "Raya Madaya", "Raya Sadiri", "Rorogagus", "Sabala Manao",
+      "Saber", "Saduc", "Sagayawan", "Sangcay", "Singcaya", "Sogod",
+      "South Madaya", "Sugod Paredes", "Tampilong", "Tolali", "Tuca",
+      "Tuka", "Tukanalipao", "Wawalayan Calocan", "West Basak"
+    ],
+    "Lamitan City": [
+      "Baimbing", "Basak", "Batubato", "Calugusan", "Campo Uno", "Colonia",
+      "Consuelo", "Duyong", "Lanawatung", "Lawi", "Look", "Maloong",
+      "Matikang", "Parang", "Poblacion", "Santa Clara", "Tairan", "Tambuan",
+      "Tubigan", "Ulanza", "Tumahubong"
+    ],
+    "Jolo Municipality": [
+      "Asturias", "Bus-bus", "Chinese Pier", "Latih", "Poblacion"
+    ],
+    "Panamao Municipality": [
+      "Andulong", "Buli", "Buloh", "Datu Bawal", "Datu Salumay",
+      "Libucan", "Pagagawan", "Panamao", "Poblacion", "Talipao", "Timbangan"
+    ],
+    "Patikul Municipality": [
+      "Benembengan", "Danag", "Kabbon", "Kan Islam", "Kapatagan",
+      "Kaunayan", "Liong", "Panglayahan", "Patikul", "Poblacion",
+      "Taglibi", "Tong"
+    ],
+    "Siasi Municipality": [
+      "Baga-as", "Deling", "Kabacan", "Lugus", "Pata Island", "Poblacion",
+      "Siasi", "South Ubian", "Subarang"
+    ],
+    "Talipao Municipality": [
+      "Bilaan", "Kapatagan", "Kanlunsod", "Lalitan", "Lamion", "Poblacion",
+      "Tagayaya", "Talipao", "Tulay", "Ungus"
+    ],
+    "Tapul Municipality": [
+      "Bangkal", "Baubauan", "Datu Buat", "Mandulin", "Poblacion",
+      "Tapul", "Tarawakan", "Tungbukul"
+    ]
+  }
+} 
