@@ -26,6 +26,7 @@ if ($org_result->num_rows === 0) {
 }
 
 // Update user's organization in the database
+
 $sql = "UPDATE users SET organization_id = ?, user_type = 'with_organization' WHERE user_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ii", $orgId, $userId);

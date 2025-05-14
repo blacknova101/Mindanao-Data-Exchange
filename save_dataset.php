@@ -48,7 +48,7 @@ $end_period = $_POST['end_period'];
 $source = $_POST['source'];
 $link = $_POST['link'];
 $location = $_POST['location'];
-$visibility = $_POST['visibility'];
+$visibility = ucfirst($_POST['visibility']); // Capitalize first letter to match database enum
 $category_id = $_POST['category'];  // Capture the selected category ID
 
 if (strtotime($start_period) > strtotime($end_period)) {
@@ -62,10 +62,10 @@ if (empty($category_id) || !is_numeric($category_id)) {
     exit();
 }
 
-// Insert dataset batch with organization_id
-$query = "INSERT INTO dataset_batches (user_id, organization_id) VALUES (?, ?)";
+// Insert dataset batch with organization_id and visibility
+$query = "INSERT INTO dataset_batches (user_id, organization_id, visibility) VALUES (?, ?, ?)";
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ii", $user_id, $organization_id); // Bind both user_id and organization_id
+$stmt->bind_param("iis", $user_id, $organization_id, $visibility); // Include visibility in binding
 $stmt->execute();
 $dataset_batch_id = $stmt->insert_id;
 
@@ -83,7 +83,7 @@ foreach ($_SESSION['valid_files'] as $temp_path) {
         $query = "INSERT INTO datasets (dataset_batch_id, user_id, file_path, title, description, start_period, end_period, source, link, location, category_id, visibility)
                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("iisssssssssi", $dataset_batch_id, $user_id, $new_path, $title, $description, $start_period, $end_period, $source, $link, $location, $category_id, $visibility);
+        $stmt->bind_param("iissssssssis", $dataset_batch_id, $user_id, $new_path, $title, $description, $start_period, $end_period, $source, $link, $location, $category_id, $visibility);
         $stmt->execute();
     }
 }

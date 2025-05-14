@@ -13,6 +13,9 @@ if (!isset($_SESSION['user_id'])) {
 $category_id = isset($_GET['category_id']) ? $_GET['category_id'] : null;
 $category_name = "";
 
+// Get current filter (if any)
+$current_filter = isset($_GET['visibility']) ? $_GET['visibility'] : '';
+
 // Start the SQL query
 $sql = "
     SELECT 
@@ -23,16 +26,26 @@ $sql = "
         d.file_path,
         u.first_name, 
         u.last_name,
+        u.user_id,
+        db.visibility,
         (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id) AS upvotes,
         (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id AND r.user_id = {$_SESSION['user_id']}) AS user_upvoted,
         c.name AS category_name
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
     JOIN datasetcategories c ON d.category_id = c.category_id
+    JOIN dataset_batches db ON d.dataset_batch_id = db.dataset_batch_id
     WHERE d.dataset_id = (
         SELECT MIN(d2.dataset_id) FROM datasets d2 WHERE d2.dataset_batch_id = d.dataset_batch_id
     )
 ";
+
+// Add visibility filter if specified
+if (isset($_GET['visibility']) && in_array($_GET['visibility'], ['Public', 'Private'])) {
+    $visibility_filter = mysqli_real_escape_string($conn, $_GET['visibility']);
+    $sql .= " AND db.visibility = '$visibility_filter'";
+}
+
 // If category is selected, add the condition for category filtering
 if ($category_id) {
     $category_name_sql = "SELECT name FROM datasetcategories WHERE category_id = '$category_id'";
@@ -401,6 +414,99 @@ include 'batch_analytics.php';
             margin-right: 4px;
         }
 
+        .visibility-filter {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .filter-sidebar {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #fff;
+            padding: 20px 15px;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
+            width: 110px;
+        }
+
+        .filter-sidebar-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-sidebar-title i {
+            margin-right: 5px;
+            color: #0099ff;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .filter-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background-color: #0099ff;
+            color: white;
+        }
+
+        .visibility-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .visibility-badge.public {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .visibility-badge.private {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .dataset-card.private {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            opacity: 0.85;
+        }
+
+        .dataset-card.private .dataset-title span {
+            color: #777;
+        }
+
+        .dataset-card.private .dataset-description {
+            color: #777;
+        }
         </style>
 </head>
 <body>
@@ -427,6 +533,7 @@ include 'batch_analytics.php';
         </button>
     </form>
     <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
+
     <span class="tooltip-wrapper">
         <a href="<?= $upload_disabled ? '#' : 'uploadselection.php' ?>" 
         id="add-data-btn" 
@@ -438,19 +545,35 @@ include 'batch_analytics.php';
         <?php endif; ?>
     </span>
 </div>
+
+<!-- Visibility filter sidebar -->
+<div class="filter-sidebar">
+    <div class="filter-sidebar-title">
+        <i class="fa-solid fa-filter"></i>
+        VISIBILITY
+    </div>
+    <a href="datasetsbycategory.php<?= $category_id ? "?category_id=$category_id" : "" ?>" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
+    <a href="datasetsbycategory.php?<?= $category_id ? "category_id=$category_id&" : "" ?>visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
+    <a href="datasetsbycategory.php?<?= $category_id ? "category_id=$category_id&" : "" ?>visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
+</div>
+
 <div id="wrapper">
-        <div class="dataset-grid">
+    <div class="dataset-grid">
             <?php if (mysqli_num_rows($result) > 0): ?>
                 <?php while ($row = mysqli_fetch_assoc($result)): ?>
                     <?php
                         $batch_id = $row['dataset_batch_id'];
                         $analytics = get_batch_analytics($conn, $batch_id);
+                        $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
                     ?>
                     <div class="dataset-card">
                         <div class="dataset-title">
                             <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
                                 <?= htmlspecialchars($row['title']) ?>
                             </a>
+                            <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
+                                <?= $row['visibility'] ?>
+                            </span>
                         </div>
                         <div class="dataset-description">
                             <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
@@ -471,7 +594,11 @@ include 'batch_analytics.php';
                                 </span>
                             </div>
                             <div class="dataset-download">
+                                <?php if (!$is_private_unowned): ?>
                                 <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                                <?php else: ?>
+                                <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
+                                <?php endif; ?>
                             </div>
                             <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
                                 <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">

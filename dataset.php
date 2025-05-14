@@ -48,10 +48,12 @@ $sql = "
         d.*, 
         u.first_name, 
         u.last_name,
+        db.visibility,
         DATE_FORMAT(d.start_period, '%M %e, %Y') AS formatted_start_period,
         DATE_FORMAT(d.end_period, '%M %e, %Y') AS formatted_end_period
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id 
+    JOIN dataset_batches db ON d.dataset_batch_id = db.dataset_batch_id
     WHERE d.dataset_id = $dataset_id
 ";
 
@@ -65,6 +67,9 @@ if (!$result || mysqli_num_rows($result) === 0) {
 
 $dataset = mysqli_fetch_assoc($result);
 $batch_id = $dataset['dataset_batch_id']; // Assuming correct column name
+
+// Store whether this is a private dataset not owned by current user
+$is_private_unowned = ($dataset['visibility'] == 'Private' && $dataset['user_id'] != $_SESSION['user_id']);
 
 $batchDatasetsSql = "
     SELECT * FROM datasets
@@ -282,6 +287,26 @@ $analytics = get_batch_analytics($conn, $batch_id);
     .file-download {
         margin-right: 5px; /* Adds space between the icon and the text */
     }
+    
+    .visibility-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+        margin-left: 15px;
+        font-weight: bold;
+    }
+
+    .visibility-badge.public {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .visibility-badge.private {
+        background-color: #f44336;
+        color: white;
+    }
+    
     form{
       width: 100%;
     }
@@ -347,7 +372,17 @@ $analytics = get_batch_analytics($conn, $batch_id);
   <div class="header-section">
       <div class="header-left">
       <span><?php echo !empty($dataset['source']) ? htmlspecialchars($dataset['source']) : 'Unknown'; ?></span>
-      <h1><?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?></h1>
+      <h1>
+        <?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?>
+        <span class="visibility-badge <?= strtolower($dataset['visibility']) ?>">
+          <?= $dataset['visibility'] ?>
+        </span>
+      </h1>
+      <?php if ($is_private_unowned): ?>
+      <div style="margin-top: 10px; font-size: 14px; color: #ffcccc;">
+        Note: This is a private dataset. Download is restricted to the owner.
+      </div>
+      <?php endif; ?>
         </div>
     </div>
     <div class="title-section">
@@ -388,11 +423,21 @@ $analytics = get_batch_analytics($conn, $batch_id);
             <?php while ($ds = mysqli_fetch_assoc($batchDatasetsResult)): ?>
               <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <a href="<?php echo htmlspecialchars($ds['file_path']); ?>" download style="color: #007BFF; text-decoration: none;">
+                  <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id']): ?>
+                  <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" style="color: #007BFF; text-decoration: none;">
                     <?php echo htmlspecialchars(basename($ds['file_path'])); ?>
-                </a>
+                  </a>
+                  <?php else: ?>
+                  <span style="color: #666;">
+                    <?php echo htmlspecialchars(basename($ds['file_path'])); ?>
+                  </span>
+                  <?php endif; ?>
                 </div>
-                <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" class="download-btn">⬇️ Download</a>              
+                <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id']): ?>
+                  <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" class="download-btn">⬇️ Download</a>              
+                <?php else: ?>
+                  <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
+                <?php endif; ?>
               </div>
             <?php endwhile; ?>
           </div>

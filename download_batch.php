@@ -1,16 +1,44 @@
 <?php
 session_start();
 include 'db_connection.php';
-include 'batch_analytics.php'; // <-- Add this line
+include 'batch_analytics.php';
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
 if (!isset($_GET['batch_id'])) {
     die('Batch ID not specified.');
 }
 
 $batch_id = intval($_GET['batch_id']);
+$user_id = $_SESSION['user_id'];
+
+// Check if the dataset is public or owned by the current user
+$visibility_check = "SELECT db.visibility, d.user_id 
+                    FROM dataset_batches db
+                    JOIN datasets d ON db.dataset_batch_id = d.dataset_batch_id
+                    WHERE db.dataset_batch_id = ? 
+                    LIMIT 1";
+$stmt = $conn->prepare($visibility_check);
+$stmt->bind_param("i", $batch_id);
+$stmt->execute();
+$result_visibility = $stmt->get_result();
+$dataset_info = $result_visibility->fetch_assoc();
+
+if (!$dataset_info) {
+    die('Dataset not found.');
+}
+
+// Only allow download if public OR the user owns the dataset
+if ($dataset_info['visibility'] === 'Private' && $dataset_info['user_id'] != $user_id) {
+    die('You do not have permission to download this private dataset.');
+}
 
 // Increment batch downloads
-increment_batch_downloads($conn, $batch_id); // <-- Add this line
+increment_batch_downloads($conn, $batch_id);
 
 $sql = "SELECT file_path FROM datasets WHERE dataset_batch_id = $batch_id";
 $result = mysqli_query($conn, $sql);

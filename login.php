@@ -54,9 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['has_organization'] = false;
             }
             
-            // Add session tracking
-            require_once 'track_session.php';
-            
             header("Location: homelogin.php");
             exit();
         } else {
