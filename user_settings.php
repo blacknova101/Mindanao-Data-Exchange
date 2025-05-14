@@ -527,6 +527,7 @@ $hasOrganization = !empty($organizationId);
             display: flex;
             gap: 10px;
             align-items: center;
+            padding-right:20px;
         }
 
         .email-update-btn {
