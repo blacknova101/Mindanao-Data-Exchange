@@ -2,6 +2,9 @@
 session_start();
 include 'db_connection.php'; // Ensure your DB connection is here
 
+// Include session update to ensure organization_id is synchronized
+include 'update_session.php';
+
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");

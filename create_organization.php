@@ -50,9 +50,9 @@ if ($organization_id) {
             $error = "Organization already exists.";
         } else {
             // Insert the new organization
-            $insert_query = "INSERT INTO organizations (name, contact_email, website_url, type, created_at) VALUES (?, ?, ?, ?, NOW())";
+            $insert_query = "INSERT INTO organizations (name, contact_email, website_url, type, created_at, created_by) VALUES (?, ?, ?, ?, NOW(), ?)";
             $stmt = mysqli_prepare($conn, $insert_query);
-            mysqli_stmt_bind_param($stmt, "ssss", $name, $contact_email, $website_url, $final_type);
+            mysqli_stmt_bind_param($stmt, "ssssi", $name, $contact_email, $website_url, $final_type, $user_id);
         
             if (mysqli_stmt_execute($stmt)) {
                 // Update user's organization_id and user_type

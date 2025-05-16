@@ -17,7 +17,7 @@ $batch_id = intval($_GET['batch_id']);
 $user_id = $_SESSION['user_id'];
 
 // Check if the dataset is public or owned by the current user
-$visibility_check = "SELECT db.visibility, d.user_id 
+$visibility_check = "SELECT db.visibility, d.user_id, d.dataset_id
                     FROM dataset_batches db
                     JOIN datasets d ON db.dataset_batch_id = d.dataset_batch_id
                     WHERE db.dataset_batch_id = ? 
@@ -32,9 +32,33 @@ if (!$dataset_info) {
     die('Dataset not found.');
 }
 
-// Only allow download if public OR the user owns the dataset
-if ($dataset_info['visibility'] === 'Private' && $dataset_info['user_id'] != $user_id) {
-    die('You do not have permission to download this private dataset.');
+$has_permission = false;
+
+// Case 1: Dataset is public
+if ($dataset_info['visibility'] === 'Public') {
+    $has_permission = true;
+}
+// Case 2: User owns the dataset
+elseif ($dataset_info['user_id'] == $user_id) {
+    $has_permission = true;
+}
+// Case 3: User has approved access request
+else {
+    $dataset_id = $dataset_info['dataset_id'];
+    $access_check = "SELECT * FROM dataset_access_requests
+                    WHERE dataset_id = $dataset_id
+                    AND requester_id = $user_id
+                    AND status = 'Approved'";
+    $access_result = mysqli_query($conn, $access_check);
+    if ($access_result && mysqli_num_rows($access_result) > 0) {
+        $has_permission = true;
+    }
+}
+
+// Only allow download if user has permission
+if (!$has_permission) {
+    header("Location: dataset.php?id=" . $dataset_info['dataset_id'] . "&error=permission");
+    exit();
 }
 
 // Increment batch downloads

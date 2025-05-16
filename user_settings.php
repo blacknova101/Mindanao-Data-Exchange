@@ -20,6 +20,18 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
+// Check for pending organization membership requests
+$pending_request_sql = "SELECT omr.*, o.name as organization_name, omr.expiration_date
+                      FROM organization_membership_requests omr
+                      JOIN organizations o ON omr.organization_id = o.organization_id
+                      WHERE omr.user_id = ? AND omr.status = 'Pending'";
+$pending_request_stmt = $conn->prepare($pending_request_sql);
+$pending_request_stmt->bind_param("i", $user_id);
+$pending_request_stmt->execute();
+$pending_request_result = $pending_request_stmt->get_result();
+$has_pending_request = ($pending_request_result->num_rows > 0);
+$pending_request = $has_pending_request ? $pending_request_result->fetch_assoc() : null;
+
 // Debug information
 error_log("User Settings - User ID: " . $user_id);
 error_log("User Settings - Organization ID: " . ($user['organization_id'] ?? 'NULL'));
@@ -41,6 +53,7 @@ $hasOrganization = !empty($organizationId);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Settings</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -569,6 +582,75 @@ $hasOrganization = !empty($organizationId);
             border-radius: 4px;
             font-size: 14px;
         }
+        
+        /* Pending request styling */
+        .pending-request-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            color: #856404;
+        }
+        
+        .pending-request-info p {
+            margin: 5px 0;
+        }
+        
+        .request-dates {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 15px !important;
+        }
+        
+        .cancel-request-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        .cancel-request-btn:hover {
+            background-color: #c82333;
+        }
+        
+        /* Admin controls styling */
+        .admin-controls {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e6f7ff;
+            border: 1px solid #b3e0ff;
+            border-radius: 4px;
+        }
+        
+        .admin-controls h4 {
+            color: #0066cc;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .admin-btn {
+            display: inline-block;
+            background-color: #0099ff;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .admin-btn:hover {
+            background-color: #007acc;
+            color: white;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -658,12 +740,61 @@ $hasOrganization = !empty($organizationId);
                         <div class="form-group">
                             <input type="text" id="organization" name="organization" value="<?php echo $organizationName; ?>" readonly>
                         </div>
-                        <!-- Disable the 'Create New Organization' button if the user has an organization -->
-                        <?php if (!$hasOrganization): ?>
-                            <button type="button" class="create-org-btn" onclick="window.location.href='join_organization.php'">Join an Organization</button>
+                        <?php if ($has_pending_request): ?>
+                            <div class="pending-request-info">
+                                <p><strong>Pending Request:</strong> You have requested to join <strong><?php echo htmlspecialchars($pending_request['organization_name']); ?></strong></p>
+                                <p class="request-dates">
+                                    Requested: <?php echo date('M j, Y', strtotime($pending_request['request_date'])); ?><br>
+                                    <?php if (!empty($pending_request['expiration_date'])): ?>
+                                        Expires: <?php echo date('M j, Y', strtotime($pending_request['expiration_date'])); ?>
+                                    <?php endif; ?>
+                                </p>
+                                <form method="post" action="cancel_request.php">
+                                    <input type="hidden" name="request_id" value="<?php echo $pending_request['request_id']; ?>">
+                                    <button type="submit" class="cancel-request-btn">Cancel Request</button>
+                                </form>
+                            </div>
                         <?php else: ?>
-                            <!-- If user has org, show leave button -->
-                            <button type="button" class="create-org-btn" onclick="showLeaveOrgModal()">Leave Organization</button>
+                            <?php if ($hasOrganization): ?>
+                                <!-- If user has org, show leave button -->
+                                <button type="button" class="create-org-btn" onclick="showLeaveOrgModal()">Leave Organization</button>
+                                
+                                <!-- Check if user is an organization admin -->
+                                <?php
+                                // Check if user is the organization owner/creator
+                                $check_owner_sql = "SELECT o.created_by FROM organizations o WHERE o.organization_id = ? AND o.created_by = ?";
+                                $check_owner_stmt = $conn->prepare($check_owner_sql);
+                                $check_owner_stmt->bind_param("ii", $organizationId, $user_id);
+                                $check_owner_stmt->execute();
+                                $check_owner_result = $check_owner_stmt->get_result();
+                                $is_org_owner = ($check_owner_result->num_rows > 0);
+                                
+                                if ($is_org_owner): ?>
+                                    <div class="admin-controls">
+                                        <h4>Organization Owner Controls</h4>
+                                        <a href="manage_org_requests.php" class="admin-btn">Manage Membership Requests</a>
+                                    </div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <!-- If user has no org, show options -->
+                                <div class="org-actions" style="display: flex; gap: 10px;">
+                                    <button type="button" class="create-org-btn" onclick="window.location.href='join_organization.php'">Join an Organization</button>
+                                    <button type="button" class="create-org-btn" onclick="checkPendingOrgRequests()">Request New Org</button>
+                                </div>
+                                <div id="org-request-error" class="error-message" style="display: none; margin-top: 15px;">
+                                    You already have a pending organization creation request. Please wait for administrator approval or <a href="user_org_requests.php" style="color: #721c24; text-decoration: underline;">check your request status</a>.
+                                </div>
+                                <div style="margin-top: 15px;">
+                                    <a href="user_org_requests.php" style="color: #0099ff; text-decoration: none;">View my organization requests</a>
+                                </div>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'admin'): ?>
+                            <div class="admin-controls" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+                                <h4>Admin Controls</h4>
+                                <a href="admin_org_requests.php" class="admin-btn">Manage Organization Requests</a>
+                            </div>
                         <?php endif; ?>
                     </div>
 
@@ -711,8 +842,33 @@ $hasOrganization = !empty($organizationId);
         function hideModal() {
             document.getElementById("categoryModal").style.display = "none";
          }
-            document.addEventListener("DOMContentLoaded", function () {
+        
+        // Function to show leave organization confirmation modal
+        function showLeaveOrgModal() {
+            const modal = document.getElementById("leaveOrgModal");
+            if (modal) {
+                modal.style.display = "flex";
+            } else {
+                console.error("Leave organization modal not found");
+            }
+        }
+        
+        // Function to close the leave organization modal
+        function closeLeaveOrgModal() {
+            const modal = document.getElementById("leaveOrgModal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("categoryModal").style.display = "none";
+            
+            // Verify the leave organization modal exists
+            const leaveOrgModal = document.getElementById("leaveOrgModal");
+            if (!leaveOrgModal) {
+                console.error("Leave organization modal element not found");
+            }
         });
 
         // Success Message Animation
@@ -763,6 +919,29 @@ $hasOrganization = !empty($organizationId);
                 this.submit();
             });
         });
+        
+        // Check if user has pending organization creation requests
+        function checkPendingOrgRequests() {
+            // Make an AJAX request to check for pending org creation requests
+            fetch('check_pending_org_requests.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.has_pending_request) {
+                        // Show error message
+                        document.getElementById('org-request-error').style.display = 'block';
+                        // Scroll to the error message
+                        document.getElementById('org-request-error').scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        // Redirect to create organization request page
+                        window.location.href = 'create_organization_request.php';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking pending requests:', error);
+                    // Redirect anyway if there's an error with the check
+                    window.location.href = 'create_organization_request.php';
+                });
+        }
     </script>
 </body>
 </html>

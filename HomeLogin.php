@@ -1,6 +1,10 @@
 <?php
 session_start();
 include 'db_connection.php'; // Include your database connection file
+
+// Include session update to ensure organization_id is synchronized
+include 'update_session.php';
+
 if (!isset($_SESSION['user_id'])) {
     // Redirect to login page if not authenticated
     header("Location: index.php");
@@ -460,7 +464,6 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
         });
     </script>
     <script src="search.js"></script>
-
 
 </body>
 </html>

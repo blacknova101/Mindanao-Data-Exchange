@@ -115,6 +115,39 @@ $user_registrations = $conn->query("
         .activity-item:last-child {
             border-bottom: none;
         }
+        
+        /* Maintenance task styling */
+        .maintenance-task {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 4px solid #0099ff;
+        }
+        
+        .maintenance-task h5 {
+            color: #0099ff;
+            margin-bottom: 10px;
+        }
+        
+        .maintenance-task p {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .maintenance-task i {
+            margin-right: 8px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -125,6 +158,7 @@ $user_registrations = $conn->query("
             <a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Users</a>
             <a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a>
             <a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a>
+            <a class="nav-link" href="admin_org_requests.php"><i class="fas fa-clipboard-list"></i> Org Requests</a>
             <a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a>
             <a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Settings</a>
             <a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -161,6 +195,37 @@ $user_registrations = $conn->query("
                     <i class="fas fa-download"></i>
                     <h3><?php echo $total_downloads; ?></h3>
                     <p>Total Downloads</p>
+                </div>
+            </div>
+        </div>
+
+        <?php if (isset($_GET['message'])): ?>
+            <div class="alert alert-success">
+                <?php echo htmlspecialchars($_GET['message']); ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Maintenance Tasks -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Maintenance Tasks</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="maintenance-task">
+                            <h5><i class="fas fa-clock"></i> Organization Request Expiration</h5>
+                            <p>Check for expired organization membership requests and notify users</p>
+                            <a href="test_expire_requests.php" class="btn btn-primary btn-sm">Run Expiration Check</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="maintenance-task">
+                            <h5><i class="fas fa-tasks"></i> Schedule Automatic Expiration</h5>
+                            <p>Set up a scheduled task to automatically check for expired requests daily</p>
+                            <a href="setup_expiration_task.bat" class="btn btn-outline-primary btn-sm" download>Download Task Setup Script</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

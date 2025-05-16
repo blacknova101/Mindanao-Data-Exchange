@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['email'] = $user['email'];
             $_SESSION['first_name'] = $user['first_name'];
             $_SESSION['last_name'] = $user['last_name'];
+            $_SESSION['user_type'] = $user['user_type'];
             
             // Get organization information
             $org_query = "SELECT o.organization_id, o.name as org_name 

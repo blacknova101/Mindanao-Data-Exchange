@@ -2,6 +2,9 @@
 session_start();
 include 'db_connection.php';
 
+// Include session update to ensure organization_id is synchronized
+include 'update_session.php';
+
 // Check if the user is logged in (ensure 'user_id' is set in the session)
 if (!isset($_SESSION['user_id'])) {
     // Redirect to login page if not authenticated
@@ -12,12 +15,23 @@ if (!isset($_SESSION['user_id'])) {
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 
+// Include the hasApprovedAccess function
+function hasApprovedAccess($conn, $dataset_id, $user_id) {
+    $query = "SELECT * FROM dataset_access_requests 
+              WHERE dataset_id = $dataset_id 
+              AND requester_id = $user_id 
+              AND status = 'Approved'";
+    $result = mysqli_query($conn, $query);
+    return ($result && mysqli_num_rows($result) > 0);
+}
+
 if ($search) {
     $sql = "
         SELECT 
             db.dataset_batch_id,
             db.user_id,
             db.organization_id,
+            db.visibility,
             u.first_name, u.last_name,
             o.name AS org_name,
             d.dataset_id,
@@ -97,7 +111,25 @@ if ($search) {
     $page_title = "All Datasets";
 }
 
+// Get the current filter (if any)
+$current_filter = isset($_GET['visibility']) ? $_GET['visibility'] : '';
+
+// Modify the SQL query to filter by visibility if specified
+if (isset($_GET['visibility']) && in_array($_GET['visibility'], ['Public', 'Private'])) {
+    $visibility_filter = mysqli_real_escape_string($conn, $_GET['visibility']);
+    
+    if (strpos($sql, 'WHERE') !== false) {
+        // If there's already a WHERE clause, add AND
+        $sql = str_replace('ORDER BY', "AND db.visibility = '$visibility_filter' ORDER BY", $sql);
+    } else {
+        // If there's no WHERE clause, add one
+        $sql = str_replace('ORDER BY', "WHERE db.visibility = '$visibility_filter' ORDER BY", $sql);
+    }
+}
+
 $result = mysqli_query($conn, $sql);
+
+// Set this AFTER the session is updated
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
 
 include 'batch_analytics.php';
@@ -454,6 +486,89 @@ include 'batch_analytics.php';
         .dataset-analytics .analytics-item i {
             margin-right: 4px;
         }
+
+        .category-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        /* Add CSS for the visibility filter sidebar */
+        .filter-sidebar {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #fff;
+            padding: 20px 15px;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
+            width: 110px;
+        }
+
+        .filter-sidebar-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-sidebar-title i {
+            margin-right: 5px;
+            color: #0099ff;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .filter-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background-color: #0099ff;
+            color: white;
+        }
+
+        .visibility-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .visibility-badge.public {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .visibility-badge.private {
+            background-color: #f44336;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -507,6 +622,9 @@ include 'batch_analytics.php';
                     <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['dataset_title']) ?>">
                         <?= htmlspecialchars($row['dataset_title']) ?>
                     </a>
+                    <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
+                        <?= $row['visibility'] ?>
+                    </span>
                     </div>
                     <div class="dataset-description">
                         <?= htmlspecialchars(mb_strimwidth($row['dataset_description'], 0, 255, '...')) ?>
@@ -527,7 +645,15 @@ include 'batch_analytics.php';
                             </span>
                         </div>
                         <div class="dataset-download">
-                            <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                            <?php 
+                                $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
+                                $has_access = hasApprovedAccess($conn, $row['dataset_id'], $_SESSION['user_id']);
+                                if (!$is_private_unowned || $has_access): 
+                            ?>
+                                <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                            <?php else: ?>
+                                <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
+                            <?php endif; ?>
                         </div>
                         <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
                             <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
@@ -592,7 +718,15 @@ include 'batch_analytics.php';
                     <td>
                         <div class="table-actions">
                             <div class="table-download">
-                                <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                                <?php 
+                                    $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
+                                    $has_access = hasApprovedAccess($conn, $row['dataset_id'], $_SESSION['user_id']);
+                                    if (!$is_private_unowned || $has_access): 
+                                ?>
+                                    <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                                <?php else: ?>
+                                    <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
+                                <?php endif; ?>
                             </div>
                             <div class="table-upvote" data-id="<?= $row['dataset_id'] ?>">
                                 <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
@@ -672,6 +806,17 @@ include 'batch_analytics.php';
         });
     }
     </script>
+
+<!-- Add visibility filter sidebar after the opening body tag -->
+<div class="filter-sidebar">
+    <div class="filter-sidebar-title">
+        <i class="fa-solid fa-filter"></i>
+        VISIBILITY
+    </div>
+    <a href="search_results.php?<?= isset($_GET['search']) ? 'search=' . urlencode($_GET['search']) : (isset($_GET['category']) ? 'category=' . urlencode($_GET['category']) : '') ?>" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
+    <a href="search_results.php?<?= isset($_GET['search']) ? 'search=' . urlencode($_GET['search']) . '&' : (isset($_GET['category']) ? 'category=' . urlencode($_GET['category']) . '&' : '') ?>visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
+    <a href="search_results.php?<?= isset($_GET['search']) ? 'search=' . urlencode($_GET['search']) . '&' : (isset($_GET['category']) ? 'category=' . urlencode($_GET['category']) . '&' : '') ?>visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
+</div>
 
 </body>
 </html>

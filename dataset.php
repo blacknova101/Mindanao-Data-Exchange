@@ -28,6 +28,113 @@ if (!$dataset_id) {
     exit;
 }
 
+// Handle dataset access request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_access'])) {
+    if (!$user_id) {
+        echo "You must be logged in to request access.";
+        exit;
+    }
+
+    // Process the access request with reason and document
+    $request_reason = isset($_POST['request_reason']) ? mysqli_real_escape_string($conn, substr($_POST['request_reason'], 0, 500)) : '';
+    
+    // Handle file upload
+    $document_path = '';
+    if (isset($_FILES['verification_document']) && $_FILES['verification_document']['error'] == 0) {
+        $upload_dir = 'verification_documents/';
+        
+        // Create directory if it doesn't exist
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        $file_extension = pathinfo($_FILES['verification_document']['name'], PATHINFO_EXTENSION);
+        $file_name = 'verification_' . $dataset_id . '_' . $user_id . '_' . time() . '.' . $file_extension;
+        $target_file = $upload_dir . $file_name;
+        
+        // Move uploaded file to target directory
+        if (move_uploaded_file($_FILES['verification_document']['tmp_name'], $target_file)) {
+            $document_path = $target_file;
+        } else {
+            $_SESSION['request_message'] = "Error uploading verification document.";
+            header("Location: dataset.php?id=$dataset_id");
+            exit;
+        }
+    }
+
+    // Check if a request already exists
+    $checkRequestSql = "SELECT * FROM dataset_access_requests 
+                        WHERE dataset_id = $dataset_id AND requester_id = $user_id";
+    $checkResult = mysqli_query($conn, $checkRequestSql);
+    
+    $canSubmitNewRequest = true;
+    $requestExists = mysqli_num_rows($checkResult) > 0;
+    
+    if ($requestExists) {
+        $existingRequest = mysqli_fetch_assoc($checkResult);
+        // Allow new request only if previous one was rejected or no pending/approved request exists
+        if ($existingRequest['status'] === 'Pending' || $existingRequest['status'] === 'Approved') {
+            $canSubmitNewRequest = false;
+        }
+    }
+    
+    if ($canSubmitNewRequest) {
+        // If request was rejected before, update the existing request
+        if ($requestExists) {
+            $updateRequest = "
+                UPDATE dataset_access_requests
+                SET request_date = NOW(),
+                    status = 'Pending',
+                    reason = '$request_reason',
+                    verification_document = '$document_path'
+                WHERE dataset_id = $dataset_id 
+                AND requester_id = $user_id
+            ";
+            if (mysqli_query($conn, $updateRequest)) {
+                $_SESSION['request_message'] = "Access request resubmitted successfully.";
+            } else {
+                $_SESSION['request_message'] = "Error resubmitting request: " . mysqli_error($conn);
+            }
+        } else {
+            // Insert brand new request
+            $insertRequest = "
+                INSERT INTO dataset_access_requests (
+                    dataset_id, 
+                    requester_id, 
+                    owner_id, 
+                    request_date, 
+                    status, 
+                    reason,
+                    verification_document
+                ) VALUES (
+                    $dataset_id, 
+                    $user_id, 
+                    (SELECT user_id FROM datasets WHERE dataset_id = $dataset_id), 
+                    NOW(), 
+                    'Pending',
+                    '$request_reason',
+                    '$document_path'
+                )
+            ";
+            if (mysqli_query($conn, $insertRequest)) {
+                $_SESSION['request_message'] = "Access request submitted successfully.";
+            } else {
+                $_SESSION['request_message'] = "Error submitting request: " . mysqli_error($conn);
+            }
+        }
+    } else {
+        if ($existingRequest['status'] === 'Approved') {
+            $_SESSION['request_message'] = "Your request has already been approved. You can download this dataset.";
+        } else {
+            $_SESSION['request_message'] = "You already have a pending request for this dataset.";
+        }
+    }
+    
+    // Redirect to prevent form resubmission
+    header("Location: dataset.php?id=$dataset_id");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_text'])) {
     if (!$user_id) {
         echo "You must be logged in to comment.";
@@ -48,6 +155,7 @@ $sql = "
         d.*, 
         u.first_name, 
         u.last_name,
+        u.email,
         db.visibility,
         DATE_FORMAT(d.start_period, '%M %e, %Y') AS formatted_start_period,
         DATE_FORMAT(d.end_period, '%M %e, %Y') AS formatted_end_period
@@ -70,6 +178,25 @@ $batch_id = $dataset['dataset_batch_id']; // Assuming correct column name
 
 // Store whether this is a private dataset not owned by current user
 $is_private_unowned = ($dataset['visibility'] == 'Private' && $dataset['user_id'] != $_SESSION['user_id']);
+
+// Check if user has already requested access to this dataset
+$has_requested_access = false;
+$has_approved_access = false;
+$has_rejected_access = false;
+$request_status = '';
+
+if ($is_private_unowned) {
+    $requestCheckSql = "SELECT * FROM dataset_access_requests 
+                       WHERE dataset_id = $dataset_id AND requester_id = $user_id";
+    $requestResult = mysqli_query($conn, $requestCheckSql);
+    if ($requestResult && mysqli_num_rows($requestResult) > 0) {
+        $request = mysqli_fetch_assoc($requestResult);
+        $request_status = $request['status'];
+        $has_requested_access = ($request_status === 'Pending');
+        $has_approved_access = ($request_status === 'Approved');
+        $has_rejected_access = ($request_status === 'Rejected');
+    }
+}
 
 $batchDatasetsSql = "
     SELECT * FROM datasets
@@ -283,6 +410,27 @@ $analytics = get_batch_analytics($conn, $batch_id);
     .download-btn:hover {
         background-color: #007acc;
     }
+    
+    .request-btn {
+        background-color: #ff9900;
+        color: white;
+        font-weight: bold;
+        padding: 10px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+        display: inline-block;
+        margin-top: 15px;
+        cursor: pointer;
+        border: none;
+    }
+    .request-btn:hover {
+        background-color: #e68a00;
+    }
+    .request-btn:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
 
     .file-download {
         margin-right: 5px; /* Adds space between the icon and the text */
@@ -342,6 +490,20 @@ $analytics = get_batch_analytics($conn, $batch_id);
       object-fit: cover;
       z-index: -1; /* stays behind everything */
     }
+    
+    .alert {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      color: #721c24;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+    }
+    .alert.success {
+      color: #155724;
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
 
 
     @media (max-width: 768px) {
@@ -351,6 +513,117 @@ $analytics = get_batch_analytics($conn, $batch_id);
       .info-grid {
         flex-direction: column;
       }
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      width: 500px;
+      max-width: 90%;
+    }
+    
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    
+    .form-group input[type="file"] {
+      padding: 8px 0;
+    }
+    
+    .form-help {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .cancel-btn {
+      padding: 8px 16px;
+      background-color: #f1f1f1;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .submit-btn {
+      padding: 8px 16px;
+      background-color: #ff9900;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .submit-btn:hover {
+      background-color: #e68a00;
+    }
+
+    .char-counter {
+      font-size: 12px;
+      color: #777;
+      text-align: right;
+      margin-top: 5px;
+    }
+    
+    /* Add styling for when the user approaches the limit */
+    .char-counter.warning {
+      color: #f0ad4e;
+    }
+    
+    /* Add styling for when the user reaches the limit */
+    .char-counter.limit {
+      color: #d9534f;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -379,12 +652,34 @@ $analytics = get_batch_analytics($conn, $batch_id);
         </span>
       </h1>
       <?php if ($is_private_unowned): ?>
-      <div style="margin-top: 10px; font-size: 14px; color: #ffcccc;">
-        Note: This is a private dataset. Download is restricted to the owner.
-      </div>
+        <?php if ($has_approved_access): ?>
+          <div style="margin-top: 10px; font-size: 14px; color: #d4edda;">
+            Your access request was approved. You can download this private dataset.
+          </div>
+        <?php elseif ($has_requested_access): ?>
+          <div style="margin-top: 10px; font-size: 14px; color: #fff3cd;">
+            Your access request is pending. You'll be notified when it's approved.
+          </div>
+        <?php elseif ($has_rejected_access): ?>
+          <div style="margin-top: 10px; font-size: 14px; color: #ffcccc;">
+            Your previous request was rejected. You may submit a new request.
+          </div>
+        <?php else: ?>
+          <div style="margin-top: 10px; font-size: 14px; color: #ffcccc;">
+            Note: This is a private dataset. Request access to download it.
+          </div>
+        <?php endif; ?>
       <?php endif; ?>
         </div>
     </div>
+    
+    <?php if (isset($_SESSION['request_message'])): ?>
+    <div class="alert <?php echo strpos($_SESSION['request_message'], 'successfully') !== false ? 'success' : ''; ?>">
+        <?php echo $_SESSION['request_message']; ?>
+        <?php unset($_SESSION['request_message']); ?>
+    </div>
+    <?php endif; ?>
+    
     <div class="title-section">
       <p><?php echo !empty($dataset['description']) ? nl2br(htmlspecialchars($dataset['description'])) : 'No description available.'; ?></p>
       </div>
@@ -393,6 +688,11 @@ $analytics = get_batch_analytics($conn, $batch_id);
     <div class="info-grid">
       <div class="info-box">
         <h3>Additional Information</h3>
+        <div class="info-item">
+          <strong>Uploader</strong>
+          <span><?php echo htmlspecialchars($dataset['first_name'] . ' ' . $dataset['last_name']); ?></span>
+          <span>(<?php echo htmlspecialchars($dataset['email']); ?>)</span>
+        </div>
         <div class="info-item">
           <strong>Time Period</strong>
           <?php 
@@ -415,6 +715,26 @@ $analytics = get_batch_analytics($conn, $batch_id);
                 <?php echo !empty($dataset['link']) ? htmlspecialchars($dataset['link']) : 'No link available'; ?>
             </a>
         </div>
+        
+        <?php if ($is_private_unowned): ?>
+          <?php if ($has_approved_access): ?>
+            <button type="button" class="request-btn" style="background-color: #28a745;" disabled>
+              Access Granted
+            </button>
+          <?php elseif ($has_requested_access): ?>
+            <button type="button" class="request-btn" disabled>
+              Access Requested
+            </button>
+          <?php elseif ($has_rejected_access): ?>
+            <button type="button" class="request-btn" style="background-color: #ff5722;" onclick="openRequestModal()">
+              Request Again
+            </button>
+          <?php else: ?>
+            <button type="button" class="request-btn" onclick="openRequestModal()">
+              Request this Dataset
+            </button>
+          <?php endif; ?>
+        <?php endif; ?>
       </div>
       <div class="resources-box">
         <h3>Data and Resources</h3>
@@ -423,7 +743,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
             <?php while ($ds = mysqli_fetch_assoc($batchDatasetsResult)): ?>
               <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id']): ?>
+                  <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
                   <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" style="color: #007BFF; text-decoration: none;">
                     <?php echo htmlspecialchars(basename($ds['file_path'])); ?>
                   </a>
@@ -433,7 +753,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
                   </span>
                   <?php endif; ?>
                 </div>
-                <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id']): ?>
+                <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
                   <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" class="download-btn">⬇️ Download</a>              
                 <?php else: ?>
                   <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
@@ -487,5 +807,84 @@ $analytics = get_batch_analytics($conn, $batch_id);
       </div>
 
   </div>
+
+  <!-- Add modal for access request -->
+  <div id="requestModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="document.getElementById('requestModal').style.display='none'">&times;</span>
+      <h3>Request Access to Dataset</h3>
+      <p>Please provide a reason for requesting access to this dataset and upload a verification document.</p>
+      
+      <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="request_access" value="1">
+        
+        <div class="form-group">
+          <label for="request_reason">Reason for Request:</label>
+          <textarea name="request_reason" id="request_reason" rows="4" maxlength="500" required onkeyup="countChars()"></textarea>
+          <div class="char-counter"><span id="charCount">0</span>/500 characters</div>
+          <p class="form-help">Briefly explain why you need access to this dataset (max 500 characters). Be concise and specific.</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="verification_document">Verification Document:</label>
+          <input type="file" name="verification_document" id="verification_document">
+          <p class="form-help">Upload a document that verifies your identity or affiliation (PDF, JPG, or PNG).</p>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" onclick="document.getElementById('requestModal').style.display='none'">Cancel</button>
+          <button type="submit" class="submit-btn">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </body>
 </html>
+
+<script>
+        // Show category modal
+        function showModal() {
+            document.getElementById("categoryModal").style.display = "flex";
+        }
+        
+        // Hide category modal
+        function hideModal() {
+            document.getElementById("categoryModal").style.display = "none";
+        }
+        
+        // Open request modal and initialize character counter
+        function openRequestModal() {
+            document.getElementById('requestModal').style.display = 'block';
+            countChars(); // Initialize character counter
+        }
+        
+        // Count characters in the request reason textarea
+        function countChars() {
+            const textarea = document.getElementById('request_reason');
+            const charCount = document.getElementById('charCount');
+            const counter = document.querySelector('.char-counter');
+            const maxLength = parseInt(textarea.getAttribute('maxlength'));
+            const currentLength = textarea.value.length;
+            
+            charCount.textContent = currentLength;
+            
+            // Update styling based on how close to the limit
+            if (currentLength >= maxLength) {
+                counter.className = 'char-counter limit';
+            } else if (currentLength >= maxLength * 0.8) {
+                counter.className = 'char-counter warning';
+            } else {
+                counter.className = 'char-counter';
+            }
+        }
+        
+        // Initialize character counter on document load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Reset the form when modal is closed
+            document.querySelector('.close').addEventListener('click', function() {
+                document.getElementById('request_reason').value = '';
+                countChars();
+            });
+        });
+    </script>

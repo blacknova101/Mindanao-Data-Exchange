@@ -2,6 +2,9 @@
 session_start();
 include 'db_connection.php';
 
+// Include session update to ensure organization_id is synchronized
+include 'update_session.php';
+
 // Check if the user is logged in (ensure 'user_id' is set in the session)
 if (!isset($_SESSION['user_id'])) {
     // Redirect to login page if not authenticated
@@ -40,12 +43,24 @@ if (isset($_GET['visibility']) && in_array($_GET['visibility'], ['Public', 'Priv
 $sql .= " GROUP BY d.dataset_batch_id ORDER BY MIN(d.dataset_id) DESC";
 
 $result = mysqli_query($conn, $sql);
+
+// Set this AFTER the session is updated
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
 
 // Get current filter (if any)
 $current_filter = isset($_GET['visibility']) ? $_GET['visibility'] : '';
 
 include 'batch_analytics.php';
+
+// Function to check if user has approved access to a dataset
+function hasApprovedAccess($conn, $dataset_id, $user_id) {
+    $query = "SELECT * FROM dataset_access_requests 
+              WHERE dataset_id = $dataset_id 
+              AND requester_id = $user_id 
+              AND status = 'Approved'";
+    $result = mysqli_query($conn, $query);
+    return ($result && mysqli_num_rows($result) > 0);
+}
 ?>
 
 <!DOCTYPE html>
@@ -583,10 +598,13 @@ include 'batch_analytics.php';
                             </span>
                         </div>
                         <div class="dataset-download">
-                            <?php if (!$is_private_unowned): ?>
-                            <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
+                            <?php 
+                                $has_access = hasApprovedAccess($conn, $row['dataset_id'], $_SESSION['user_id']);
+                                if (!$is_private_unowned || $has_access): 
+                            ?>
+                                <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
                             <?php else: ?>
-                            <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
+                                <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
                             <?php endif; ?>
                         </div>
                         <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
@@ -659,7 +677,10 @@ include 'batch_analytics.php';
                     <td>
                         <div class="table-actions">
                             <div class="table-download">
-                                <?php if (!$is_private_unowned): ?>
+                                <?php 
+                                    $has_access = hasApprovedAccess($conn, $row['dataset_id'], $_SESSION['user_id']);
+                                    if (!$is_private_unowned || $has_access): 
+                                ?>
                                     <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
                                 <?php else: ?>
                                     <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>

@@ -2,6 +2,9 @@
 session_start();
 include 'db_connection.php';
 
+// Include session update to ensure organization_id is synchronized
+include 'update_session.php';
+
 // Check if the user is logged in (ensure 'user_id' is set in the session)
 if (!isset($_SESSION['user_id'])) {
     // Redirect to login page if not authenticated
@@ -39,6 +42,8 @@ $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, 'iii', $user_id, $user_id, $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
+
+// Set this AFTER the session is updated
 $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organization_id'] == null;
 
 include 'batch_analytics.php';

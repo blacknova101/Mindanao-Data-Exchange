@@ -344,7 +344,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2>Edit Dataset</h2>
             </div>
             <nav class="nav-links">
-                <a href="index.php">HOME</a>
+                <a href="homelogin.php">HOME</a>
                 <a href="mydatasets.php">MY DATASETS</a>
             </nav>
         </header>

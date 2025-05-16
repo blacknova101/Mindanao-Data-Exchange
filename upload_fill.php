@@ -1,6 +1,10 @@
 <?php
 session_start();
 include 'db_connection.php';
+
+// Include session update to ensure organization_id is synchronized
+include 'update_session.php';
+
 // Now check login
 if (!isset($_SESSION['user_id'])) {
     header("Location: unauthorized.php");
