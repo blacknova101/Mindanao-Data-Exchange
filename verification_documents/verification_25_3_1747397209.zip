@@ -1,6 +1,0 @@
-<br />
-<b>Warning</b>:  filesize(): stat failed for C:\xampp\htdocs\Mindanao-Data-Exchange/temp_zips/batch_8.zip in <b>C:\xampp\htdocs\Mindanao-Data-Exchange\download_batch.php</b> on line <b>70</b><br />
-<br />
-<b>Warning</b>:  readfile(C:\xampp\htdocs\Mindanao-Data-Exchange/temp_zips/batch_8.zip): Failed to open stream: No such file or directory in <b>C:\xampp\htdocs\Mindanao-Data-Exchange\download_batch.php</b> on line <b>71</b><br />
-<br />
-<b>Warning</b>:  unlink(C:\xampp\htdocs\Mindanao-Data-Exchange/temp_zips/batch_8.zip): No such file or directory in <b>C:\xampp\htdocs\Mindanao-Data-Exchange\download_batch.php</b> on line <b>74</b><br />
