@@ -184,13 +184,11 @@
         const listBtn = document.getElementById('list-view-btn');
         
         if (viewType === 'card') {
-            cardView.style.display = 'grid';
-            listView.style.display = 'none';
+            document.body.classList.remove('view-list');
             cardBtn.classList.add('active');
             listBtn.classList.remove('active');
         } else {
-            cardView.style.display = 'none';
-            listView.style.display = 'table';
+            document.body.classList.add('view-list');
             listBtn.classList.add('active');
             cardBtn.classList.remove('active');
         }

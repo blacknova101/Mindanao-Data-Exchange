@@ -5,6 +5,9 @@ include 'db_connection.php';
 // Include session update to ensure organization_id is synchronized
 include 'update_session.php';
 
+// Include the category modal early to ensure its functions are defined
+include 'category_modal.php';
+
 // Check if the user is logged in (ensure 'user_id' is set in the session)
 if (!isset($_SESSION['user_id'])) {
     // Redirect to login page if not authenticated
@@ -64,6 +67,7 @@ if ($search) {
             db.dataset_batch_id,
             db.user_id,
             db.organization_id,
+            db.visibility,
             u.first_name, u.last_name,
             o.name AS org_name,
             d.dataset_id,
@@ -90,6 +94,7 @@ if ($search) {
             db.dataset_batch_id,
             db.user_id,
             db.organization_id,
+            db.visibility,
             u.first_name, u.last_name,
             o.name AS org_name,
             d.dataset_id,
@@ -279,7 +284,7 @@ include 'batch_analytics.php';
         }
         .search-bar input {
             padding: 20px;
-            width: 1000px;/* Reduced width */
+            width: 1043px;/* Reduced width */
             border: solid black 1px;
             border-radius:10px;
             margin-top: 20px;
@@ -502,50 +507,36 @@ include 'batch_analytics.php';
             left: 0;
             top: 50%;
             transform: translateY(-50%);
-            background-color: #fff;
-            padding: 20px 15px;
+            background-color: #f8f9fa;
             border-radius: 0 10px 10px 0;
+            width: 120px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            padding: 15px;
             z-index: 100;
-            width: 110px;
         }
-
+        
         .filter-sidebar-title {
-            font-size: 14px;
             font-weight: bold;
-            color: #333;
             margin-bottom: 10px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .filter-sidebar-title i {
-            margin-right: 5px;
-            color: #0099ff;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            background-color: #f0f0f0;
             color: #333;
+            font-size: 14px;
+        }
+        
+        .filter-btn {
+            display: block;
+            padding: 8px 0;
+            margin: 5px 0;
             text-decoration: none;
-            border-radius: 20px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-align: center;
+            color: #555;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-size: 13px;
         }
-
+        
         .filter-btn:hover {
-            background-color: #e0e0e0;
+            background-color: #e9ecef;
         }
-
+        
         .filter-btn.active {
             background-color: #0099ff;
             color: white;
@@ -569,12 +560,42 @@ include 'batch_analytics.php';
             background-color: #f44336;
             color: white;
         }
+
+        /* Ensure view toggle functions properly */
+        .dataset-grid {
+            display: grid; /* Default is grid for card view */
+        }
+        
+        .dataset-table {
+            display: none; /* Initially hidden */
+            width: 100%;
+        }
+        
+        /* When list view is active */
+        .view-list .dataset-grid {
+            display: none !important;
+        }
+        
+        .view-list .dataset-table {
+            display: table !important;
+        }
     </style>
 </head>
 <body>
 <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
+
+<!-- Visibility filter sidebar -->
+<div class="filter-sidebar">
+    <div class="filter-sidebar-title">
+        <i class="fa-solid fa-filter"></i>
+        VISIBILITY
+    </div>
+    <a href="search_results.php<?= isset($_GET['search']) ? "?search=" . urlencode($_GET['search']) : (isset($_GET['category']) ? "?category=" . urlencode($_GET['category']) : "") ?>" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
+    <a href="search_results.php?<?= isset($_GET['search']) ? "search=" . urlencode($_GET['search']) . "&" : (isset($_GET['category']) ? "category=" . urlencode($_GET['category']) . "&" : "") ?>visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
+    <a href="search_results.php?<?= isset($_GET['search']) ? "search=" . urlencode($_GET['search']) . "&" : (isset($_GET['category']) ? "category=" . urlencode($_GET['category']) . "&" : "") ?>visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
+</div>
 
 <div class="container">
 <header class="navbar">
@@ -594,7 +615,7 @@ include 'batch_analytics.php';
             <img src="images/search_icon.png" alt="Search">
         </button>
     </form>
-    <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
+    <a id="category-btn" onclick="if(typeof showModal === 'function') { showModal(); return false; }" style="cursor: pointer;">CATEGORY</a>
     <span class="tooltip-wrapper">
         <a href="<?= $upload_disabled ? '#' : 'uploadselection.php' ?>" 
         id="add-data-btn" 
@@ -622,9 +643,11 @@ include 'batch_analytics.php';
                     <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['dataset_title']) ?>">
                         <?= htmlspecialchars($row['dataset_title']) ?>
                     </a>
+                    <?php if(isset($row['visibility'])): ?>
                     <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
                         <?= $row['visibility'] ?>
                     </span>
+                    <?php endif; ?>
                     </div>
                     <div class="dataset-description">
                         <?= htmlspecialchars(mb_strimwidth($row['dataset_description'], 0, 255, '...')) ?>
@@ -646,7 +669,7 @@ include 'batch_analytics.php';
                         </div>
                         <div class="dataset-download">
                             <?php 
-                                $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
+                                $is_private_unowned = (isset($row['visibility']) && $row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
                                 $has_access = hasApprovedAccess($conn, $row['dataset_id'], $_SESSION['user_id']);
                                 if (!$is_private_unowned || $has_access): 
                             ?>
@@ -719,7 +742,7 @@ include 'batch_analytics.php';
                         <div class="table-actions">
                             <div class="table-download">
                                 <?php 
-                                    $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
+                                    $is_private_unowned = (isset($row['visibility']) && $row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
                                     $has_access = hasApprovedAccess($conn, $row['dataset_id'], $_SESSION['user_id']);
                                     if (!$is_private_unowned || $has_access): 
                                 ?>
@@ -757,7 +780,8 @@ include 'batch_analytics.php';
         <br><br>
 </div>
 
-<?php include 'category_modal.php'; // Include the modal?>
+<!-- Removed duplicate category_modal.php include -->
+
 <script>
         function showModal() {
             document.getElementById("categoryModal").style.display = "flex";
@@ -766,8 +790,25 @@ include 'batch_analytics.php';
             document.getElementById("categoryModal").style.display = "none";
         }
         document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("categoryModal").style.display = "none";
-    });
+            document.getElementById("categoryModal").style.display = "none";
+            
+            // Add a backup event listener for the category button
+            var categoryBtn = document.getElementById('category-btn');
+            if (categoryBtn) {
+                categoryBtn.addEventListener('click', function(e) {
+                    if (typeof showModal === 'function') {
+                        showModal();
+                        e.preventDefault();
+                    }
+                });
+            }
+            
+            // Initialize view toggle
+            const savedView = localStorage.getItem('datasetViewPreference');
+            if (savedView) {
+                toggleView(savedView);
+            }
+        });
 
     function upvoteDataset(datasetId) {
         const upvoteButton = document.querySelector(`[data-id="${datasetId}"] button`);
@@ -806,17 +847,6 @@ include 'batch_analytics.php';
         });
     }
     </script>
-
-<!-- Add visibility filter sidebar after the opening body tag -->
-<div class="filter-sidebar">
-    <div class="filter-sidebar-title">
-        <i class="fa-solid fa-filter"></i>
-        VISIBILITY
-    </div>
-    <a href="search_results.php?<?= isset($_GET['search']) ? 'search=' . urlencode($_GET['search']) : (isset($_GET['category']) ? 'category=' . urlencode($_GET['category']) : '') ?>" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
-    <a href="search_results.php?<?= isset($_GET['search']) ? 'search=' . urlencode($_GET['search']) . '&' : (isset($_GET['category']) ? 'category=' . urlencode($_GET['category']) . '&' : '') ?>visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
-    <a href="search_results.php?<?= isset($_GET['search']) ? 'search=' . urlencode($_GET['search']) . '&' : (isset($_GET['category']) ? 'category=' . urlencode($_GET['category']) . '&' : '') ?>visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
-</div>
 
 </body>
 </html>

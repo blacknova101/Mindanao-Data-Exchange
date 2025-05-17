@@ -28,6 +28,103 @@ if (!$dataset_id) {
     exit;
 }
 
+// Handle version switching if requested
+if (isset($_GET['switch_to']) && is_numeric($_GET['switch_to'])) {
+    $version_id = (int)$_GET['switch_to'];
+    
+    // Get the dataset batch_id first
+    $batchSql = "SELECT dataset_batch_id FROM datasets WHERE dataset_id = ?";
+    $stmt = mysqli_prepare($conn, $batchSql);
+    mysqli_stmt_bind_param($stmt, 'i', $dataset_id);
+    mysqli_stmt_execute($stmt);
+    $batchResult = mysqli_stmt_get_result($stmt);
+    
+    if ($batchRow = mysqli_fetch_assoc($batchResult)) {
+        $batch_id = $batchRow['dataset_batch_id'];
+        
+        // Check if this version exists and belongs to this batch
+        $checkVersionSql = "
+            SELECT * FROM datasetversions 
+            WHERE version_id = ? AND dataset_batch_id = ?
+        ";
+        $stmt = mysqli_prepare($conn, $checkVersionSql);
+        mysqli_stmt_bind_param($stmt, 'ii', $version_id, $batch_id);
+        mysqli_stmt_execute($stmt);
+        $checkResult = mysqli_stmt_get_result($stmt);
+        
+        if (mysqli_num_rows($checkResult) > 0) {
+            $versionData = mysqli_fetch_assoc($checkResult);
+            
+            // Start a transaction
+            mysqli_begin_transaction($conn);
+            
+            try {
+                // Mark all versions as not current
+                $updateAllSql = "
+                    UPDATE datasetversions
+                    SET is_current = 0
+                    WHERE dataset_batch_id = ?
+                ";
+                $stmt = mysqli_prepare($conn, $updateAllSql);
+                mysqli_stmt_bind_param($stmt, 'i', $batch_id);
+                mysqli_stmt_execute($stmt);
+                
+                // Mark the selected version as current
+                $updateCurrentSql = "
+                    UPDATE datasetversions
+                    SET is_current = 1
+                    WHERE version_id = ?
+                ";
+                $stmt = mysqli_prepare($conn, $updateCurrentSql);
+                mysqli_stmt_bind_param($stmt, 'i', $version_id);
+                mysqli_stmt_execute($stmt);
+                
+                // Update the main dataset with this version's data including file_path
+                $updateDatasetSql = "
+                    UPDATE datasets
+                    SET title = ?,
+                        description = ?,
+                        start_period = ?,
+                        end_period = ?,
+                        category_id = ?,
+                        source = ?,
+                        link = ?,
+                        location = ?,
+                        file_path = ?
+                    WHERE dataset_batch_id = ?
+                ";
+                $stmt = mysqli_prepare($conn, $updateDatasetSql);
+                mysqli_stmt_bind_param(
+                    $stmt, 
+                    'ssssissssi', 
+                    $versionData['title'],
+                    $versionData['description'],
+                    $versionData['start_period'],
+                    $versionData['end_period'],
+                    $versionData['category_id'],
+                    $versionData['source'],
+                    $versionData['link'],
+                    $versionData['location'],
+                    $versionData['file_path'],
+                    $batch_id
+                );
+                mysqli_stmt_execute($stmt);
+                
+                // Commit the transaction
+                mysqli_commit($conn);
+                
+                // Redirect to the dataset page
+                header("Location: dataset.php?id=$dataset_id&switched=1");
+                exit();
+            } catch (Exception $e) {
+                // Roll back the transaction if any query fails
+                mysqli_rollback($conn);
+                $error = "Failed to switch versions. Error: " . $e->getMessage();
+            }
+        }
+    }
+}
+
 // Handle dataset access request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_access'])) {
     if (!$user_id) {
@@ -145,39 +242,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_text'])) {
 
     $insertComment = "
         INSERT INTO datasetcomments (dataset_id, user_id, comment_text, timestamp)
-        VALUES ($dataset_id, $user_id, '$comment_text', NOW())
+        VALUES (?, ?, ?, NOW())
     ";
-    mysqli_query($conn, $insertComment);
+    
+    $stmt = mysqli_prepare($conn, $insertComment);
+    mysqli_stmt_bind_param($stmt, 'iis', $dataset_id, $user_id, $comment_text);
+    mysqli_stmt_execute($stmt);
+    
+    // Redirect to prevent form resubmission on refresh
+    header("Location: dataset.php?id=$dataset_id&comment_added=1");
+    exit;
 }
 
+// Get dataset details
 $sql = "
-    SELECT 
-        d.*, 
-        u.first_name, 
-        u.last_name,
-        u.email,
-        db.visibility,
-        DATE_FORMAT(d.start_period, '%M %e, %Y') AS formatted_start_period,
-        DATE_FORMAT(d.end_period, '%M %e, %Y') AS formatted_end_period
+    SELECT d.*, db.visibility, u.first_name, u.last_name, u.email, u.organization_id, 
+           o.name as organization_name, c.name as category_name, d.dataset_batch_id
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id 
     JOIN dataset_batches db ON d.dataset_batch_id = db.dataset_batch_id
-    WHERE d.dataset_id = $dataset_id
+    LEFT JOIN organizations o ON u.organization_id = o.organization_id
+    LEFT JOIN datasetcategories c ON d.category_id = c.category_id
+    WHERE d.dataset_id = ?
 ";
 
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, 'i', $dataset_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 
-$result = mysqli_query($conn, $sql); // <--- Moved here
-
-if (!$result || mysqli_num_rows($result) === 0) {
+if (mysqli_num_rows($result) === 0) {
     echo "Dataset not found.";
     exit;
 }
 
 $dataset = mysqli_fetch_assoc($result);
-$batch_id = $dataset['dataset_batch_id']; // Assuming correct column name
+$batch_id = $dataset['dataset_batch_id'];
+
+// Get dataset versions
+$versionsSql = "
+    SELECT v.*, 
+           DATE_FORMAT(v.created_at, '%M %e, %Y') as formatted_date,
+           CONCAT(u.first_name, ' ', u.last_name) as creator_name
+    FROM datasetversions v
+    JOIN users u ON v.created_by = u.user_id
+    WHERE v.dataset_batch_id = ?
+    ORDER BY v.version_number DESC
+    LIMIT 5
+";
+
+$stmt = mysqli_prepare($conn, $versionsSql);
+mysqli_stmt_bind_param($stmt, 'i', $batch_id);
+mysqli_stmt_execute($stmt);
+$versionsResult = mysqli_stmt_get_result($stmt);
+
+// Get current version
+$currentVersionSql = "
+    SELECT v.version_number, v.version_id
+    FROM datasetversions v
+    WHERE v.dataset_batch_id = ? AND v.is_current = 1
+    LIMIT 1
+";
+
+$stmt = mysqli_prepare($conn, $currentVersionSql);
+mysqli_stmt_bind_param($stmt, 'i', $batch_id);
+mysqli_stmt_execute($stmt);
+$currentVersionResult = mysqli_stmt_get_result($stmt);
+$currentVersion = mysqli_fetch_assoc($currentVersionResult);
+
+// Count total versions
+$countVersionsSql = "
+    SELECT COUNT(*) as total_versions
+    FROM datasetversions
+    WHERE dataset_batch_id = ?
+";
+
+$stmt = mysqli_prepare($conn, $countVersionsSql);
+mysqli_stmt_bind_param($stmt, 'i', $batch_id);
+mysqli_stmt_execute($stmt);
+$countResult = mysqli_stmt_get_result($stmt);
+$countRow = mysqli_fetch_assoc($countResult);
+$totalVersions = $countRow['total_versions'];
 
 // Store whether this is a private dataset not owned by current user
-$is_private_unowned = ($dataset['visibility'] == 'Private' && $dataset['user_id'] != $_SESSION['user_id']);
+$is_private_unowned = ($dataset['visibility'] === 'Private' && $dataset['user_id'] != $user_id);
 
 // Check if user has already requested access to this dataset
 $has_requested_access = false;
@@ -200,17 +348,12 @@ if ($is_private_unowned) {
 
 $batchDatasetsSql = "
     SELECT * FROM datasets
-    WHERE dataset_batch_id = $batch_id
+    WHERE dataset_batch_id = ?
 ";
-$batchDatasetsResult = mysqli_query($conn, $batchDatasetsSql);
-
-
-$result = mysqli_query($conn, $sql);
-
-if (!$result || mysqli_num_rows($result) === 0) {
-    echo "Dataset not found.";
-    exit;
-}
+$stmt = mysqli_prepare($conn, $batchDatasetsSql);
+mysqli_stmt_bind_param($stmt, 'i', $batch_id);
+mysqli_stmt_execute($stmt);
+$batchDatasetsResult = mysqli_stmt_get_result($stmt);
 
 include 'batch_analytics.php';
 
@@ -231,53 +374,71 @@ $analytics = get_batch_analytics($conn, $batch_id);
 <head>
   <meta charset="UTF-8">
   <title><?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?></title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
      body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background-color: #f4f6f9;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f9;
       color: #333;
     }
-    .navbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
-            padding-left: 30px;
-            background-color: #0099ff; /* Transparent background */
-            color: #cfd9ff;
-            border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            position: relative;
-            margin: 10px 0;
-            backdrop-filter: blur(10px);
-            max-width: 1200px; /* Limit the maximum width */
-            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
-            margin-top:30px;
-            margin-left: auto; /* Center align the navbar */
-            margin-right: auto; /* Center align the navbar */
-            font-weight: bold;
-        }
-        .logo {
+    
+    /* Version tabs styling */
+    .version-tabs {
         display: flex;
-        align-items: center;
-        }
-        .logo img {
-            height: auto;
-            width: 80px; /* Adjust logo size */
-            max-width: 100%;
-        }
-        .nav-links a {
-            color: white;
-            margin-left: 20px;
-            text-decoration: none;
-            font-size: 18px;
-            transition: transform 0.3s ease; /* Smooth transition for scaling */
-        }
-        .nav-links a:hover {
-            transform: scale(1.2); /* Scale up on hover */
-        }
-
+        margin-bottom: -1px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .version-tab {
+        padding: 8px 16px;
+        background-color: #e9ecef;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+        border-radius: 6px 6px 0 0;
+        margin-right: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s;
+        position: relative;
+        top: 1px;
+        text-decoration: none;
+        color: #495057;
+    }
+    
+    .version-tab.active {
+        background-color: #fff;
+        border-bottom: 1px solid #fff;
+        color: #0099ff;
+        font-weight: 600;
+    }
+    
+    .version-tab:hover:not(.active) {
+        background-color: #f1f3f5;
+    }
+    
+    .version-tab.history {
+        margin-left: auto;
+        background-color: #f8f9fa;
+    }
+    
+    .version-indicator {
+        display: inline-block;
+        padding: 3px 8px;
+        background-color: #e9f5ff;
+        color: #0099ff;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-left: 10px;
+    }
+    
+    /* Adjust container to work with tabs */
     .container {
       max-width: 1100px;
       margin: 40px auto;
@@ -285,6 +446,51 @@ $analytics = get_batch_analytics($conn, $batch_id);
       background: #fff;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 5%;
+        padding-left: 30px;
+        background-color: #0099ff;
+        color: #cfd9ff;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        position: relative;
+        margin: 10px 0;
+        backdrop-filter: blur(10px);
+        max-width: 1200px;
+        width: 100%;
+        margin-top: 30px;
+        margin-left: auto;
+        margin-right: auto;
+        font-weight: bold;
+    }
+    
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+    
+    .logo img {
+        height: auto;
+        width: 80px;
+        max-width: 100%;
+    }
+    
+    .nav-links a {
+        color: white;
+        margin-left: 20px;
+        text-decoration: none;
+        font-size: 18px;
+        transition: transform 0.3s ease;
+    }
+    
+    .nav-links a:hover {
+        transform: scale(1.2);
     }
 
     .header-section {
@@ -372,6 +578,10 @@ $analytics = get_batch_analytics($conn, $batch_id);
       margin-bottom: 4px;
     }
 
+    .info-item span {
+      font-weight: 500;
+    }
+
     .file-item {
       display: flex;
       align-items: center;
@@ -383,32 +593,232 @@ $analytics = get_batch_analytics($conn, $batch_id);
     }
 
     .file-item i {
-      font-style: normal;
-      font-size: 18px;
       margin-right: 10px;
+      color: #007BFF;
     }
 
     .file-item a {
-      flex-grow: 1;
+      color: #333;
       text-decoration: none;
-      color: #007BFF;
     }
 
     .file-item a:hover {
       text-decoration: underline;
+      color: #007BFF;
     }
 
-    .download-btn {
-        background-color: #0099ff;
-        color: white;
-        font-weight: bold;
-        padding: 8px 14px;
-        border-radius: 6px;
-        text-decoration: none;
-        transition: background-color 0.3s ease;
+    .file-item .file-size {
+      margin-left: auto;
+      color: #777;
+      font-size: 0.9em;
     }
-    .download-btn:hover {
-        background-color: #007acc;
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn i {
+      margin-right: 8px;
+    }
+    
+    .btn-primary {
+      background: #007BFF;
+      color: white;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: #0069d9;
+    }
+
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #333;
+      border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecef;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .metadata-section {
+      margin-top: 40px;
+    }
+
+    .metadata-section h3 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .metadata-item {
+      background: #f8f9fa;
+      padding: 12px 16px;
+      border-radius: 6px;
+      border-left: 4px solid #007BFF;
+    }
+
+    .metadata-item strong {
+      display: block;
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .metadata-item span {
+      font-weight: 500;
+    }
+
+    .upvote-section {
+      display: flex;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    .upvote-btn {
+      display: flex;
+      align-items: center;
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 30px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .upvote-btn:hover {
+      background: #e9ecef;
+    }
+
+    .upvote-btn i {
+      color: #007BFF;
+      margin-right: 8px;
+    }
+
+    .upvote-count {
+      font-weight: 600;
+    }
+
+    .upvote-text {
+      margin-left: 12px;
+      color: #666;
+    }
+    
+    .request-access-form {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .request-access-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .request-access-form textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      resize: vertical;
+    }
+
+    .request-access-form .btn {
+      margin-top: 10px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .alert-info {
+      background: #cff4fc;
+      color: #055160;
+      border: 1px solid #b6effb;
+    }
+
+    .alert-warning {
+      background: #fff3cd;
+      color: #664d03;
+      border: 1px solid #ffecb5;
+    }
+
+    .alert-success {
+      background: #d1e7dd;
+      color: #0f5132;
+      border: 1px solid #badbcc;
+    }
+
+    .alert-danger {
+      background: #f8d7da;
+      color: #842029;
+      border: 1px solid #f5c2c7;
+    }
+    
+    #background-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1; /* stays behind everything */
+    }
+    
+    /* Add missing styles */
+    .visibility-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+        margin-left: 15px;
+        font-weight: bold;
+    }
+    
+    .visibility-badge.public {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .visibility-badge.private {
+        background-color: #f44336;
+        color: white;
     }
     
     .request-btn {
@@ -424,95 +834,14 @@ $analytics = get_batch_analytics($conn, $batch_id);
         cursor: pointer;
         border: none;
     }
+    
     .request-btn:hover {
         background-color: #e68a00;
     }
+    
     .request-btn:disabled {
         background-color: #cccccc;
         cursor: not-allowed;
-    }
-
-    .file-download {
-        margin-right: 5px; /* Adds space between the icon and the text */
-    }
-    
-    .visibility-badge {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 14px;
-        margin-left: 15px;
-        font-weight: bold;
-    }
-
-    .visibility-badge.public {
-        background-color: #4CAF50;
-        color: white;
-    }
-
-    .visibility-badge.private {
-        background-color: #f44336;
-        color: white;
-    }
-    
-    form{
-      width: 100%;
-    }
-    form textarea {
-      width: 1080px;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    form button {
-      background-color: #007BFF;
-      color: white;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    form button:hover {
-      background-color: #0056b3;
-    }
-    .resources-scrollable {
-      max-height: 300px; /* Adjust height as needed */
-      overflow-y: auto;
-      padding-right: 10px; /* Optional: to avoid scrollbar overlapping text */
-    }
-
-    #background-video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1; /* stays behind everything */
-    }
-    
-    .alert {
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 4px;
-      color: #721c24;
-      background-color: #f8d7da;
-      border: 1px solid #f5c6cb;
-    }
-    .alert.success {
-      color: #155724;
-      background-color: #d4edda;
-      border: 1px solid #c3e6cb;
-    }
-
-
-    @media (max-width: 768px) {
-      .header-section {
-        flex-direction: column;
-      }
-      .info-grid {
-        flex-direction: column;
-      }
     }
 
     /* Modal styles */
@@ -525,31 +854,74 @@ $analytics = get_batch_analytics($conn, $batch_id);
       width: 100%;
       height: 100%;
       overflow: auto;
-      background-color: rgba(0,0,0,0.4);
+      background-color: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     
     .modal-content {
       background-color: #fff;
-      margin: 10% auto;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      width: 500px;
+      margin: 5% auto;
+      padding: 35px;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      width: 650px;
       max-width: 90%;
+      transform: translateY(20px);
+      animation: slideUp 0.4s ease forwards;
+      border-top: 5px solid #0099ff;
+    }
+    
+    @keyframes slideUp {
+      to { transform: translateY(0); }
     }
     
     .close {
-      color: #aaa;
+      color: #888;
       float: right;
       font-size: 28px;
       font-weight: bold;
       cursor: pointer;
+      transition: color 0.2s;
+      margin-top: -25px;
+      margin-right: -20px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
     }
     
     .close:hover,
     .close:focus {
-      color: black;
-      text-decoration: none;
+      color: #0099ff;
+      background-color: #f0f7ff;
+    }
+    
+    .modal h3 {
+      color: #0099ff;
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e9f5ff;
+      position: relative;
+    }
+    
+    .modal h3:after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 80px;
+      height: 2px;
+      background-color: #0099ff;
     }
     
     .form-group {
@@ -558,54 +930,88 @@ $analytics = get_batch_analytics($conn, $batch_id);
     
     .form-group label {
       display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 15px;
+    }
+    
+    .form-group textarea,
+    .form-group input[type="text"],
+    .form-group input[type="url"],
+    .form-group input[type="date"],
+    .form-group select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 15px;
+      transition: all 0.2s;
+      background-color: #f9fbfd;
+      box-sizing: border-box;
+    }
+    
+    .form-group textarea:focus,
+    .form-group input[type="text"]:focus,
+    .form-group input[type="url"]:focus,
+    .form-group input[type="date"]:focus,
+    .form-group select:focus {
+      border-color: #0099ff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.15);
+      background-color: #fff;
     }
     
     .form-group textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      min-height: 120px;
       resize: vertical;
-    }
-    
-    .form-group input[type="file"] {
-      padding: 8px 0;
     }
     
     .form-help {
       font-size: 12px;
       color: #666;
-      margin-top: 5px;
+      margin-top: 6px;
     }
     
     .form-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
+      gap: 12px;
+      margin-top: 30px;
     }
     
     .cancel-btn {
-      padding: 8px 16px;
+      padding: 10px 20px;
       background-color: #f1f1f1;
+      color: #333;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .cancel-btn:hover {
+      background-color: #e0e0e0;
+      transform: translateY(-2px);
     }
     
     .submit-btn {
-      padding: 8px 16px;
-      background-color: #ff9900;
+      padding: 10px 24px;
+      background-color: #0099ff;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
     }
     
     .submit-btn:hover {
-      background-color: #e68a00;
+      background-color: #0080dd;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 153, 255, 0.3);
     }
 
     .char-counter {
@@ -615,15 +1021,432 @@ $analytics = get_batch_analytics($conn, $batch_id);
       margin-top: 5px;
     }
     
-    /* Add styling for when the user approaches the limit */
     .char-counter.warning {
       color: #f0ad4e;
     }
     
-    /* Add styling for when the user reaches the limit */
     .char-counter.limit {
       color: #d9534f;
       font-weight: bold;
+    }
+    
+    /* Radio button styling */
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin: 15px 0;
+    }
+    
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 10px 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    
+    .radio-group label:hover {
+      background-color: #e9f5ff;
+    }
+    
+    .radio-group input[type="radio"] {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      max-width: 18px;
+      max-height: 18px;
+      flex: 0 0 18px;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      outline: none;
+      transition: all 0.2s;
+      position: relative;
+      padding: 0;
+      margin: 0;
+      vertical-align: middle;
+      box-sizing: border-box;
+    }
+    
+    .radio-group input[type="radio"]:checked {
+      border-color: #0099ff;
+    }
+    
+    .radio-group input[type="radio"]:checked::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      background-color: #0099ff;
+      border-radius: 50%;
+    }
+
+    /* File upload styling */
+    .file-upload-container {
+      border: 2px dashed #0099ff;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 15px;
+      background-color: #f0f7ff;
+      transition: all 0.2s;
+    }
+    
+    .file-upload-container:hover {
+      background-color: #e9f5ff;
+    }
+    
+    .file-upload-container input[type="file"] {
+      width: 100%;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    
+    .file-list {
+      margin-top: 15px;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      background: #fff;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+    
+    /* Version notes styling */
+    .version-notes {
+      background-color: #f0f7ff;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #0099ff;
+      margin-top: 15px;
+    }
+    
+    /* Form rows for the modal */
+    .form-row {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .form-row .form-group {
+      flex: 1 1 240px;
+      min-width: 0; /* Prevents flex item overflow */
+    }
+    
+    @media (max-width: 768px) {
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+        margin: 10% auto;
+      }
+      
+      .form-row {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .radio-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+
+    /* Add CSS fix for form spacing */
+    .form-group {
+        margin-bottom: 25px;
+        box-sizing: border-box;
+        padding-right: 0;
+    }
+    
+    .form-group input, 
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 15px;
+    }
+    
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        margin-bottom: 5px;
+    }
+    
+    .form-row .form-group {
+        flex: 1 1 240px;
+        min-width: 0;
+    }
+
+    /* Notification styles - specific selectors to avoid conflicts */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #00cc00;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      transform: translateX(150%);
+      transition: transform 0.3s ease-in-out;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+    
+    .notification.comment {
+      background-color: #0099ff;
+    }
+    
+    .notification.request {
+      background-color: #ff9900;
+    }
+    
+    .notification i {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.hide {
+      transform: translateX(150%);
+    }
+    
+    /* Comment section styles with specific IDs */
+    #form {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+    
+    #form h3 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    
+    #form textarea {
+      width: 98%;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      resize: vertical;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+    
+    #form button {
+      background-color: #0099ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    #form button:hover {
+      background-color: #007bff;
+    }
+    
+    .comment-item {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-bottom: 1px solid #dee2e6;
+      background-color: #fff;
+      border-radius: 4px;
+    }
+    
+    .comment-item strong {
+      color: #495057;
+      font-size: 16px;
+    }
+    
+    .comment-item small {
+      color: #6c757d;
+      font-size: 12px;
+      margin-left: 5px;
+    }
+    
+    .comment-item p {
+      margin-top: 10px;
+      color: #212529;
+      line-height: 1.5;
+    }
+    
+    .no-comments {
+      color: #6c757d;
+      font-style: italic;
+    }
+
+    /* Additional styles that were missing */
+    .header-left {
+      border-radius: 8px;
+    }
+    
+    .download-btn {
+      background-color: #0099ff;
+      color: white;
+      font-weight: bold;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+    
+    .download-btn:hover {
+      background-color: #007acc;
+    }
+    
+    .resources-scrollable {
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    /* Add specific styling for the Edit Dataset button */
+    #editDatasetBtn {
+        padding: 10px 20px !important;
+        font-size: 16px !important;
+        background-color: #0099ff !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s !important;
+    }
+    
+    #editDatasetBtn:hover {
+        background-color: #007bff !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0, 153, 255, 0.3) !important;
+    }
+
+    /* Comment Submit Button */
+    #commentSubmitBtn {
+        background-color: #0099ff !important;
+        color: white !important;
+        border: none !important;
+        padding: 10px 20px !important;
+        border-radius: 4px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        transition: background-color 0.2s !important;
+    }
+    
+    #commentSubmitBtn:hover {
+        background-color: #007bff !important;
+    }
+    
+    /* Request Access buttons */
+    #requestAccessBtn, #requestAgainBtn {
+        background-color: #ff9900 !important;
+        color: white !important;
+        font-weight: bold !important;
+        padding: 10px 16px !important;
+        border-radius: 6px !important;
+        text-decoration: none !important;
+        transition: background-color 0.3s ease !important;
+        display: inline-block !important;
+        margin-top: 15px !important;
+        cursor: pointer !important;
+        border: none !important;
+    }
+    
+    #requestAccessBtn:hover, #requestAgainBtn:hover {
+        background-color: #e68a00 !important;
+    }
+    
+    #accessGrantedBtn {
+        background-color: #28a745 !important;
+        color: white !important;
+        font-weight: bold !important;
+        padding: 10px 16px !important;
+        border-radius: 6px !important;
+        display: inline-block !important;
+        margin-top: 15px !important;
+        border: none !important;
+    }
+    
+    #accessRequestedBtn {
+        background-color: #cccccc !important;
+        color: white !important;
+        font-weight: bold !important;
+        padding: 10px 16px !important;
+        border-radius: 6px !important;
+        display: inline-block !important;
+        margin-top: 15px !important;
+        border: none !important;
+        cursor: not-allowed !important;
+    }
+    
+    /* Modal Cancel and Submit buttons */
+    #cancelRequestBtn, #cancelEditBtn {
+        padding: 10px 20px !important;
+        background-color: #f1f1f1 !important;
+        color: #333 !important;
+        border: none !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        font-weight: 600 !important;
+        transition: all 0.2s !important;
+    }
+    
+    #cancelRequestBtn:hover, #cancelEditBtn:hover {
+        background-color: #e0e0e0 !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    #submitRequestBtn, #saveChangesBtn {
+        padding: 10px 24px !important;
+        background-color: #0099ff !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        font-weight: 600 !important;
+        transition: all 0.2s !important;
+    }
+    
+    #submitRequestBtn:hover, #saveChangesBtn:hover {
+        background-color: #0080dd !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0, 153, 255, 0.3) !important;
     }
   </style>
 </head>
@@ -631,6 +1454,76 @@ $analytics = get_batch_analytics($conn, $batch_id);
 <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
+  
+<?php if (isset($_SESSION['request_message'])): ?>
+<div class="notification request" id="requestMessage">
+    <i class="fas fa-bell"></i> <?php echo $_SESSION['request_message']; ?>
+    <?php unset($_SESSION['request_message']); ?>
+</div>
+<?php endif; ?>
+
+<?php if (isset($_GET['switched']) && $_GET['switched'] == '1'): ?>
+<div class="notification" id="versionMessage">
+    <i class="fas fa-check-circle"></i> Version switched successfully
+</div>
+<?php endif; ?>
+
+<?php if (isset($_GET['comment_added']) && $_GET['comment_added'] == '1'): ?>
+<div class="notification comment" id="commentMessage">
+    <i class="fas fa-comment"></i> Your comment has been posted successfully
+</div>
+<?php endif; ?>
+
+<script>
+// Success Message Animation
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle request message
+    const requestMessage = document.getElementById('requestMessage');
+    if (requestMessage) {
+        setTimeout(() => {
+            requestMessage.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            requestMessage.classList.add('hide');
+            setTimeout(() => {
+                requestMessage.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Handle version message
+    const versionMessage = document.getElementById('versionMessage');
+    if (versionMessage) {
+        setTimeout(() => {
+            versionMessage.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            versionMessage.classList.add('hide');
+            setTimeout(() => {
+                versionMessage.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Handle comment message
+    const commentMessage = document.getElementById('commentMessage');
+    if (commentMessage) {
+        setTimeout(() => {
+            commentMessage.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            commentMessage.classList.add('hide');
+            setTimeout(() => {
+                commentMessage.remove();
+            }, 300);
+        }, 3000);
+    }
+});
+</script>
+
 <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
@@ -640,13 +1533,56 @@ $analytics = get_batch_analytics($conn, $batch_id);
             <a href="HomeLogin.php">HOME</a>
         </nav>
     </header>
+
   <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2>
+          <?php echo htmlspecialchars($dataset['title']); ?>
+          <?php if (isset($currentVersion)): ?>
+          <span class="version-indicator"><?php echo htmlspecialchars($currentVersion['version_number']); ?></span>
+          <?php endif; ?>
+          <span class="visibility-badge <?= strtolower($dataset['visibility']) ?>">
+            <?= $dataset['visibility'] ?>
+          </span>
+        </h2>
+      </div>
+      <?php if ($dataset['user_id'] == $user_id): ?>
+      <div>
+          <button id="editDatasetBtn" onclick="openEditModal()" class="btn btn-primary">
+              <i class="fas fa-edit"></i> Edit Dataset
+          </button>
+      </div>
+      <?php endif; ?>
+    </div>
     
+    <!-- Version tabs -->
+    <div class="version-tabs">
+      <?php if (mysqli_num_rows($versionsResult) > 0): ?>
+        <?php mysqli_data_seek($versionsResult, 0); ?>
+        <?php while ($version = mysqli_fetch_assoc($versionsResult)): ?>
+          <a href="dataset.php?id=<?php echo $dataset_id; ?>&switch_to=<?php echo $version['version_id']; ?>" 
+             class="version-tab <?php echo ($version['is_current'] ? 'active' : ''); ?>">
+            <?php echo htmlspecialchars($version['version_number']); ?>
+          </a>
+        <?php endwhile; ?>
+        
+        <?php if ($totalVersions > 5): ?>
+          <a href="dataset_versions.php?batch_id=<?php echo $batch_id; ?>" class="version-tab history">
+            <i class="fas fa-history"></i> History (<?php echo $totalVersions; ?>)
+          </a>
+        <?php endif; ?>
+      <?php endif; ?>
+    </div>
+
   <div class="header-section">
       <div class="header-left">
       <span><?php echo !empty($dataset['source']) ? htmlspecialchars($dataset['source']) : 'Unknown'; ?></span>
       <h1>
         <?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?>
+        <?php if (isset($currentVersion)): ?>
+        <span class="version-indicator"><?php echo htmlspecialchars($currentVersion['version_number']); ?></span>
+        <?php endif; ?>
         <span class="visibility-badge <?= strtolower($dataset['visibility']) ?>">
           <?= $dataset['visibility'] ?>
         </span>
@@ -673,13 +1609,6 @@ $analytics = get_batch_analytics($conn, $batch_id);
         </div>
     </div>
     
-    <?php if (isset($_SESSION['request_message'])): ?>
-    <div class="alert <?php echo strpos($_SESSION['request_message'], 'successfully') !== false ? 'success' : ''; ?>">
-        <?php echo $_SESSION['request_message']; ?>
-        <?php unset($_SESSION['request_message']); ?>
-    </div>
-    <?php endif; ?>
-    
     <div class="title-section">
       <p><?php echo !empty($dataset['description']) ? nl2br(htmlspecialchars($dataset['description'])) : 'No description available.'; ?></p>
       </div>
@@ -691,13 +1620,31 @@ $analytics = get_batch_analytics($conn, $batch_id);
         <div class="info-item">
           <strong>Uploader</strong>
           <span><?php echo htmlspecialchars($dataset['first_name'] . ' ' . $dataset['last_name']); ?></span>
-          <span>(<?php echo htmlspecialchars($dataset['email']); ?>)</span>
+          <?php if (!empty($dataset['email'])): ?>
+            <span>(<?php echo htmlspecialchars($dataset['email']); ?>)</span>
+          <?php endif; ?>
         </div>
         <div class="info-item">
           <strong>Time Period</strong>
           <?php 
-            $start = !empty($dataset['formatted_start_period']) ? $dataset['formatted_start_period'] : 'Unknown';
-            $end = !empty($dataset['formatted_end_period']) ? $dataset['formatted_end_period'] : 'Unknown';
+            // Convert date format from Y-m to month name and year
+            function formatPeriodDate($period) {
+                if (!$period || $period === '0000-00' || empty($period)) {
+                    return 'Unknown';
+                }
+                
+                // If it's already in YYYY-MM-DD format, extract just year and month
+                if (strlen($period) > 7) {
+                    $period = substr($period, 0, 7); // Get YYYY-MM portion
+                }
+                
+                $date = DateTime::createFromFormat('Y-m', $period);
+                return $date ? $date->format('F Y') : 'Invalid date';
+            }
+
+            $start = formatPeriodDate($dataset['start_period']);
+            $end = formatPeriodDate($dataset['end_period']);
+            
             echo htmlspecialchars("$start – $end");
           ?>
         </div>
@@ -718,19 +1665,19 @@ $analytics = get_batch_analytics($conn, $batch_id);
         
         <?php if ($is_private_unowned): ?>
           <?php if ($has_approved_access): ?>
-            <button type="button" class="request-btn" style="background-color: #28a745;" disabled>
+            <button type="button" id="accessGrantedBtn" class="request-btn" style="background-color: #28a745;" disabled>
               Access Granted
             </button>
           <?php elseif ($has_requested_access): ?>
-            <button type="button" class="request-btn" disabled>
+            <button type="button" id="accessRequestedBtn" class="request-btn" disabled>
               Access Requested
             </button>
           <?php elseif ($has_rejected_access): ?>
-            <button type="button" class="request-btn" style="background-color: #ff5722;" onclick="openRequestModal()">
+            <button type="button" id="requestAgainBtn" class="request-btn" style="background-color: #ff5722;" onclick="openRequestModal()">
               Request Again
             </button>
           <?php else: ?>
-            <button type="button" class="request-btn" onclick="openRequestModal()">
+            <button type="button" id="requestAccessBtn" class="request-btn" onclick="openRequestModal()">
               Request this Dataset
             </button>
           <?php endif; ?>
@@ -738,9 +1685,55 @@ $analytics = get_batch_analytics($conn, $batch_id);
       </div>
       <div class="resources-box">
         <h3>Data and Resources</h3>
-        <?php if ($batchDatasetsResult && mysqli_num_rows($batchDatasetsResult) > 0): ?>
+        <?php
+        // Get the current version information
+        if (isset($currentVersion) && $currentVersion) {
+            $currentVersionId = $currentVersion['version_id'];
+            
+            // Get the current version details
+            $versionDetailSql = "
+                SELECT * FROM datasetversions 
+                WHERE version_id = ?
+            ";
+            $stmt = mysqli_prepare($conn, $versionDetailSql);
+            mysqli_stmt_bind_param($stmt, 'i', $currentVersionId);
+            mysqli_stmt_execute($stmt);
+            $versionDetail = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+            
+            // Get only the main dataset as a resource
+            $resourcesSql = "
+                SELECT * FROM datasets 
+                WHERE dataset_id = ?
+            ";
+            $stmt = mysqli_prepare($conn, $resourcesSql);
+            mysqli_stmt_bind_param($stmt, 'i', $dataset_id);
+            mysqli_stmt_execute($stmt);
+            $resourcesResult = mysqli_stmt_get_result($stmt);
+        } else {
+            $resourcesResult = false;
+        }
+
+        // Get additional files from the same version directory if they exist
+        $additionalFiles = [];
+        if (isset($versionDetail['file_path'])) {
+            $versionDir = dirname($versionDetail['file_path']);
+            if (file_exists($versionDir) && is_dir($versionDir)) {
+                $files = scandir($versionDir);
+                foreach ($files as $file) {
+                    if ($file != '.' && $file != '..' && !is_dir($versionDir . '/' . $file) && $versionDir . '/' . $file != $dataset['file_path']) {
+                        $additionalFiles[] = [
+                            'file_path' => $versionDir . '/' . $file,
+                            'dataset_id' => $dataset_id
+                        ];
+                    }
+                }
+            }
+        }
+        ?>
+        
+        <?php if ($resourcesResult && mysqli_num_rows($resourcesResult) > 0): ?>
           <div class="resources-scrollable" style="display: flex; flex-direction: column; gap: 10px;">
-            <?php while ($ds = mysqli_fetch_assoc($batchDatasetsResult)): ?>
+            <?php while ($ds = mysqli_fetch_assoc($resourcesResult)): ?>
               <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
@@ -760,9 +1753,30 @@ $analytics = get_batch_analytics($conn, $batch_id);
                 <?php endif; ?>
               </div>
             <?php endwhile; ?>
+            
+            <?php foreach ($additionalFiles as $addFile): ?>
+              <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
+                  <a href="download.php?direct_file=<?php echo urlencode($addFile['file_path']); ?>" style="color: #007BFF; text-decoration: none;">
+                    <?php echo htmlspecialchars(basename($addFile['file_path'])); ?>
+                  </a>
+                  <?php else: ?>
+                  <span style="color: #666;">
+                    <?php echo htmlspecialchars(basename($addFile['file_path'])); ?>
+                  </span>
+                  <?php endif; ?>
+                </div>
+                <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
+                  <a href="download.php?direct_file=<?php echo urlencode($addFile['file_path']); ?>" class="download-btn">⬇️ Download</a>              
+                <?php else: ?>
+                  <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
           </div>
         <?php else: ?>
-          <p>No other datasets in this batch.</p>
+          <p>No additional resources available.</p>
         <?php endif; ?>
       </div>
 
@@ -775,7 +1789,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
       <!-- Comment Form -->
       <form method="POST">
           <textarea name="comment_text" rows="4" placeholder="Write your comment here..." required></textarea><br>
-          <button type="submit">Post Comment</button>
+          <button type="submit" id="commentSubmitBtn">Post Comment</button>
       </form>
 
       <br>
@@ -786,22 +1800,25 @@ $analytics = get_batch_analytics($conn, $batch_id);
           SELECT dc.comment_text, dc.timestamp, u.first_name, u.last_name 
           FROM datasetcomments dc
           JOIN users u ON dc.user_id = u.user_id
-          WHERE dc.dataset_id = $dataset_id
+          WHERE dc.dataset_id = ?
           ORDER BY dc.timestamp DESC
       ";
 
-      $commentResult = mysqli_query($conn, $commentSql);
+      $stmt = mysqli_prepare($conn, $commentSql);
+      mysqli_stmt_bind_param($stmt, 'i', $dataset_id);
+      mysqli_stmt_execute($stmt);
+      $commentResult = mysqli_stmt_get_result($stmt);
 
       if (mysqli_num_rows($commentResult) > 0) {
           while ($comment = mysqli_fetch_assoc($commentResult)) {
-              echo "<div style='margin-bottom:15px; padding:10px; border-bottom:1px solid #ccc;'>";
-              echo "<strong>" . htmlspecialchars($comment['first_name'] . ' ' . $comment['last_name']) . "</strong><br>";
-              echo "<small>" . $comment['timestamp'] . "</small>";
-              echo "<p>" . nl2br(htmlspecialchars($comment['comment_text'])) . "</p>";
-              echo "</div>";
+              echo '<div class="comment-item">';
+              echo '<strong>' . htmlspecialchars($comment['first_name'] . ' ' . $comment['last_name']) . '</strong>';
+              echo '<small>' . date('F j, Y \a\t g:i a', strtotime($comment['timestamp'])) . '</small>';
+              echo '<p>' . nl2br(htmlspecialchars($comment['comment_text'])) . '</p>';
+              echo '</div>';
           }
       } else {
-          echo "<p>No comments yet.</p>";
+          echo '<p class="no-comments">No comments yet.</p>';
       }
       ?>
       </div>
@@ -832,12 +1849,95 @@ $analytics = get_batch_analytics($conn, $batch_id);
         </div>
         
         <div class="form-actions">
-          <button type="button" class="cancel-btn" onclick="document.getElementById('requestModal').style.display='none'">Cancel</button>
-          <button type="submit" class="submit-btn">Submit Request</button>
+          <button type="button" id="cancelRequestBtn" class="cancel-btn" onclick="document.getElementById('requestModal').style.display='none'">Cancel</button>
+          <button type="submit" id="submitRequestBtn" class="submit-btn">Submit Request</button>
         </div>
       </form>
     </div>
   </div>
+
+  <!-- Add Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content" style="width: 80%; max-width: 800px;">
+        <span class="close" onclick="document.getElementById('editModal').style.display='none'">&times;</span>
+        <h3>Edit Dataset</h3>
+        
+        <form method="POST" action="update_dataset.php" enctype="multipart/form-data">
+            <input type="hidden" name="dataset_id" value="<?php echo $dataset_id; ?>">
+            <input type="hidden" name="batch_id" value="<?php echo $batch_id; ?>">
+            <input type="hidden" name="return_to" value="dataset.php">
+            
+            <div class="form-group">
+                <label>Update Type:</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="update_type" value="update" checked> Update Current Version
+                    </label>
+                    <label>
+                        <input type="radio" name="update_type" value="new_version"> Create New Version
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" name="title" id="title" value="<?php echo htmlspecialchars($dataset['title']); ?>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea name="description" id="description" required><?php echo htmlspecialchars($dataset['description']); ?></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="start_period">Start Period:</label>
+                    <input type="date" name="start_period" id="start_period" value="<?php echo $dataset['start_period']; ?>" required>
+                </div>
+                <div class="form-group">
+                    <label for="end_period">End Period:</label>
+                    <input type="date" name="end_period" id="end_period" value="<?php echo $dataset['end_period']; ?>" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="source">Source:</label>
+                    <input type="text" name="source" id="source" value="<?php echo htmlspecialchars($dataset['source']); ?>" required>
+                </div>
+                <div class="form-group">
+                    <label for="link">Link:</label>
+                    <input type="url" name="link" id="link" value="<?php echo htmlspecialchars($dataset['link']); ?>" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" name="location" id="location" value="<?php echo htmlspecialchars($dataset['location']); ?>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="files">Files:</label>
+                <div class="file-upload-container">
+                    <input type="file" name="files[]" id="files" multiple>
+                    <div id="fileList" class="file-list"></div>
+                </div>
+                <p class="form-help">Select new files to upload. Leave empty to keep existing files.</p>
+            </div>
+
+            <div class="form-group version-notes" style="display: none;">
+                <label for="change_notes">Version Change Notes:</label>
+                <textarea name="change_notes" id="change_notes" rows="3" placeholder="Describe what changed in this version..."></textarea>
+                <p class="form-help">These notes will help users understand what changed in this version.</p>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" id="cancelEditBtn" class="cancel-btn" onclick="document.getElementById('editModal').style.display='none'">Cancel</button>
+                <button type="submit" id="saveChangesBtn" class="submit-btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 </body>
 </html>
@@ -887,4 +1987,33 @@ $analytics = get_batch_analytics($conn, $batch_id);
                 countChars();
             });
         });
-    </script>
+
+    function openEditModal() {
+        document.getElementById('editModal').style.display = 'block';
+    }
+
+    // Handle file selection display
+    document.getElementById('files').addEventListener('change', function(e) {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
+        
+        Array.from(e.target.files).forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <i class="fas fa-file"></i>
+                <span>${file.name}</span>
+                <span style="margin-left: auto; color: #666;">${(file.size / 1024).toFixed(1)} KB</span>
+            `;
+            fileList.appendChild(fileItem);
+        });
+    });
+
+    // Show/hide version notes based on update type
+    document.querySelectorAll('input[name="update_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const versionNotes = document.querySelector('.version-notes');
+            versionNotes.style.display = this.value === 'new_version' ? 'block' : 'none';
+        });
+    });
+</script>

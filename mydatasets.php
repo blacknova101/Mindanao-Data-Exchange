@@ -15,6 +15,9 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Get the current filter (if any)
+$current_filter = isset($_GET['visibility']) ? $_GET['visibility'] : '';
+
 $sql = "
     SELECT 
         d.dataset_id,
@@ -26,17 +29,26 @@ $sql = "
         u.last_name,
         c.name AS category_name,
         c.category_id,
+        db.visibility,
         (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id) AS upvotes,
         (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id AND r.user_id = ?) AS user_upvoted
     FROM datasets d
     JOIN users u ON d.user_id = u.user_id
+    JOIN dataset_batches db ON d.dataset_batch_id = db.dataset_batch_id
     LEFT JOIN datasetcategories c ON d.category_id = c.category_id
     WHERE d.user_id = ?
       AND d.dataset_id = (
           SELECT MIN(d2.dataset_id) FROM datasets d2 WHERE d2.dataset_batch_id = d.dataset_batch_id AND d2.user_id = ?
       )
-    ORDER BY d.dataset_id DESC
 ";
+
+// Add visibility filter if specified
+if (isset($_GET['visibility']) && in_array($_GET['visibility'], ['Public', 'Private'])) {
+    $visibility_filter = mysqli_real_escape_string($conn, $_GET['visibility']);
+    $sql .= " AND db.visibility = '$visibility_filter'";
+}
+
+$sql .= " ORDER BY d.dataset_id DESC";
 
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, 'iii', $user_id, $user_id, $user_id);
@@ -67,6 +79,48 @@ include 'batch_analytics.php';
             padding: 0;
             text-align: center;
         }
+        
+        /* Filter Sidebar Styles */
+        .filter-sidebar {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #f8f9fa;
+            border-radius: 0 10px 10px 0;
+            width: 120px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            z-index: 100;
+        }
+        
+        .filter-sidebar-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .filter-btn {
+            display: block;
+            padding: 8px 0;
+            margin: 5px 0;
+            text-decoration: none;
+            color: #555;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+        
+        .filter-btn:hover {
+            background-color: #e9ecef;
+        }
+        
+        .filter-btn.active {
+            background-color: #0099ff;
+            color: white;
+        }
+        
         .navbar {
             display: flex;
             align-items: center;
@@ -402,6 +456,15 @@ include 'batch_analytics.php';
             margin-right: 4px;
         }
 
+        .category-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
         .dataset-actions-buttons {
             display: flex;
             align-items: center;
@@ -445,12 +508,61 @@ include 'batch_analytics.php';
             background-color: #45a049;
         }
 
+        .visibility-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .visibility-badge.public {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .visibility-badge.private {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        /* Ensure view toggle functions properly */
+        .dataset-grid {
+            display: grid; /* Default is grid for card view */
+        }
+        
+        .dataset-table {
+            display: none; /* Initially hidden */
+            width: 100%;
+        }
+        
+        /* When list view is active */
+        .view-list .dataset-grid {
+            display: none !important;
+        }
+        
+        .view-list .dataset-table {
+            display: table !important;
+        }
+
     </style>
 </head>
 <body>
 <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
+
+<!-- Visibility filter sidebar -->
+<div class="filter-sidebar">
+    <div class="filter-sidebar-title">
+        <i class="fa-solid fa-filter"></i>
+        VISIBILITY
+    </div>
+    <a href="mydatasets.php" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
+    <a href="mydatasets.php?visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
+    <a href="mydatasets.php?visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
+</div>
 
 <div class="container">
 <header class="navbar">
@@ -498,6 +610,11 @@ include 'batch_analytics.php';
                     <a href="mydataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
                         <?= htmlspecialchars($row['title']) ?>
                     </a>
+                    <?php if(isset($row['visibility'])): ?>
+                    <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
+                        <?= $row['visibility'] ?>
+                    </span>
+                    <?php endif; ?>
                 </div>
                     <div class="dataset-description">
                         <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
@@ -561,6 +678,11 @@ include 'batch_analytics.php';
                         <a href="mydataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
                             <?= htmlspecialchars($row['title']) ?>
                         </a>
+                        <?php if(isset($row['visibility'])): ?>
+                        <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
+                            <?= $row['visibility'] ?>
+                        </span>
+                        <?php endif; ?>
                     </td>
                     <td><?= htmlspecialchars(mb_strimwidth($row['description'], 0, 100, '...')) ?></td>
                     <td>
@@ -628,6 +750,12 @@ include 'batch_analytics.php';
         }
         document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("categoryModal").style.display = "none";
+            
+            // Initialize view toggle
+            const savedView = localStorage.getItem('datasetViewPreference');
+            if (savedView) {
+                toggleView(savedView);
+            }
         });
 
     function upvoteDataset(datasetId) {

@@ -28,9 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Get target users
     if ($target_users == 'all') {
-        $sql = "SELECT user_id, email, name FROM users WHERE is_active = 1";
+        $sql = "SELECT user_id, email, CONCAT(first_name, ' ', last_name) AS name FROM users WHERE is_active = 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
     } else {
-        $sql = "SELECT user_id, email, name FROM users WHERE organization_id = ? AND is_active = 1";
+        $sql = "SELECT user_id, email, CONCAT(first_name, ' ', last_name) AS name FROM users WHERE organization_id = ? AND is_active = 1";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $target_users);
         $stmt->execute();
@@ -40,29 +42,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Send notifications
     foreach ($users as $user) {
         // Insert user notification
-        $sql = "INSERT INTO user_notifications (user_id, notification_id) VALUES (?, ?)";
+        $notif_type = "notification";
+        $sql = "INSERT INTO user_notifications (user_id, message, notification_type, related_id) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $user['user_id'], $notification_id);
+        $stmt->bind_param("issi", $user['user_id'], $message, $notif_type, $notification_id);
         $stmt->execute();
         
         // Send email if notification type is email or both
         if ($notification_type == 'email' || $notification_type == 'both') {
             $mail = new PHPMailer(true);
             try {
+                // Server settings
+                $mail->SMTPDebug = 0; // Set to 0 for production (no debug output)
                 $mail->isSMTP();
                 $mail->Host = 'smtp.gmail.com';
                 $mail->SMTPAuth = true;
-                $mail->Username = 'your-email@gmail.com'; // Replace with your email
-                $mail->Password = 'your-app-password'; // Replace with your app password
+                $mail->Username = 'wazzupbymindex@gmail.com';
+                $mail->Password = 'zigg xxbk opcb qsob';
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port = 587;
                 
-                $mail->setFrom('your-email@gmail.com', 'Mindanao Data Exchange');
+                // Recipients
+                $mail->setFrom('wazzupbymindex@gmail.com', 'Mindanao Data Exchange');
                 $mail->addAddress($user['email'], $user['name']);
+                
+                // Content
+                $mail->isHTML(true);
                 $mail->Subject = $title;
                 $mail->Body = $message;
+                $mail->AltBody = strip_tags($message);
                 
                 $mail->send();
+                error_log("Email sent successfully to {$user['email']}");
             } catch (Exception $e) {
                 // Log email error
                 error_log("Email error for user {$user['user_id']}: {$mail->ErrorInfo}");
@@ -78,7 +89,7 @@ $organizations = $conn->query("SELECT organization_id, name FROM organizations O
 
 // Get recent notifications
 $sql = "SELECT n.*, a.name as admin_name, 
-        (SELECT COUNT(*) FROM user_notifications WHERE notification_id = n.notification_id) as recipient_count
+        (SELECT COUNT(*) FROM user_notifications WHERE related_id = n.admin_notif_id AND notification_type = 'notification') as recipient_count
         FROM notifications n 
         JOIN administrator a ON n.created_by = a.admin_id 
         ORDER BY n.created_at DESC 
@@ -147,6 +158,7 @@ $recent_notifications = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
             <a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Users</a>
             <a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a>
             <a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a>
+            <a class="nav-link" href="admin_org_requests.php"><i class="fas fa-clipboard-list"></i> Org Requests</a>
             <a class="nav-link active" href="#"><i class="fas fa-bell"></i> Notifications</a>
             <a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Settings</a>
             <a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>

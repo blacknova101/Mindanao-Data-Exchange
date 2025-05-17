@@ -427,50 +427,36 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
             left: 0;
             top: 50%;
             transform: translateY(-50%);
-            background-color: #fff;
-            padding: 20px 15px;
+            background-color: #f8f9fa;
             border-radius: 0 10px 10px 0;
+            width: 120px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            padding: 15px;
             z-index: 100;
-            width: 110px;
         }
-
+        
         .filter-sidebar-title {
-            font-size: 14px;
             font-weight: bold;
-            color: #333;
             margin-bottom: 10px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .filter-sidebar-title i {
-            margin-right: 5px;
-            color: #0099ff;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            background-color: #f0f0f0;
             color: #333;
+            font-size: 14px;
+        }
+        
+        .filter-btn {
+            display: block;
+            padding: 8px 0;
+            margin: 5px 0;
             text-decoration: none;
-            border-radius: 20px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-align: center;
+            color: #555;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-size: 13px;
         }
-
+        
         .filter-btn:hover {
-            background-color: #e0e0e0;
+            background-color: #e9ecef;
         }
-
+        
         .filter-btn.active {
             background-color: #0099ff;
             color: white;
@@ -508,12 +494,43 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
         .dataset-card.private .dataset-description {
             color: #777;
         }
+        
+        /* Ensure view toggle functions properly */
+        .dataset-grid {
+            display: grid; /* Default is grid for card view */
+        }
+        
+        .dataset-table {
+            display: none; /* Initially hidden */
+            width: 100%;
+        }
+        
+        /* When list view is active */
+        .view-list .dataset-grid {
+            display: none !important;
+        }
+        
+        .view-list .dataset-table {
+            display: table !important;
+        }
     </style>
 </head>
 <body>
 <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
+
+<!-- Visibility filter sidebar -->
+<div class="filter-sidebar">
+    <div class="filter-sidebar-title">
+        <i class="fa-solid fa-filter"></i>
+        VISIBILITY
+    </div>
+    <a href="datasets.php" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
+    <a href="datasets.php?visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
+    <a href="datasets.php?visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
+</div>
+
 <div class="container">
 <header class="navbar">
         <div class="logo">
@@ -546,17 +563,6 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
     </span>
     
     </div>
-
-<!-- Visibility filter sidebar -->
-<div class="filter-sidebar">
-    <div class="filter-sidebar-title">
-        <i class="fa-solid fa-filter"></i>
-        VISIBILITY
-    </div>
-    <a href="datasets.php" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
-    <a href="datasets.php?visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
-    <a href="datasets.php?visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
-</div>
 
 <div id="wrapper">
     <?php include 'view_toggle.php'; ?>
@@ -724,9 +730,14 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
             document.getElementById("categoryModal").style.display = "none";
         }
         document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("categoryModal").style.display = "none";
-    });
-
+            document.getElementById("categoryModal").style.display = "none";
+            
+            // Initialize view toggle
+            const savedView = localStorage.getItem('datasetViewPreference');
+            if (savedView) {
+                toggleView(savedView);
+            }
+        });
 
     function upvoteDataset(datasetId) {
         const upvoteButton = document.querySelector(`[data-id="${datasetId}"] button`);

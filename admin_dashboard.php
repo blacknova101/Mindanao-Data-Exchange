@@ -17,46 +17,76 @@ if (isset($_POST['force_logout']) && isset($_POST['user_id'])) {
     $stmt->execute();
 }
 
-// Get analytics data
-$total_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE is_active = 1")->fetch_assoc()['count'];
-$total_datasets = $conn->query("SELECT COUNT(*) as count FROM datasets")->fetch_assoc()['count'];
+// Get total counts for dashboard stats
+$total_users = $conn->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'];
+$total_active_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE is_active = 1")->fetch_assoc()['count'];
+$total_datasets = $conn->query("SELECT COUNT(*) as count FROM dataset_batches")->fetch_assoc()['count'];
 $total_organizations = $conn->query("SELECT COUNT(*) as count FROM organizations")->fetch_assoc()['count'];
+$total_categories = $conn->query("SELECT COUNT(*) as count FROM datasetcategories")->fetch_assoc()['count'];
+
+// Get total views and downloads
+$total_views = $conn->query("SELECT SUM(total_views) as count FROM dataset_batch_analytics")->fetch_assoc()['count'] ?? 0;
 $total_downloads = $conn->query("SELECT SUM(total_downloads) as count FROM dataset_batch_analytics")->fetch_assoc()['count'] ?? 0;
 
-// Get currently online users
-$sql = "SELECT u.*, us.last_activity, o.name as org_name 
+// Get recent datasets (last 5)
+$sql = "SELECT 
+            db.dataset_batch_id,
+            d.dataset_id,
+            d.title,
+            db.visibility,
+            db.created_at,
+            u.first_name,
+            u.last_name,
+            c.name AS category_name
+        FROM dataset_batches db
+        JOIN datasets d ON d.dataset_batch_id = db.dataset_batch_id
+        JOIN users u ON db.user_id = u.user_id
+        LEFT JOIN datasetcategories c ON d.category_id = c.category_id
+        WHERE d.dataset_id = (
+            SELECT MIN(dataset_id) FROM datasets WHERE dataset_batch_id = db.dataset_batch_id
+        )
+        ORDER BY db.created_at DESC
+        LIMIT 5";
+$recent_datasets = $conn->query($sql);
+
+// Get recent users (last 5)
+$sql = "SELECT u.*, o.name AS organization_name 
         FROM users u 
-        LEFT JOIN user_sessions us ON u.user_id = us.user_id 
         LEFT JOIN organizations o ON u.organization_id = o.organization_id 
-        WHERE us.last_activity > DATE_SUB(NOW(), INTERVAL 5 MINUTE) 
-        AND u.is_active = 1 
-        ORDER BY us.last_activity DESC";
-$online_users = $conn->query($sql);
+        ORDER BY u.date_joined DESC 
+        LIMIT 5";
+$recent_users = $conn->query($sql);
 
-// Get recent activities
-$sql = "SELECT 'upload' as type, d.title, db.created_at, u.first_name, u.last_name, o.name as org_name
-        FROM datasets d
-        JOIN dataset_batches db ON d.dataset_batch_id = db.dataset_batch_id
-        JOIN users u ON d.user_id = u.user_id
-        LEFT JOIN organizations o ON u.organization_id = o.organization_id
-        WHERE db.created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
-        UNION ALL
-        SELECT 'registration' as type, CONCAT(u.first_name, ' ', u.last_name) as title, u.date_joined as created_at, u.first_name, u.last_name, o.name as org_name
-        FROM users u
-        LEFT JOIN organizations o ON u.organization_id = o.organization_id
-        WHERE u.date_joined > DATE_SUB(NOW(), INTERVAL 24 HOUR)
-        ORDER BY created_at DESC
-        LIMIT 10";
-$recent_activities = $conn->query($sql);
+// Get recent organizations (last 5)
+$sql = "SELECT o.*, COUNT(u.user_id) as member_count 
+        FROM organizations o
+        LEFT JOIN users u ON o.organization_id = u.organization_id
+        GROUP BY o.organization_id
+        ORDER BY o.created_at DESC
+        LIMIT 5";
+$recent_organizations = $conn->query($sql);
 
-// Get user registration data for chart
-$user_registrations = $conn->query("
-    SELECT DATE(date_joined) as date, COUNT(*) as count
-    FROM users
-    GROUP BY DATE(date_joined)
-    ORDER BY date DESC
-    LIMIT 30
-")->fetch_all(MYSQLI_ASSOC);
+// Get public vs private datasets ratio
+$public_datasets = $conn->query("SELECT COUNT(*) as count FROM dataset_batches WHERE visibility = 'Public'")->fetch_assoc()['count'];
+$private_datasets = $conn->query("SELECT COUNT(*) as count FROM dataset_batches WHERE visibility = 'Private'")->fetch_assoc()['count'];
+
+// Get top categories by dataset count
+$sql = "SELECT c.name, COUNT(d.dataset_id) as dataset_count
+        FROM datasetcategories c
+        JOIN datasets d ON c.category_id = d.category_id
+        GROUP BY c.category_id
+        ORDER BY dataset_count DESC
+        LIMIT 5";
+$top_categories = $conn->query($sql);
+
+// Get organizations with most members
+$sql = "SELECT o.name, COUNT(u.user_id) as member_count
+        FROM organizations o
+        JOIN users u ON o.organization_id = u.organization_id
+        GROUP BY o.organization_id
+        ORDER BY member_count DESC
+        LIMIT 5";
+$top_organizations = $conn->query($sql);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -185,9 +215,9 @@ $user_registrations = $conn->query("
             </div>
             <div class="col-md-3">
                 <div class="stat-card">
-                    <i class="fas fa-building"></i>
-                    <h3><?php echo $total_organizations; ?></h3>
-                    <p>Organizations</p>
+                    <i class="fas fa-eye"></i>
+                    <h3><?php echo $total_views; ?></h3>
+                    <p>Total Views</p>
                 </div>
             </div>
             <div class="col-md-3">
@@ -195,6 +225,37 @@ $user_registrations = $conn->query("
                     <i class="fas fa-download"></i>
                     <h3><?php echo $total_downloads; ?></h3>
                     <p>Total Downloads</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-building"></i>
+                    <h3><?php echo $total_organizations; ?></h3>
+                    <p>Organizations</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-tags"></i>
+                    <h3><?php echo $total_categories; ?></h3>
+                    <p>Categories</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-user-check"></i>
+                    <h3><?php echo $total_active_users; ?></h3>
+                    <p>Active Users</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-lock"></i>
+                    <h3><?php echo $public_datasets; ?> / <?php echo $private_datasets; ?></h3>
+                    <p>Public / Private</p>
                 </div>
             </div>
         </div>
@@ -230,84 +291,203 @@ $user_registrations = $conn->query("
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Currently Online Users</h5>
-                <button onclick="location.reload()" class="btn btn-sm btn-primary">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Organization</th>
-                            <th>Last Activity</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($online_users->num_rows === 0): ?>
-                            <tr>
-                                <td colspan="4" class="text-center">No users currently online</td>
-                            </tr>
+        <div class="row">
+            <!-- Recent Datasets -->
+            <div class="col-md-6">
+                <div class="widget">
+                    <div class="widget-title">
+                        <i class="fas fa-database"></i> Recent Datasets
+                    </div>
+                    <div class="widget-body">
+                        <?php if ($recent_datasets->num_rows === 0): ?>
+                            <p class="text-muted">No datasets found</p>
                         <?php else: ?>
-                            <?php while ($user = $online_users->fetch_assoc()): ?>
-                            <tr>
-                                <td>
-                                    <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>
-                                    <br>
-                                    <small class="text-muted"><?php echo htmlspecialchars($user['email']); ?></small>
-                                </td>
-                                <td><?php echo htmlspecialchars($user['org_name'] ?? 'None'); ?></td>
-                                <td><?php echo date('M d, Y H:i:s', strtotime($user['last_activity'])); ?></td>
-                                <td>
-                                    <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
-                                        <input type="hidden" name="force_logout" value="1">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to force logout this user?')">
-                                            <i class="fas fa-sign-out-alt"></i> Force Logout
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
+                            <?php while ($dataset = $recent_datasets->fetch_assoc()): ?>
+                                <div class="recent-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1"><?php echo htmlspecialchars($dataset['title']); ?></h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-user"></i> <?php echo htmlspecialchars($dataset['first_name'] . ' ' . $dataset['last_name']); ?> |
+                                                <i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($dataset['created_at'])); ?>
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <span class="badge <?php echo $dataset['visibility'] == 'Public' ? 'badge-public' : 'badge-private'; ?>">
+                                                <?php echo $dataset['visibility']; ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             <?php endwhile; ?>
+                            <div class="text-center mt-3">
+                                <a href="admin_datasets.php" class="btn btn-sm btn-primary">View All Datasets</a>
+                            </div>
                         <?php endif; ?>
-                    </tbody>
-                    </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Users -->
+            <div class="col-md-6">
+                <div class="widget">
+                    <div class="widget-title">
+                        <i class="fas fa-users"></i> Recent Users
+                    </div>
+                    <div class="widget-body">
+                        <?php if ($recent_users->num_rows === 0): ?>
+                            <p class="text-muted">No users found</p>
+                        <?php else: ?>
+                            <?php while ($user = $recent_users->fetch_assoc()): ?>
+                                <div class="recent-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1"><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-envelope"></i> <?php echo htmlspecialchars($user['email']); ?> | 
+                                                <i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($user['date_joined'])); ?>
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <span class="badge <?php echo $user['is_active'] ? 'badge-public' : 'badge-private'; ?>">
+                                                <?php echo $user['is_active'] ? 'Active' : 'Inactive'; ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endwhile; ?>
+                            <div class="text-center mt-3">
+                                <a href="admin_users.php" class="btn btn-sm btn-primary">View All Users</a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="row mt-4">
-            <div class="col-md-8">
-                <div class="activity-list">
-                    <h4>Recent Activities</h4>
-                    <?php if ($recent_activities->num_rows === 0): ?>
-                        <p>No recent activities found.</p>
-                    <?php else: ?>
-                        <?php while ($activity = $recent_activities->fetch_assoc()): ?>
-                        <div class="activity-item">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <strong><?php echo htmlspecialchars($activity['title']); ?></strong>
-                                    <p class="mb-0"><?php echo htmlspecialchars($activity['first_name'] . ' ' . $activity['last_name']); ?></p>
+        
+        <!-- Analytics Widgets Row -->
+        <div class="row">
+            <!-- Top Categories -->
+            <div class="col-md-6">
+                <div class="widget">
+                    <div class="widget-title">
+                        <i class="fas fa-tags"></i> Top Categories
+                    </div>
+                    <div class="widget-body">
+                        <?php if ($top_categories->num_rows === 0): ?>
+                            <p class="text-muted">No categories found</p>
+                        <?php else: ?>
+                            <?php 
+                            $max_count = 0;
+                            $categories = [];
+                            while ($category = $top_categories->fetch_assoc()) {
+                                $categories[] = $category;
+                                if ($category['dataset_count'] > $max_count) {
+                                    $max_count = $category['dataset_count'];
+                                }
+                            }
+                            ?>
+                            
+                            <?php foreach ($categories as $category): ?>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span><?php echo htmlspecialchars($category['name']); ?></span>
+                                        <span><?php echo $category['dataset_count']; ?> datasets</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-info" role="progressbar" 
+                                             style="width: <?php echo ($category['dataset_count'] / $max_count) * 100; ?>%" 
+                                             aria-valuenow="<?php echo $category['dataset_count']; ?>" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="<?php echo $max_count; ?>">
+                                        </div>
+                                    </div>
                                 </div>
-                                <small class="text-muted">
-                                    <?php echo date('M d, Y H:i', strtotime($activity['created_at'])); ?>
-                                </small>
-                            </div>
-                        </div>
-                        <?php endwhile; ?>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="activity-list">
-                    <h4>User Registrations</h4>
-                    <canvas id="userRegistrationsChart"></canvas>
+            
+            <!-- Top Organizations -->
+            <div class="col-md-6">
+                <div class="widget">
+                    <div class="widget-title">
+                        <i class="fas fa-building"></i> Top Organizations
+                    </div>
+                    <div class="widget-body">
+                        <?php if ($top_organizations->num_rows === 0): ?>
+                            <p class="text-muted">No organizations found</p>
+                        <?php else: ?>
+                            <?php 
+                            $max_count = 0;
+                            $orgs = [];
+                            while ($org = $top_organizations->fetch_assoc()) {
+                                $orgs[] = $org;
+                                if ($org['member_count'] > $max_count) {
+                                    $max_count = $org['member_count'];
+                                }
+                            }
+                            ?>
+                            
+                            <?php foreach ($orgs as $org): ?>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span><?php echo htmlspecialchars($org['name']); ?></span>
+                                        <span><?php echo $org['member_count']; ?> members</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: <?php echo ($org['member_count'] / $max_count) * 100; ?>%" 
+                                             aria-valuenow="<?php echo $org['member_count']; ?>" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="<?php echo $max_count; ?>">
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                            <div class="text-center mt-3">
+                                <a href="admin_organizations.php" class="btn btn-sm btn-primary">View All Organizations</a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Organizations Widget -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="widget">
+                    <div class="widget-title">
+                        <i class="fas fa-building"></i> Recent Organizations
+                    </div>
+                    <div class="widget-body">
+                        <div class="row">
+                            <?php if ($recent_organizations->num_rows === 0): ?>
+                                <div class="col-12">
+                                    <p class="text-muted">No organizations found</p>
+                                </div>
+                            <?php else: ?>
+                                <?php while ($org = $recent_organizations->fetch_assoc()): ?>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title"><?php echo htmlspecialchars($org['name']); ?></h5>
+                                                <p class="card-text">
+                                                    <i class="fas fa-users"></i> Members: <?php echo $org['member_count']; ?><br>
+                                                    <i class="fas fa-calendar"></i> Created: <?php echo date('M d, Y', strtotime($org['created_at'])); ?>
+                                                </p>
+                                                <a href="admin_organizations.php?org_id=<?php echo $org['organization_id']; ?>" class="btn btn-sm btn-primary">
+                                                    View Members
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endwhile; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
