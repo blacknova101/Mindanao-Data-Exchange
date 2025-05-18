@@ -20,9 +20,11 @@ $category = isset($_GET['category']) ? $_GET['category'] : '';
 
 // Include the hasApprovedAccess function
 function hasApprovedAccess($conn, $dataset_id, $user_id) {
+    $dataset_id = mysqli_real_escape_string($conn, $dataset_id);
+    $user_id = mysqli_real_escape_string($conn, $user_id);
     $query = "SELECT * FROM dataset_access_requests 
-              WHERE dataset_id = $dataset_id 
-              AND requester_id = $user_id 
+              WHERE dataset_id = '$dataset_id' 
+              AND requester_id = '$user_id' 
               AND status = 'Approved'";
     $result = mysqli_query($conn, $query);
     return ($result && mysqli_num_rows($result) > 0);
@@ -249,11 +251,19 @@ include 'batch_analytics.php';
         }
 
         .dataset-uploader {
-            font-size: 12px;
-            color: #666;
+            font-size: 14px;
+            color: #555;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            line-height: 1.4;
         }
-
+        
+        .dataset-uploader .uploader-name {
+            font-weight: 500;
+            border-left: 3px solid #0099ff;
+            padding-left: 8px;
+        }
 
         .dataset-card:hover {
             transform: translateY(-5px);
@@ -579,6 +589,32 @@ include 'batch_analytics.php';
         .view-list .dataset-table {
             display: table !important;
         }
+        
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+        }
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
     </style>
 </head>
 <body>
@@ -606,6 +642,9 @@ include 'batch_analytics.php';
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="mydatasets.php">MY DATASETS</a>
+            <div class="profile-icon">
+                <img src="images/avatarIconunknown.jpg" alt="Profile">
+            </div>
         </nav>
     </header> 
     <form id="searchForm" action="search_results.php" method="GET">
@@ -648,13 +687,17 @@ include 'batch_analytics.php';
                         <?= $row['visibility'] ?>
                     </span>
                     <?php endif; ?>
+                    <?php if (!empty($row['category_name'])): ?>
+                        <span class="category-badge" style="margin-left: 5px; background-color: #e9f5ff; color: #0066cc; border: 1px solid #99ccff;">
+                            <?= htmlspecialchars($row['category_name']) ?>
+                        </span>
+                    <?php endif; ?>
                     </div>
                     <div class="dataset-description">
                         <?= htmlspecialchars(mb_strimwidth($row['dataset_description'], 0, 255, '...')) ?>
                     </div>
                     <div class="dataset-uploader">
-                        <br><br><br>
-                        Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                        <span class="uploader-name">Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></span>
                     </div>
                     <div class="dataset-actions">
                         <div class="dataset-analytics">
@@ -781,6 +824,9 @@ include 'batch_analytics.php';
 </div>
 
 <!-- Removed duplicate category_modal.php include -->
+
+<?php include 'sidebar.php'; // Include the sidebar ?>
+<?php include 'category_modal.php'; // Include the modal ?>
 
 <script>
         function showModal() {

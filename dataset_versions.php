@@ -43,7 +43,7 @@ $versionsSql = "
     FROM datasetversions v
     JOIN users u ON v.created_by = u.user_id
     WHERE v.dataset_batch_id = ?
-    ORDER BY v.version_number DESC
+    ORDER BY v.created_at DESC, v.version_id DESC
 ";
 
 $stmt = mysqli_prepare($conn, $versionsSql);
@@ -251,6 +251,50 @@ $versionsResult = mysqli_stmt_get_result($stmt);
         .back-link i {
             margin-right: 5px;
         }
+
+        .version-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .switch-version-btn {
+            color: white;
+            text-decoration: none;
+            background-color: #0099ff;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .switch-version-btn:hover {
+            background-color: #007acc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .current-version-text {
+            color: #28a745;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .version-info-note {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -272,6 +316,10 @@ $versionsResult = mysqli_stmt_get_result($stmt);
         <div class="header">
             <h1>Version History: <?php echo htmlspecialchars($batch['title']); ?></h1>
             <p>Track all changes and updates to this dataset</p>
+            <div class="version-info-note">
+                <i class="fas fa-info-circle"></i> 
+                You can switch to any previous version of this dataset by clicking the "Switch to this version" button.
+            </div>
         </div>
 
         <div class="version-list">
@@ -308,6 +356,19 @@ $versionsResult = mysqli_stmt_get_result($stmt);
                                 <?php echo htmlspecialchars(basename($version['file_path'])); ?>
                             </a>
                         </div>
+                    </div>
+                    
+                    <div class="version-actions">
+                        <?php if (!$version['is_current']): ?>
+                        <a href="dataset.php?id=<?php echo $batch['dataset_id']; ?>&switch_to=<?php echo $version['version_id']; ?>" 
+                           class="switch-version-btn">
+                            <i class="fas fa-exchange-alt"></i> Switch to this version
+                        </a>
+                        <?php else: ?>
+                        <span class="current-version-text">
+                            <i class="fas fa-check-circle"></i> This is the current version
+                        </span>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endwhile; ?>

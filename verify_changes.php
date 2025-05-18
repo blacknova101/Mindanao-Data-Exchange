@@ -11,6 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $changeType = $_POST['change_type']; // 'email' or 'password'
     $newValue = $_POST['new_value'];
     $currentPassword = $_POST['current_password'] ?? null;
+    $fromSettings = isset($_POST['from_settings']) ? $_POST['from_settings'] : false;
+    
+    // Debug log to trace the flow
+    error_log("Processing change request - Type: $changeType, User: $userId, From Settings: " . ($fromSettings ? 'true' : 'false'));
 
     // Verify current password first
     if ($currentPassword) {

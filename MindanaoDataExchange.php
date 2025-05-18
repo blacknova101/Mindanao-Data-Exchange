@@ -23,7 +23,6 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
     <style>
         html, body {
             height: 100%;
-            overflow: hidden;
         }
 
     body {
@@ -213,7 +212,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         position: fixed;
         bottom: 20px;
         right: 20px;
-        color: #cfd9ff;
+        color:rgba(0, 153, 255, 0.8);
     }
     .upload-btn {
         display: inline-block;
@@ -275,33 +274,100 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         align-items: center;
         gap: 20px;
     }
-    /* Cursor Trail Styles */
-    .cursor-trail {
-        position: absolute;
-        width: 10px; /* Size of the trail dot */
-        height: 10px; /* Size of the trail dot */
-        border-radius: 50%; /* Round shape */
-        pointer-events: none; /* So it doesn't interfere with other elements */
-        animation: trail-animation 0.5s forwards; /* Smooth fade effect */
+    /* Footer Styles */
+    #wrapper {
+        min-height: 100vh; /* Full viewport height */
+        position: relative;
+        margin-bottom: 100px; /* Add space to prevent footer visibility */
     }
-
-    .cursor-trail.blue {
-        background-color: rgba(0, 153, 255, 0.8); /* Blue color for the trail */
+    
+    footer {
+        background-color: #0099ff;
+        color: white;
+        padding: 40px 0;
+        width: 100%;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        margin-top: 200px; /* Push footer down */
     }
-
-    .cursor-trail.white {
-        background-color: rgba(255, 255, 255, 0.8); /* White color for the trail */
+    
+    .footer-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 30px;
     }
-
-    @keyframes trail-animation {
-        0% {
-            transform: scale(1);
-            opacity: 1;
-        }
-        100% {
-            transform: scale(0);
-            opacity: 0;
-        }
+    
+    .footer-column {
+        padding: 0 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .footer-heading {
+        font-size: 20px;
+        margin-bottom: 15px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+    
+    .footer-divider {
+        width: 50px;
+        height: 3px;
+        background-color: white;
+        margin: 0 auto 20px;
+    }
+    
+    .footer-text {
+        font-size: 15px;
+        margin: 8px 0;
+        line-height: 1.5;
+        text-align: center;
+    }
+    
+    .footer-description {
+        font-size: 15px;
+        line-height: 1.8;
+        margin: 0;
+        text-align: center;
+        max-width: 400px;
+    }
+    
+    .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 22px;
+        margin-bottom: 25px;
+    }
+    
+    .social-link {
+        color: white;
+        font-size: 24px;
+        transition: transform 0.3s;
+    }
+    
+    .social-link:hover {
+        transform: scale(1.2);
+    }
+    
+    .footer-links {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+    }
+    
+    .footer-link {
+        color: white;
+        text-decoration: none;
+        font-size: 15px;
+        transition: color 0.3s;
+    }
+    
+    .footer-link:hover {
+        color: #e0e0e0;
     }
     </style>
 </head>
@@ -309,36 +375,40 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
     <video autoplay muted loop id="background-video">
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
-    <header class="navbar">
-        <div class="logo">
-            <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
-        </div>
+    
+    <div id="wrapper">
+        <header class="navbar">
+            <div class="logo">
+                <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
+            </div>
 
-        <nav class="nav-links">
-            <a href="login.php">Login</a>
-            <a href="AccountSelectionPage.php">Sign up</a>
-        </nav>
-    </header>
-    <main class="wrapper">
-        <h1>Mangasay <br> Data Exchange </h1>
-        <p id="tagline">Discover, Share, and Transform Data Seamlessly.</p>
-        <div class="stats-box">
-            <div class="stat">
-            <span class="stat-number"><?= number_format($dataset_count) ?></span>
-                <p>Datasets</p>
+            <nav class="nav-links">
+                <a href="login.php">Login</a>
+                <a href="AccountSelectionPage.php">Sign up</a>
+            </nav>
+        </header>
+        <main class="wrapper">
+            <h1>Mangasay <br> Data Exchange </h1>
+            <p id="tagline">Discover, Share, and Transform Data Seamlessly.</p>
+            <div class="stats-box">
+                <div class="stat">
+                <span class="stat-number"><?= number_format($dataset_count) ?></span>
+                    <p>Datasets</p>
+                </div>
+                <div class="divider"></div>
+                <div class="stat">
+                <span class="stat-number"><?= number_format($sources_count) ?></span>
+                    <p>Sources</p>
+                </div>
             </div>
-            <div class="divider"></div>
-            <div class="stat">
-            <span class="stat-number"><?= number_format($sources_count) ?></span>
-                <p>Sources</p>
-            </div>
+        </main>
+        
+        <div class="upload-section">
+            <a href="login.php" class="upload-btn">
+                <i class="fa-solid fa-upload"></i>
+            </a>
+            <p>Upload Data</p>
         </div>
-    </main>
-    <div class="upload-section">
-        <a href="login.php" class="upload-btn">
-            <i class="fa-solid fa-upload"></i>
-        </a>
-        <p>Upload Data</p>
     </div>
     <script>
         function showDropdown() {
@@ -350,31 +420,60 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
             }, 200);
         }
     </script>
-    <script>
-        document.addEventListener("mousemove", function (e) {
-            // Create a new element for the trail dot
-            const trailDot = document.createElement("div");
-            trailDot.classList.add("cursor-trail");
 
-            // Check if the mouse is over the header
-            if (e.target.closest("header")) {
-                trailDot.classList.add("white"); // White trail if over header
-            } else {
-                trailDot.classList.add("blue"); // Blue trail otherwise
-            }
-
-            // Set its position to the cursor's position
-            trailDot.style.left = `${e.pageX - 5}px`; // Position adjusted to center the trail
-            trailDot.style.top = `${e.pageY - 5}px`; // Position adjusted to center the trail
-
-            // Append the trail dot to the body
-            document.body.appendChild(trailDot);
-
-            // Remove the trail dot after animation ends
-            setTimeout(() => {
-                trailDot.remove();
-            }, 500); // Matches the animation duration
-        });
-    </script>
+    <!-- Footer with internal CSS styling -->
+    <footer>
+        <div class="footer-container">
+            <!-- Left section with copyright -->
+            <div class="footer-column">
+                <h3 class="footer-heading">Mangasay Data Exchange</h3>
+                <div class="footer-divider"></div>
+                <p class="footer-text">&copy; <?php echo date('Y'); ?> MDX</p>
+                <p class="footer-text">All Rights Reserved</p>
+                <p class="footer-text">Mindanao, Philippines</p>
+            </div>
+            
+            <!-- Center section with description -->
+            <div class="footer-column">
+                <h3 class="footer-heading">About MDX</h3>
+                <div class="footer-divider"></div>
+                <p class="footer-description">
+                    MDX is Mindanao's premier open data platform, connecting organizations and researchers to discover, 
+                    share and transform data across the region. Our mission is to build a collaborative data ecosystem 
+                    that empowers decision-makers, researchers, and communities throughout Mindanao.
+                </p>
+            </div>
+            
+            <!-- Right section with links and social -->
+            <div class="footer-column">
+                <h3 class="footer-heading">Connect With Us</h3>
+                <div class="footer-divider"></div>
+                
+                <!-- Social media icons -->
+                <div class="social-icons">
+                    <a href="https://twitter.com" target="_blank" class="social-link">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://facebook.com" target="_blank" class="social-link">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://instagram.com" target="_blank" class="social-link">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://linkedin.com" target="_blank" class="social-link">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+                
+                <!-- Important links -->
+                <div class="footer-links">
+                    <a href="about.php" class="footer-link">About Us</a>
+                    <a href="privacy.php" class="footer-link">Privacy Policy</a>
+                    <a href="terms.php" class="footer-link">Terms of Service</a>
+                    <a href="contact.php" class="footer-link">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

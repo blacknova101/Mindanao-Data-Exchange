@@ -163,6 +163,15 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
             font-size: 24px;
             color: #007BFF;
         }
+        .notification-icon .fa-comment {
+            color: #28a745;
+        }
+        .notification-icon .fa-reply {
+            color: #17a2b8;
+        }
+        .notification-icon .fa-comments {
+            color: #6f42c1;
+        }
         .notification-content {
             flex-grow: 1;
         }
@@ -238,6 +247,14 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
                                 <i class="fa-solid fa-check-circle"></i>
                             <?php elseif ($notification['notification_type'] == 'access_rejected'): ?>
                                 <i class="fa-solid fa-times-circle"></i>
+                            <?php elseif ($notification['notification_type'] == 'new_comment'): ?>
+                                <i class="fa-solid fa-comment"></i>
+                            <?php elseif ($notification['notification_type'] == 'comment_reply'): ?>
+                                <i class="fa-solid fa-reply"></i>
+                            <?php elseif ($notification['notification_type'] == 'comment_conversation'): ?>
+                                <i class="fa-solid fa-comments"></i>
+                            <?php elseif ($notification['notification_type'] == 'dataset_activity'): ?>
+                                <i class="fa-solid fa-bell"></i>
                             <?php else: ?>
                                 <i class="fa-solid fa-bell"></i>
                             <?php endif; ?>
@@ -255,6 +272,30 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
                         <?php if ($notification['notification_type'] == 'access_approved' && !empty($notification['related_id'])): ?>
                             <div class="notification-action">
                                 <a href="dataset.php?id=<?php echo $notification['related_id']; ?>">View Dataset</a>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($notification['notification_type'] == 'new_comment' && !empty($notification['related_id'])): ?>
+                            <div class="notification-action">
+                                <a href="dataset.php?id=<?php echo $notification['related_id']; ?>#comments">View Comment</a>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($notification['notification_type'] == 'comment_reply' && !empty($notification['related_id'])): ?>
+                            <div class="notification-action">
+                                <a href="dataset.php?id=<?php echo $notification['related_id']; ?>#comments">View Reply</a>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($notification['notification_type'] == 'comment_conversation' && !empty($notification['related_id'])): ?>
+                            <div class="notification-action">
+                                <a href="dataset.php?id=<?php echo $notification['related_id']; ?>#comments">View Conversation</a>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($notification['notification_type'] == 'dataset_activity' && !empty($notification['related_id'])): ?>
+                            <div class="notification-action">
+                                <a href="dataset.php?id=<?php echo $notification['related_id']; ?>#comments">View Activity</a>
                             </div>
                         <?php endif; ?>
                     </div>

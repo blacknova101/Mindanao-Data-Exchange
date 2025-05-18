@@ -28,28 +28,6 @@ if (!$dataset_id) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_text'])) {
-    if (!$user_id) {
-        echo "You must be logged in to comment.";
-        exit;
-    }
-
-    $comment_text = $_POST['comment_text'];
-
-    $insertComment = "
-        INSERT INTO datasetcomments (dataset_id, user_id, comment_text, timestamp)
-        VALUES (?, ?, ?, NOW())
-    ";
-    
-    $stmt = mysqli_prepare($conn, $insertComment);
-    mysqli_stmt_bind_param($stmt, 'iis', $dataset_id, $user_id, $comment_text);
-    mysqli_stmt_execute($stmt);
-    
-    // Redirect to prevent form resubmission on refresh
-    header("Location: mydataset.php?id=$dataset_id&comment_added=1");
-    exit;
-}
-
 $sql = "
     SELECT d.*, db.visibility, u.first_name, u.last_name 
     FROM datasets d
@@ -1139,6 +1117,158 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
     #downloadBtn:hover {
         background-color: #007acc !important;
     }
+
+    /* Comment actions */
+    .comment-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+    }
+    
+    .btn-edit-comment,
+    .btn-delete-comment {
+      background: none;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 3px;
+      color: #fff;
+    }
+    
+    .btn-edit-comment {
+      background-color: #28a745;
+    }
+    
+    .btn-delete-comment {
+      background-color: #dc3545;
+    }
+    
+    .btn-edit-comment:hover {
+      background-color: #218838;
+    }
+    
+    .btn-delete-comment:hover {
+      background-color: #c82333;
+    }
+    
+    #editCommentModal .modal-content {
+      max-width: 500px;
+    }
+    
+    #editCommentModal textarea {
+      width: 100%;
+      padding: 10px;
+      min-height: 100px;
+      margin-bottom: 15px;
+    }
+    
+    /* Comment reply styles */
+    .comment-reply-actions {
+      margin-top: 10px;
+    }
+    
+    .btn-reply {
+      background: none;
+      border: none;
+      color: #0099ff;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 2px 8px;
+      transition: color 0.2s;
+    }
+    
+    .btn-reply:hover {
+      color: #007bff;
+      text-decoration: underline;
+    }
+    
+    .reply-form {
+      margin: 10px 0 10px 20px;
+      padding: 10px;
+      border-left: 3px solid #17a2b8;
+      background-color: #f8f9fa;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .reply-form textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      resize: vertical;
+      margin-bottom: 10px;
+    }
+    
+    .reply-form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    .btn-cancel-reply {
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .btn-submit-reply {
+      background-color: #17a2b8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-submit-reply:hover {
+      background-color: #138496;
+    }
+    
+    .comment-replies {
+      margin-left: 20px;
+      margin-top: 10px;
+      border-left: 2px solid #e9ecef;
+      padding-left: 15px;
+    }
+    
+    .reply-item {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      border-left: 2px solid #17a2b8;
+    }
+    
+    .reply-item strong {
+      color: #495057;
+      font-size: 14px;
+    }
+    
+    .reply-item small {
+      color: #6c757d;
+      font-size: 11px;
+      margin-left: 5px;
+    }
+    
+    .reply-item p {
+      margin-top: 5px;
+      color: #212529;
+      line-height: 1.4;
+      font-size: 14px;
+    }
+    
+    /* Position adjustment for comment items */
+    .comment-item {
+      position: relative;
+    }
   </style>
 </head>
 <body>
@@ -1453,10 +1583,12 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 <div id="form">
         <hr>
-      <h3>Comments</h3>
+      <h3 id="comments">Comments</h3>
 
       <!-- Comment Form -->
-      <form method="POST">
+      <form method="POST" action="add_comment.php">
+          <input type="hidden" name="dataset_id" value="<?php echo $dataset_id; ?>">
+          <input type="hidden" name="return_page" value="mydataset.php">
           <textarea name="comment_text" rows="4" placeholder="Write your comment here..." required></textarea><br>
           <button type="submit" id="commentSubmitBtn">Post Comment</button>
       </form>
@@ -1466,7 +1598,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <!-- Comment List -->
       <?php
       $commentSql = "
-          SELECT dc.comment_text, dc.timestamp, u.first_name, u.last_name 
+          SELECT dc.comment_id, dc.comment_text, dc.timestamp, dc.user_id, u.first_name, u.last_name 
           FROM datasetcomments dc
           JOIN users u ON dc.user_id = u.user_id
           WHERE dc.dataset_id = ?
@@ -1480,11 +1612,65 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (mysqli_num_rows($commentResult) > 0) {
           while ($comment = mysqli_fetch_assoc($commentResult)) {
-              echo '<div class="comment-item">';
+              echo '<div class="comment-item" id="comment-' . $comment['comment_id'] . '">';
               echo '<strong>' . htmlspecialchars($comment['first_name'] . ' ' . $comment['last_name']) . '</strong>';
               echo '<small>' . date('F j, Y \a\t g:i a', strtotime($comment['timestamp'])) . '</small>';
+              
+              // Add edit and delete buttons for comment owner
+              if ($user_id == $comment['user_id']) {
+                  echo '<div class="comment-actions">';
+                  echo '<button class="btn-edit-comment" onclick="editComment(' . $comment['comment_id'] . ', \'' . htmlspecialchars(addslashes($comment['comment_text'])) . '\')">Edit</button>';
+                  echo '<button class="btn-delete-comment" onclick="deleteComment(' . $comment['comment_id'] . ')">Delete</button>';
+                  echo '</div>';
+              }
+              
               echo '<p>' . nl2br(htmlspecialchars($comment['comment_text'])) . '</p>';
+              
+              // Add reply button
+              echo '<div class="comment-reply-actions">';
+              echo '<button class="btn-reply" onclick="showReplyForm(' . $comment['comment_id'] . ')">Reply</button>';
               echo '</div>';
+              
+              // Add hidden reply form
+              echo '<div class="reply-form" id="reply-form-' . $comment['comment_id'] . '" style="display: none;">';
+              echo '<form method="POST" action="add_reply.php">';
+              echo '<input type="hidden" name="comment_id" value="' . $comment['comment_id'] . '">';
+              echo '<input type="hidden" name="dataset_id" value="' . $dataset_id . '">';
+              echo '<input type="hidden" name="return_page" value="mydataset.php">';
+              echo '<textarea name="reply_text" rows="2" placeholder="Write your reply..." required></textarea>';
+              echo '<div class="reply-form-actions">';
+              echo '<button type="button" class="btn-cancel-reply" onclick="hideReplyForm(' . $comment['comment_id'] . ')">Cancel</button>';
+              echo '<button type="submit" class="btn-submit-reply">Reply</button>';
+              echo '</div>';
+              echo '</form>';
+              echo '</div>';
+              
+              // Get and display replies for this comment
+              $repliesSql = "
+                  SELECT r.*, u.first_name, u.last_name 
+                  FROM comment_replies r
+                  JOIN users u ON r.user_id = u.user_id
+                  WHERE r.comment_id = ?
+                  ORDER BY r.timestamp ASC
+              ";
+              $repliesStmt = mysqli_prepare($conn, $repliesSql);
+              mysqli_stmt_bind_param($repliesStmt, 'i', $comment['comment_id']);
+              mysqli_stmt_execute($repliesStmt);
+              $repliesResult = mysqli_stmt_get_result($repliesStmt);
+              
+              if (mysqli_num_rows($repliesResult) > 0) {
+                  echo '<div class="comment-replies">';
+                  while ($reply = mysqli_fetch_assoc($repliesResult)) {
+                      echo '<div class="reply-item" id="reply-' . $reply['reply_id'] . '">';
+                      echo '<strong>' . htmlspecialchars($reply['first_name'] . ' ' . $reply['last_name']) . '</strong>';
+                      echo '<small>' . date('F j, Y \a\t g:i a', strtotime($reply['timestamp'])) . '</small>';
+                      echo '<p>' . nl2br(htmlspecialchars($reply['reply_text'])) . '</p>';
+                      echo '</div>';
+                  }
+                  echo '</div>';
+              }
+              
+              echo '</div>'; // End comment-item
           }
       } else {
           echo '<p class="no-comments">No comments yet.</p>';
@@ -1577,9 +1763,72 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
+<!-- Add modal for comment editing -->
+<div id="editCommentModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="document.getElementById('editCommentModal').style.display='none'">&times;</span>
+    <h3>Edit Comment</h3>
+    
+    <form method="POST" action="edit_comment.php">
+      <input type="hidden" name="comment_id" id="edit_comment_id">
+      <input type="hidden" name="dataset_id" value="<?php echo $dataset_id; ?>">
+      <input type="hidden" name="return_page" value="mydataset.php">
+      <div class="form-group">
+        <textarea name="comment_text" id="edit_comment_text" rows="4" required></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" onclick="document.getElementById('editCommentModal').style.display='none'">Cancel</button>
+        <button type="submit" class="submit-btn">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add modal for comment deletion -->
+<div id="deleteCommentModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="document.getElementById('deleteCommentModal').style.display='none'">&times;</span>
+    <h3>Delete Comment</h3>
+    <p>Are you sure you want to delete this comment? This action cannot be undone.</p>
+    
+    <form method="POST" action="delete_comment.php">
+      <input type="hidden" name="comment_id" id="delete_comment_id">
+      <input type="hidden" name="dataset_id" value="<?php echo $dataset_id; ?>">
+      <input type="hidden" name="return_page" value="mydataset.php">
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" onclick="document.getElementById('deleteCommentModal').style.display='none'">Cancel</button>
+        <button type="submit" class="submit-btn" style="background-color: #dc3545;">Delete Comment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
     function openEditModal() {
         document.getElementById('editModal').style.display = 'block';
+    }
+
+    // Function to edit a comment
+    function editComment(commentId, commentText) {
+        document.getElementById('edit_comment_id').value = commentId;
+        document.getElementById('edit_comment_text').value = commentText.replace(/\\'/g, "'");
+        document.getElementById('editCommentModal').style.display = 'block';
+    }
+
+    // Function to delete a comment with custom modal
+    function deleteComment(commentId) {
+        document.getElementById('delete_comment_id').value = commentId;
+        document.getElementById('deleteCommentModal').style.display = 'block';
+    }
+
+    // Function to show reply form
+    function showReplyForm(commentId) {
+        document.getElementById('reply-form-' + commentId).style.display = 'block';
+    }
+    
+    // Function to hide reply form
+    function hideReplyForm(commentId) {
+        document.getElementById('reply-form-' + commentId).style.display = 'none';
     }
 
     // Handle file selection display

@@ -175,11 +175,19 @@ include 'batch_analytics.php';
         }
 
         .dataset-uploader {
-            font-size: 12px;
-            color: #666;
+            font-size: 14px;
+            color: #555;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            line-height: 1.4;
         }
-
+        
+        .dataset-uploader .uploader-name {
+            font-weight: 500;
+            border-left: 3px solid #0099ff;
+            padding-left: 8px;
+        }
 
         .dataset-card:hover {
             transform: translateY(-5px);
@@ -516,6 +524,32 @@ include 'batch_analytics.php';
         .view-list .dataset-table {
             display: table !important;
         }
+        
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+        }
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
         </style>
 </head>
 <body>
@@ -533,6 +567,9 @@ include 'batch_analytics.php';
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="mydatasets.php">MY DATASETS</a>
+            <div class="profile-icon">
+                <img src="images/avatarIconunknown.jpg" alt="Profile">
+            </div>
         </nav>
     </header>
     <form id="searchForm" action="search_results.php" method="GET">
@@ -587,13 +624,15 @@ include 'batch_analytics.php';
                         <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
                             <?= $row['visibility'] ?>
                         </span>
+                        <span class="category-badge" style="margin-left: 5px; background-color: #e9f5ff; color: #0066cc; border: 1px solid #99ccff;">
+                            <?= htmlspecialchars($row['category_name']) ?>
+                        </span>
                     </div>
                     <div class="dataset-description">
                         <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
                     </div>
                     <div class="dataset-uploader">
-                        <br><br><br>
-                        Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                        <span class="uploader-name">Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></span>
                     </div>
                     <div class="dataset-actions">
                         <div class="dataset-analytics">
@@ -710,6 +749,7 @@ include 'batch_analytics.php';
     <?php endif; ?>
 </div>
 <?php include 'category_modal.php'; // Include the modal?>
+<?php include 'sidebar.php'; // Include the sidebar ?>
 <script>
         function showModal() {
             document.getElementById("categoryModal").style.display = "flex";
