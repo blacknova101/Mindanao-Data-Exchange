@@ -719,12 +719,13 @@ $hasOrganization = !empty($organizationId);
                                 <input type="text" id="last_name" name="last_name" value="<?php echo $user['last_name']; ?>" required readonly>
                             </div>
                         </div>
-                        <form action="verify_changes.php" method="POST">
+                        <form action="verify_changes.php" method="POST" class="email-update-form">
                             <div class="form-group">
                                 <label for="email">Email Address</label>
                                 <div class="email-update-container">
                                     <input type="email" id="email" name="new_value" value="<?php echo $user['email']; ?>" required>
                                     <input type="hidden" name="change_type" value="email">
+                                    <input type="hidden" name="from_settings" value="true">
                                     <button type="submit" class="submit-btn email-update-btn">Update Email</button>
                                 </div>
                                 <?php if (isset($_SESSION['error_message']) && isset($_SESSION['error_type']) && $_SESSION['error_type'] === 'email'): ?>
