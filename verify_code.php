@@ -33,15 +33,15 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             } else {
                 $_SESSION['message'] = "Error storing user data in the database.";
                 $_SESSION['verified'] = false;
-                header("Location: verifyemailaddressnoorg.php");
+                header("Location: verifyemailaddress.php");
                 exit();
             }
         }
     } else {
-        // Verification failed, set error message and redirect back to the verification page
+        // Verification failed, set error message and stay on the same page
         $_SESSION['message'] = "Incorrect verification code. Please try again.";
         $_SESSION['verified'] = false;
-        header("Location: verifyemailaddressnoorg.php");
+        header("Location: verifyemailaddress.php");
         exit();
     }
 }

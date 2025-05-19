@@ -1666,13 +1666,13 @@ $analytics = get_batch_analytics($conn, $batch_id);
 <?php endif; ?>
 
 <?php if (isset($_GET['switched']) && $_GET['switched'] == '1'): ?>
-<div class="notification" id="versionMessage">
+<div class="notification" id="dataset_versionMessage">
     <i class="fas fa-check-circle"></i> Version switched successfully
 </div>
 <?php endif; ?>
 
 <?php if (isset($_GET['comment_added']) && $_GET['comment_added'] == '1'): ?>
-<div class="notification comment" id="commentMessage">
+<div class="notification comment" id="dataset_commentMessage">
     <i class="fas fa-comment"></i> Your comment has been posted successfully
 </div>
 <?php endif; ?>
@@ -1696,7 +1696,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle version message
-    const versionMessage = document.getElementById('versionMessage');
+    const versionMessage = document.getElementById('dataset_versionMessage');
     if (versionMessage) {
         setTimeout(() => {
             versionMessage.classList.add('show');
@@ -1711,7 +1711,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle comment message
-    const commentMessage = document.getElementById('commentMessage');
+    const commentMessage = document.getElementById('dataset_commentMessage');
     if (commentMessage) {
         setTimeout(() => {
             commentMessage.classList.add('show');

@@ -162,10 +162,16 @@ $total_count = $request_count + $notif_count;
         background-color: #ff3b30;
         color: white;
         border-radius: 50%;
-        padding: 2px 6px;
+        width: 18px;
+        height: 18px;
         font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         margin-left: 5px;
     }
+
     
     .submenu {
         display: none;
@@ -247,29 +253,36 @@ $total_count = $request_count + $notif_count;
 </div>
 <script src="https://kit.fontawesome.com/2c68a433da.js" crossorigin="anonymous"></script>
 <script>
-document.querySelector('.profile-icon').addEventListener('click', function() {
-    document.querySelector('.sidebar').classList.add('active');
-    document.querySelector('.sidebar-overlay').classList.add('active');
-});
+document.addEventListener('DOMContentLoaded', function() {
+    // Use querySelectorAll to get all profile icons and attach click event to each
+    const profileIcons = document.querySelectorAll('.profile-icon');
+    profileIcons.forEach(function(icon) {
+        icon.addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.add('active');
+            document.querySelector('.sidebar-overlay').classList.add('active');
+        });
+    });
 
-document.querySelector('.sidebar-overlay').addEventListener('click', function() {
-    document.querySelector('.sidebar').classList.remove('active');
-    document.querySelector('.sidebar-overlay').classList.remove('active');
-});
-document.querySelector('.sign-out').addEventListener('click', function() {
-    window.location.href = 'mindanaodataexchange.php';
-});
+    document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.remove('active');
+        document.querySelector('.sidebar-overlay').classList.remove('active');
+    });
+    
+    document.querySelector('.sign-out').addEventListener('click', function() {
+        window.location.href = 'mindanaodataexchange.php';
+    });
 
-// Toggle submenu for notifications
-document.querySelector('.notifications-menu').addEventListener('click', function(e) {
-    e.preventDefault();
-    this.classList.toggle('active');
-    const submenu = document.querySelector('.submenu');
-    if (this.classList.contains('active')) {
-        submenu.style.display = 'block';
-    } else {
-        submenu.style.display = 'none';
-    }
+    // Toggle submenu for notifications
+    document.querySelector('.notifications-menu').addEventListener('click', function(e) {
+        e.preventDefault();
+        this.classList.toggle('active');
+        const submenu = document.querySelector('.submenu');
+        if (this.classList.contains('active')) {
+            submenu.style.display = 'block';
+        } else {
+            submenu.style.display = 'none';
+        }
+    });
 });
 </script>
 

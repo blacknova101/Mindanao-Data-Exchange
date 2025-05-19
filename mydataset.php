@@ -1277,26 +1277,26 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
     </video>
 
 <?php if (isset($_GET['switched']) && $_GET['switched'] == '1'): ?>
-<div class="notification" id="versionMessage">
+<div class="notification" id="mydataset_versionMessage">
     <i class="fas fa-check-circle"></i> Version switched successfully
 </div>
 <?php endif; ?>
 
 <?php if (isset($_GET['comment_added']) && $_GET['comment_added'] == '1'): ?>
-<div class="notification comment" id="commentMessage">
+<div class="notification comment" id="mydataset_commentMessage">
     <i class="fas fa-comment"></i> Comment added successfully
 </div>
 <?php endif; ?>
 
 <?php if (isset($_SESSION['success_message'])): ?>
-<div class="notification" id="successMessage">
+<div class="notification" id="mydataset_successMessage">
     <i class="fas fa-check-circle"></i> <?php echo $_SESSION['success_message']; ?>
     <?php unset($_SESSION['success_message']); ?>
 </div>
 <?php endif; ?>
 
 <?php if (isset($_SESSION['error_message'])): ?>
-<div class="notification comment" id="errorMessage" style="background-color: #dc3545;">
+<div class="notification comment" id="mydataset_errorMessage" style="background-color: #dc3545;">
     <i class="fas fa-exclamation-circle"></i> <?php echo $_SESSION['error_message']; ?>
     <?php unset($_SESSION['error_message']); ?>
 </div>
@@ -1306,7 +1306,7 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
 // Success Message Animation
 document.addEventListener('DOMContentLoaded', function() {
     // Handle version message
-    const versionMessage = document.getElementById('versionMessage');
+    const versionMessage = document.getElementById('mydataset_versionMessage');
     if (versionMessage) {
         setTimeout(() => {
             versionMessage.classList.add('show');
@@ -1321,7 +1321,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle comment message
-    const commentMessage = document.getElementById('commentMessage');
+    const commentMessage = document.getElementById('mydataset_commentMessage');
     if (commentMessage) {
         setTimeout(() => {
             commentMessage.classList.add('show');
@@ -1336,7 +1336,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle success message
-    const successMessage = document.getElementById('successMessage');
+    const successMessage = document.getElementById('mydataset_successMessage');
     if (successMessage) {
         setTimeout(() => {
             successMessage.classList.add('show');
@@ -1351,7 +1351,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle error message
-    const errorMessage = document.getElementById('errorMessage');
+    const errorMessage = document.getElementById('mydataset_errorMessage');
     if (errorMessage) {
         setTimeout(() => {
             errorMessage.classList.add('show');

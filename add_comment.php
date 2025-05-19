@@ -32,7 +32,8 @@ $stmt = mysqli_prepare($conn, $insertComment);
 mysqli_stmt_bind_param($stmt, 'iis', $dataset_id, $user_id, $comment_text);
 
 if (mysqli_stmt_execute($stmt)) {
-    $_SESSION['success_message'] = "Comment added successfully.";
+    // Don't set session message to avoid it appearing on other pages
+    // $_SESSION['success_message'] = "Comment added successfully.";
     
     // Get dataset owner info for notification
     $getDatasetOwner = "
@@ -64,10 +65,14 @@ if (mysqli_stmt_execute($stmt)) {
             mysqli_stmt_execute($stmt);
         }
     }
+    
+    // Redirect back to the appropriate page with comment_added parameter
+    header("Location: {$return_page}?id={$dataset_id}&comment_added=1");
+    exit;
 } else {
     $_SESSION['error_message'] = "Error adding comment: " . mysqli_error($conn);
-}
-
-// Redirect back to the appropriate page
-header("Location: {$return_page}?id={$dataset_id}");
-exit; 
+    
+    // Redirect back to the appropriate page
+    header("Location: {$return_page}?id={$dataset_id}");
+    exit;
+} 

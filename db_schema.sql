@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 17, 2025 at 07:23 AM
+-- Generation Time: May 19, 2025 at 06:41 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -36,6 +36,27 @@ CREATE TABLE `administrator` (
   `last_login` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
+--
+-- Dumping data for table `administrator`
+--
+
+INSERT INTO `administrator` (`admin_id`, `name`, `email`, `password_hash`, `created_at`, `last_login`) VALUES
+(1, 'Adrian Labisores', 'labisoresadrian@gmail.com', '4b6684227975db5920120bda0bc35dfcf9dcc01adcce2adf3f6d82c3edca343e', '2025-05-18 14:09:31', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `comment_replies`
+--
+
+CREATE TABLE `comment_replies` (
+  `reply_id` int(11) NOT NULL,
+  `comment_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `reply_text` text NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -43,9 +64,9 @@ CREATE TABLE `administrator` (
 --
 
 CREATE TABLE `datasetaccesslogs` (
-  `log_id` varchar(15) NOT NULL,
-  `user_id` varchar(15) NOT NULL,
-  `dataset_id` varchar(15) NOT NULL,
+  `log_id` int(15) NOT NULL,
+  `user_id` int(15) NOT NULL,
+  `dataset_id` int(15) NOT NULL,
   `access_time` datetime DEFAULT current_timestamp(),
   `action` enum('View','Edit','Delete') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
@@ -83,8 +104,8 @@ CREATE TABLE `datasetcategories` (
 
 CREATE TABLE `datasetcomments` (
   `comment_id` int(11) NOT NULL,
-  `dataset_id` varchar(15) NOT NULL,
-  `user_id` varchar(15) NOT NULL,
+  `dataset_id` int(15) NOT NULL,
+  `user_id` int(15) NOT NULL,
   `comment_text` varchar(150) NOT NULL,
   `timestamp` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
@@ -135,18 +156,6 @@ CREATE TABLE `datasets` (
   `link` varchar(255) NOT NULL,
   `location` varchar(100) NOT NULL,
   `visibility` enum('Private','Public') DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `datasettags`
---
-
-CREATE TABLE `datasettags` (
-  `tag_id` varchar(15) NOT NULL,
-  `dataset_id` varchar(15) NOT NULL,
-  `tag_name` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
@@ -221,24 +230,11 @@ CREATE TABLE `dataset_batch_analytics` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `locations`
---
-
-CREATE TABLE `locations` (
-  `location_id` varchar(15) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `country_code` varchar(20) NOT NULL,
-  `region` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `notifications`
 --
 
 CREATE TABLE `notifications` (
-  `notification_id` int(11) NOT NULL,
+  `admin_notif_id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
   `message` text NOT NULL,
   `type` enum('in_app','email','both') NOT NULL,
@@ -325,7 +321,7 @@ CREATE TABLE `organization_request_documents` (
 CREATE TABLE `sources` (
   `source_id` varchar(15) NOT NULL,
   `name` varchar(50) NOT NULL,
-  `organization_id` varchar(15) NOT NULL,
+  `organization_id` int(15) NOT NULL,
   `contact_email` varchar(50) DEFAULT NULL,
   `website_url` varchar(150) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
@@ -392,6 +388,14 @@ ALTER TABLE `administrator`
   ADD UNIQUE KEY `idx_email` (`email`);
 
 --
+-- Indexes for table `comment_replies`
+--
+ALTER TABLE `comment_replies`
+  ADD PRIMARY KEY (`reply_id`),
+  ADD KEY `comment_id` (`comment_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `datasetaccesslogs`
 --
 ALTER TABLE `datasetaccesslogs`
@@ -441,12 +445,6 @@ ALTER TABLE `datasets`
   ADD KEY `category_id` (`category_id`);
 
 --
--- Indexes for table `datasettags`
---
-ALTER TABLE `datasettags`
-  ADD PRIMARY KEY (`tag_id`);
-
---
 -- Indexes for table `datasetversions`
 --
 ALTER TABLE `datasetversions`
@@ -477,16 +475,10 @@ ALTER TABLE `dataset_batch_analytics`
   ADD PRIMARY KEY (`dataset_batch_id`);
 
 --
--- Indexes for table `locations`
---
-ALTER TABLE `locations`
-  ADD PRIMARY KEY (`location_id`);
-
---
 -- Indexes for table `notifications`
 --
 ALTER TABLE `notifications`
-  ADD PRIMARY KEY (`notification_id`),
+  ADD PRIMARY KEY (`admin_notif_id`),
   ADD KEY `created_by` (`created_by`);
 
 --
@@ -557,7 +549,13 @@ ALTER TABLE `user_sessions`
 -- AUTO_INCREMENT for table `administrator`
 --
 ALTER TABLE `administrator`
-  MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `comment_replies`
+--
+ALTER TABLE `comment_replies`
+  MODIFY `reply_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `datasetanalytics`
@@ -569,85 +567,85 @@ ALTER TABLE `datasetanalytics`
 -- AUTO_INCREMENT for table `datasetcategories`
 --
 ALTER TABLE `datasetcategories`
-  MODIFY `category_id` int(15) NOT NULL AUTO_INCREMENT;
+  MODIFY `category_id` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `datasetcomments`
 --
 ALTER TABLE `datasetcomments`
-  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `datasetratings`
 --
 ALTER TABLE `datasetratings`
-  MODIFY `rating_id` int(15) NOT NULL AUTO_INCREMENT;
+  MODIFY `rating_id` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `datasets`
 --
 ALTER TABLE `datasets`
-  MODIFY `dataset_id` int(15) NOT NULL AUTO_INCREMENT;
+  MODIFY `dataset_id` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `datasetversions`
 --
 ALTER TABLE `datasetversions`
-  MODIFY `version_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `version_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `dataset_access_requests`
 --
 ALTER TABLE `dataset_access_requests`
-  MODIFY `request_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `request_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `dataset_batches`
 --
 ALTER TABLE `dataset_batches`
-  MODIFY `dataset_batch_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `dataset_batch_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `admin_notif_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `organizations`
 --
 ALTER TABLE `organizations`
-  MODIFY `organization_id` int(15) NOT NULL AUTO_INCREMENT;
+  MODIFY `organization_id` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `organization_creation_requests`
 --
 ALTER TABLE `organization_creation_requests`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `organization_membership_requests`
 --
 ALTER TABLE `organization_membership_requests`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `organization_request_documents`
 --
 ALTER TABLE `organization_request_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(15) NOT NULL AUTO_INCREMENT;
+  MODIFY `user_id` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `user_notifications`
 --
 ALTER TABLE `user_notifications`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=128;
 
 --
 -- AUTO_INCREMENT for table `user_sessions`
@@ -660,55 +658,125 @@ ALTER TABLE `user_sessions`
 --
 
 --
+-- Constraints for table `comment_replies`
+--
+ALTER TABLE `comment_replies`
+  ADD CONSTRAINT `comment_replies_ibfk_1` FOREIGN KEY (`comment_id`) REFERENCES `datasetcomments` (`comment_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `comment_replies_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `datasetanalytics`
 --
 ALTER TABLE `datasetanalytics`
-  ADD CONSTRAINT `datasetanalytics_ibfk_1` FOREIGN KEY (`dataset_id`) REFERENCES `datasets` (`dataset_id`);
+  ADD CONSTRAINT `datasetanalytics_ibfk_1` FOREIGN KEY (`dataset_id`) REFERENCES `datasets` (`dataset_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `datasetcomments`
+--
+ALTER TABLE `datasetcomments`
+  ADD CONSTRAINT `datasetcomments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `datasetcomments_ibfk_2` FOREIGN KEY (`dataset_id`) REFERENCES `datasets` (`dataset_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `datasetratings`
+--
+ALTER TABLE `datasetratings`
+  ADD CONSTRAINT `datasetratings_ibfk_1` FOREIGN KEY (`dataset_id`) REFERENCES `datasets` (`dataset_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `datasetratings_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `datasets`
+--
+ALTER TABLE `datasets`
+  ADD CONSTRAINT `datasets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `datasets_ibfk_2` FOREIGN KEY (`dataset_batch_id`) REFERENCES `dataset_batches` (`dataset_batch_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `datasets_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `datasetcategories` (`category_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Constraints for table `datasetversions`
 --
 ALTER TABLE `datasetversions`
-  ADD CONSTRAINT `datasetversions_ibfk_1` FOREIGN KEY (`dataset_batch_id`) REFERENCES `dataset_batches` (`dataset_batch_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `datasetversions_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `datasetcategories` (`category_id`),
-  ADD CONSTRAINT `datasetversions_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`);
+  ADD CONSTRAINT `datasetversions_ibfk_1` FOREIGN KEY (`dataset_batch_id`) REFERENCES `dataset_batches` (`dataset_batch_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `datasetversions_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `datasetcategories` (`category_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD CONSTRAINT `datasetversions_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+--
+-- Constraints for table `dataset_access_requests`
+--
+ALTER TABLE `dataset_access_requests`
+  ADD CONSTRAINT `dataset_access_requests_ibfk_1` FOREIGN KEY (`dataset_id`) REFERENCES `datasets` (`dataset_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `dataset_access_requests_ibfk_2` FOREIGN KEY (`requester_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `dataset_access_requests_ibfk_3` FOREIGN KEY (`owner_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `dataset_batches`
 --
 ALTER TABLE `dataset_batches`
-  ADD CONSTRAINT `dataset_batches_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`organization_id`);
+  ADD CONSTRAINT `dataset_batches_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`organization_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD CONSTRAINT `dataset_batches_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `dataset_batch_analytics`
 --
 ALTER TABLE `dataset_batch_analytics`
-  ADD CONSTRAINT `dataset_batch_analytics_ibfk_1` FOREIGN KEY (`dataset_batch_id`) REFERENCES `dataset_batches` (`dataset_batch_id`);
+  ADD CONSTRAINT `dataset_batch_analytics_ibfk_1` FOREIGN KEY (`dataset_batch_id`) REFERENCES `dataset_batches` (`dataset_batch_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `notifications`
 --
 ALTER TABLE `notifications`
-  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `administrator` (`admin_id`);
+  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `administrator` (`admin_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `organization_creation_requests`
 --
 ALTER TABLE `organization_creation_requests`
-  ADD CONSTRAINT `organization_creation_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  ADD CONSTRAINT `organization_creation_requests_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`user_id`);
+  ADD CONSTRAINT `organization_creation_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `organization_creation_requests_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `organization_request_documents`
 --
 ALTER TABLE `organization_request_documents`
-  ADD CONSTRAINT `organization_request_documents_ibfk_1` FOREIGN KEY (`request_id`) REFERENCES `organization_creation_requests` (`request_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `organization_request_documents_ibfk_1` FOREIGN KEY (`request_id`) REFERENCES `organization_creation_requests` (`request_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `sources`
+--
+ALTER TABLE `sources`
+  ADD CONSTRAINT `sources_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`organization_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `users`
 --
 ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`organization_id`);
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`organization_id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `user_notifications`
+--
+ALTER TABLE `user_notifications`
+  ADD CONSTRAINT `user_notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `user_sessions`
+--
+ALTER TABLE `user_sessions`
+  ADD CONSTRAINT `user_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `datasetaccesslogs`
+--
+ALTER TABLE `datasetaccesslogs`
+  ADD CONSTRAINT `datasetaccesslogs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `datasetaccesslogs_ibfk_2` FOREIGN KEY (`dataset_id`) REFERENCES `datasets` (`dataset_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `organization_membership_requests`
+--
+ALTER TABLE `organization_membership_requests`
+  ADD CONSTRAINT `organization_membership_requests_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`organization_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `organization_membership_requests_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

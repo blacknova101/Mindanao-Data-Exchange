@@ -405,7 +405,7 @@ $requests_result = $requests_stmt->get_result();
         <h1>My Organization Requests</h1>
         
         <?php if (isset($_SESSION['success_message'])): ?>
-            <div class="alert alert-success">
+            <div class="alert alert-success" id="org_requests_success">
                 <?php 
                     echo $_SESSION['success_message']; 
                     unset($_SESSION['success_message']); 
@@ -414,7 +414,7 @@ $requests_result = $requests_stmt->get_result();
         <?php endif; ?>
         
         <?php if (isset($_SESSION['error_message'])): ?>
-            <div class="alert alert-danger">
+            <div class="alert alert-danger" id="org_requests_error">
                 <?php 
                     echo $_SESSION['error_message']; 
                     unset($_SESSION['error_message']); 

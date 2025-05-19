@@ -5,15 +5,14 @@ include 'db_connection.php';
 $query = "SELECT category_id, name FROM datasetcategories";
 $result = $conn->query($query);
 
+// Initialize categories array
+$categories = [];
+
 // Check if categories exist
 if ($result->num_rows > 0) {
-    $categories = [];
     while ($row = $result->fetch_assoc()) {
         $categories[] = $row;
     }
-} else {
-    echo "No categories found.";
-    exit();
 }
 ?>
 <style>
@@ -160,11 +159,17 @@ if ($result->num_rows > 0) {
             <button class="category-search-button"><i class="fa-solid fa-search"></i> Search</button>
         </div>
         <div class="category-grid">
-            <?php foreach ($categories as $category): ?>
-                <div onclick="selectCategory('<?php echo $category['category_id']; ?>')">
-                    <?php echo htmlspecialchars($category['name']); ?>
+            <?php if (empty($categories)): ?>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #666;">
+                    No categories found.
                 </div>
-            <?php endforeach; ?>
+            <?php else: ?>
+                <?php foreach ($categories as $category): ?>
+                    <div onclick="selectCategory('<?php echo $category['category_id']; ?>')">
+                        <?php echo htmlspecialchars($category['name']); ?>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
         <button class="close-btn" onclick="hideModal()">Close</button>
     </div>

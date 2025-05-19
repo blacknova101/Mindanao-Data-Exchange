@@ -12,6 +12,9 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Initialize the total_count variable
+$total_count = 0;
+
 // Get the category ID from the URL if available
 $category_id = isset($_GET['category_id']) ? $_GET['category_id'] : null;
 $category_name = "";
@@ -550,6 +553,30 @@ include 'batch_analytics.php';
             align-items: center;
             gap: 20px;
         }
+        /* Updated notification badge styles for navbar */
+        .nav-links .profile-icon {
+            position: relative;
+        }
+        
+        .nav-links .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            padding: 0;               /* Remove extra padding */
+            line-height: 18px;        /* Match height for vertical centering */
+            text-align: center;       /* Ensure text is centered */
+        }
         </style>
 </head>
 <body>
@@ -567,8 +594,11 @@ include 'batch_analytics.php';
         <nav class="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="mydatasets.php">MY DATASETS</a>
-            <div class="profile-icon">
+            <div class="profile-icon" id="navbar-profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <?php if ($total_count > 0): ?>
+                    <span class="notification-badge"><?php echo $total_count; ?></span>
+                <?php endif; ?>
             </div>
         </nav>
     </header>
@@ -803,6 +833,13 @@ include 'batch_analytics.php';
             }
         });
     }
+    // Update the click event to use the specific ID
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('navbar-profile-icon').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.add('active');
+            document.querySelector('.sidebar-overlay').classList.add('active');
+        });
+    });
 </script>
 </body>
 </html>

@@ -157,19 +157,42 @@ if (isset($_POST['confirm_leave']) && $_POST['confirm_leave'] === 'yes' && isset
             $member_count = $count_result->fetch_assoc()['member_count'];
             
             if ($member_count == 0) {
-                // If no members left, delete the organization
-                $delete_org_sql = "DELETE FROM organizations WHERE organization_id = ?";
-                $delete_org_stmt = $conn->prepare($delete_org_sql);
-                $delete_org_stmt->bind_param("i", $organization_id);
+                // If no members left, first update dataset_batches to remove the organization reference
+                // but preserve the datasets themselves
+                $update_batches_sql = "UPDATE dataset_batches SET organization_id = NULL WHERE organization_id = ?";
+                $update_batches_stmt = $conn->prepare($update_batches_sql);
+                $update_batches_stmt->bind_param("i", $organization_id);
                 
-                if ($delete_org_stmt->execute()) {
-                    $_SESSION['success_message'] = "You have successfully left the organization and it has been deleted since there are no more members.";
+                if ($update_batches_stmt->execute()) {
+                    // Store organization details before deletion for historical reference
+                    $get_org_details_sql = "SELECT * FROM organizations WHERE organization_id = ?";
+                    $get_org_details_stmt = $conn->prepare($get_org_details_sql);
+                    $get_org_details_stmt->bind_param("i", $organization_id);
+                    $get_org_details_stmt->execute();
+                    $org_details = $get_org_details_stmt->get_result()->fetch_assoc();
+                    
+                    // Create a record in a historical organizations table if needed
+                    // This is optional but could be useful for maintaining a record of deleted organizations
+                    
+                    // Then delete the organization
+                    $delete_org_sql = "DELETE FROM organizations WHERE organization_id = ?";
+                    $delete_org_stmt = $conn->prepare($delete_org_sql);
+                    $delete_org_stmt->bind_param("i", $organization_id);
+                    
+                    if ($delete_org_stmt->execute()) {
+                        $_SESSION['success_message'] = "You have successfully left the organization and it has been deleted since there are no more members. Any datasets uploaded by the organization have been preserved.";
+                    } else {
+                        // If deletion fails, just mark it as having no owner
+                        $update_org_sql = "UPDATE organizations SET created_by = NULL WHERE organization_id = ?";
+                        $update_org_stmt = $conn->prepare($update_org_sql);
+                        $update_org_stmt->bind_param("i", $organization_id);
+                        $update_org_stmt->execute();
+                        $_SESSION['success_message'] = "You have successfully left the organization. The organization couldn't be deleted but has been marked as having no owner. All datasets are preserved.";
+                    }
                 } else {
-                    // If deletion fails, just mark it as having no owner
-                    $update_org_sql = "UPDATE organizations SET created_by = NULL WHERE organization_id = ?";
-                    $update_org_stmt = $conn->prepare($update_org_sql);
-                    $update_org_stmt->bind_param("i", $organization_id);
-                    $update_org_stmt->execute();
+                    $_SESSION['error_message'] = "Failed to update dataset references. Please contact an administrator.";
+                    header("Location: user_settings.php");
+                    exit();
                 }
             } else if ($member_count > 0 && $is_owner) {
                 // If there are members but the owner is leaving without transferring ownership
