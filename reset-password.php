@@ -1,55 +1,76 @@
 <?php
 session_start();
 include('db_connection.php'); // Include your DB connection
+include('includes/error_handler.php'); // Include error handler
+
+// Check if reset email is set
+if (!isset($_SESSION['reset_email'])) {
+    handle_error("Password reset session expired. Please start again.", ERROR_AUTH, "forgot-password.php");
+}
 
 // Check if the user is trying to reset the password
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $newPassword = $_POST['new_password'];
-    $reNewPassword = $_POST['re_new_password'];
-
-    // Check if both passwords match
-    if ($newPassword != $reNewPassword) {
-        $_SESSION['error_message'] = 'Error: Passwords do not match.';
-        header("Location: reset-password.php");
-        exit();
-    }
-
-    // Check if new password meets the complexity requirements
-    if (!preg_match("/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $newPassword)) {
-        $_SESSION['error_message'] = 'Error: Password must be at least 8 characters long, contain 1 uppercase letter, 1 number, and 1 special character.';
-        header("Location: reset-password.php");
-        exit();
-    }
-
-    // Check if new password is the same as the previous password
-    $email = $_SESSION['reset_email'];
-    $query = "SELECT password FROM users WHERE email = '$email'";
-    $result = mysqli_query($conn, $query);
-    $user = mysqli_fetch_assoc($result);
-    $previousPassword = $user['password']; // Previous password in sha256 format
-
-    // Hash the new password to compare with the previous one (sha256)
-    $hashedNewPassword = hash('sha256', $newPassword);
-
-    if ($hashedNewPassword === $previousPassword) {
-        $_SESSION['error_message'] = 'Error: New password cannot be the same as the previous password.';
-        header("Location: reset-password.php");
-        exit();
-    }
-
-    // If all checks pass, update the password
-    $hashedNewPassword = hash('sha256', $newPassword); // Hash the new password before saving it
-    $updateQuery = "UPDATE users SET password = '$hashedNewPassword' WHERE email = '$email'";
-
-    if (mysqli_query($conn, $updateQuery)) {
-        // Password updated successfully
-        unset($_SESSION['reset_code'], $_SESSION['reset_email']);
-        header("Location: login.php"); // Redirect to login page
-        exit();
-    } else {
-        $_SESSION['error_message'] = 'Error updating password. Please try again.';
-        header("Location: reset-password.php");
-        exit();
+    try {
+        $newPassword = $_POST['new_password'];
+        $reNewPassword = $_POST['re_new_password'];
+    
+        // Check if both passwords match
+        if ($newPassword != $reNewPassword) {
+            handle_validation_error('Passwords do not match.', 'password_match', 'reset-password.php');
+        }
+    
+        // Check if new password meets the complexity requirements
+        if (!preg_match("/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $newPassword)) {
+            handle_validation_error('Password must be at least 8 characters long, contain 1 uppercase letter, 1 number, and 1 special character.', 'password_complexity', 'reset-password.php');
+        }
+    
+        // Check if new password is the same as the previous password
+        $email = $_SESSION['reset_email'];
+        $query = "SELECT password FROM users WHERE email = ?";
+        $stmt = $conn->prepare($query);
+        
+        if (!$stmt) {
+            handle_db_error('Database error occurred.', $conn, 'reset-password.php');
+        }
+        
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        
+        // Check if the new password matches the old one using password_verify
+        if ($user && password_verify($newPassword, $user['password'])) {
+            handle_validation_error('New password cannot be the same as the previous password.', 'password_reuse', 'reset-password.php');
+        }
+    
+        // If all checks pass, update the password with bcrypt hash
+        $hashedNewPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+        $updateQuery = "UPDATE users SET password = ? WHERE email = ?";
+        $updateStmt = $conn->prepare($updateQuery);
+        
+        if (!$updateStmt) {
+            handle_db_error('Failed to prepare password update query.', $conn, 'reset-password.php');
+        }
+        
+        $updateStmt->bind_param("ss", $hashedNewPassword, $email);
+    
+        if ($updateStmt->execute()) {
+            // Password updated successfully
+            unset($_SESSION['reset_code'], $_SESSION['reset_email']);
+            
+            // Log password reset
+            log_error("Password reset successful", "auth", ['email' => $email]);
+            
+            set_success_message('Password has been reset successfully. You can now login with your new password.', 'login.php');
+        } else {
+            handle_db_error('Error updating password.', $conn, 'reset-password.php');
+        }
+    } catch (Exception $e) {
+        log_error("Password reset error", ERROR_GENERAL, [
+            'exception' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        handle_error("An unexpected error occurred. Please try again.", ERROR_GENERAL, "reset-password.php");
     }
 }
 ?>
@@ -59,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Reset Password</title>
+    <link rel="stylesheet" href="assets/css/error_styles.css">
     <style>
             html, body {
         height: auto;
@@ -205,19 +227,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="container">
         <form action="reset-password.php" method="POST">
             <h2>Set New Password</h2>
+            
+            <?php echo display_error_message(); ?>
+            <?php echo display_success_message(); ?>
+            
             <label for="new_password">New Password:</label>
             <input type="password" id="new_password" name="new_password" required>
             <label for="re_new_password">Re-enter New Password:</label>
             <input type="password" id="re_new_password" name="re_new_password" required>
             <button type="submit">Reset Password</button>
         </form>
-
-        <?php
-        if (isset($_SESSION['error_message'])) {
-            echo '<p style="color:red;">' . $_SESSION['error_message'] . '</p>';
-            unset($_SESSION['error_message']);
-        }
-        ?>
     </div>
 </body>
 </html>

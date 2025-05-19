@@ -4,115 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unauthorized Access</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
             text-align: center;
-            padding: 50px;
-            overflow: hidden;
+            max-width: 500px;
+            width: 90%;
         }
 
         h1 {
-            font-size: 36px;
-        }
-
-        p {
-            font-size: 18px;
+            font-size: 28px;
+            color: #0099ff;
             margin-bottom: 20px;
         }
 
+        .icon {
+            font-size: 60px;
+            color: #0099ff;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
         .btn {
-            padding: 10px 20px;
-            background-color: #f5c6cb;
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #0099ff;
+            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin: 5px;
         }
 
         .btn:hover {
-            background-color: #d6a7ab;
+            background-color: #0077cc;
         }
 
-        #jumpscare {
-            display: none;
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #0099ff;
+            color: #0099ff;
+        }
+
+        .btn-outline:hover {
+            background-color: #f0f7ff;
+        }
+        #background-video {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: black;
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-         }
-
-
-        #jumpscare img {
-            max-width: 100%;
-            max-height: 100%;
-            animation: shake 0.4s infinite;
-        }
-
-        @keyframes shake {
-            0% { transform: translate(0, 0) scale(1.05); }
-            20% { transform: translate(-5px, 5px) scale(1.1); }
-            40% { transform: translate(5px, -5px) scale(1.1); }
-            60% { transform: translate(-5px, -5px) scale(1.1); }
-            80% { transform: translate(5px, 5px) scale(1.1); }
-            100% { transform: translate(0, 0) scale(1.05); }
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* stays behind everything */
         }
     </style>
 </head>
-<body onclick="startScare()">
-
-    <h1>Unauthorized Access</h1>
-    <img src="images/jn.png" alt="Unauthorized Access" style="max-width: 200px; margin: 20px 0;">
-    <p>You do not have the necessary permissions to view this page.</p>
-    <p>If you believe this is an error, please <a href="#" onclick="scareThenRedirectToLogin()">log in</a> again.</p>
-    <p><button onclick="scareThenRedirect()" class="btn">Go Back to Home</button></p>
-
-    <div id="jumpscare">
-        <img src="images/jn.png" alt="SCARY!">
+<body>
+<video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
+    </video>
+    <div class="container">
+        <div class="icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1>Unauthorized Access</h1>
+        <p>You do not have the necessary permissions to access this page.</p>
+        <p>Please log in with the appropriate credentials or contact the administrator if you believe this is an error.</p>
+        <div>
+            <a href="login.php" class="btn">Log In</a>
+            <a href="HomeLogin.php" class="btn btn-outline">Back to Home</a>
+        </div>
     </div>
-
-    <audio id="scream-audio" src="songs/scream.mp3" preload="auto"></audio>
-
-    <script>
-    function scareThenRedirect() {
-        // Show the jumpscare
-        document.getElementById("jumpscare").style.display = "flex";
-
-        // Play scream sound
-        const scream = document.getElementById("scream-audio");
-        scream.play().catch((error) => {
-        console.warn("Autoplay prevented:", error);
-        });
-
-        // Redirect after 5 seconds
-        setTimeout(() => {
-        window.location.href = "HomeLogin.php";
-        }, 5000);
-    }
-</script>
-<script>
-  function scareThenRedirectToLogin() {
-    document.getElementById("jumpscare").style.display = "flex";
-
-    const scream = document.getElementById("scream-audio");
-    scream.play().catch((error) => {
-      console.warn("Autoplay prevented:", error);
-    });
-
-    setTimeout(() => {
-      window.location.href = "login.php";
-    }, 5000);
-  }
-</script>
-
 </body>
 </html>

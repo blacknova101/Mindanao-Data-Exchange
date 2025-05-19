@@ -732,7 +732,7 @@ ALTER TABLE `notifications`
 --
 ALTER TABLE `organization_creation_requests`
   ADD CONSTRAINT `organization_creation_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `organization_creation_requests_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `organization_creation_requests_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`admin_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `organization_request_documents`

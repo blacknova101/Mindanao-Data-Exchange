@@ -1,67 +1,92 @@
 <?php
 session_start();
 include 'db_connection.php';
+include 'includes/error_handler.php';
 
-if (isset($_GET['error'])) {
-    $error_message = htmlspecialchars($_GET['error']); // Sanitize the error message
-}
-
+// If user is already logged in, redirect to home page
 if (isset($_SESSION['user_id'])) {
-    // Redirect to login page if already logged in
     header("Location: homelogin.php");
     exit();
 }
 
 // Handle login form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    
-    // Verify login
-    $sql = "SELECT * FROM users WHERE email = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
-        // Verify password (assuming you're using SHA256)
-        if (hash('sha256', $password) === $user['password']) {
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['first_name'] = $user['first_name'];
-            $_SESSION['last_name'] = $user['last_name'];
-            $_SESSION['user_type'] = $user['user_type'];
-            
-            // Get organization information
-            $org_query = "SELECT o.organization_id, o.name as org_name 
-                         FROM users u 
-                         LEFT JOIN organizations o ON u.organization_id = o.organization_id 
-                         WHERE u.user_id = ?";
-            $org_stmt = $conn->prepare($org_query);
-            $org_stmt->bind_param("i", $user['user_id']);
-            $org_stmt->execute();
-            $org_result = $org_stmt->get_result();
-            
-            if ($org_result->num_rows > 0) {
-                $org_data = $org_result->fetch_assoc();
-                $_SESSION['organization_id'] = $org_data['organization_id'];
-                $_SESSION['org_name'] = $org_data['org_name'];
-                $_SESSION['has_organization'] = true;
-            } else {
-                $_SESSION['organization_id'] = null;
-                $_SESSION['org_name'] = null;
-                $_SESSION['has_organization'] = false;
-            }
-            
-            header("Location: homelogin.php");
-            exit();
-        } else {
-            $error_message = "Invalid email or password";
+    try {
+        $email = $_POST['email'];
+        $password = $_POST['password'];
+        
+        // Validate inputs
+        if (empty($email)) {
+            handle_validation_error("Email address is required", "email", "login.php");
         }
-    } else {
-        $error_message = "Invalid email or password";
+        
+        if (empty($password)) {
+            handle_validation_error("Password is required", "password", "login.php");
+        }
+        
+        // Verify login
+        $sql = "SELECT * FROM users WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+        
+        if (!$stmt) {
+            handle_db_error("Database error occurred", $conn, "login.php");
+        }
+        
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            // Verify password using password_verify for bcrypt
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['first_name'] = $user['first_name'];
+                $_SESSION['last_name'] = $user['last_name'];
+                $_SESSION['user_type'] = $user['user_type'];
+                
+                // Get organization information
+                $org_query = "SELECT o.organization_id, o.name as org_name 
+                             FROM users u 
+                             LEFT JOIN organizations o ON u.organization_id = o.organization_id 
+                             WHERE u.user_id = ?";
+                $org_stmt = $conn->prepare($org_query);
+                
+                if (!$org_stmt) {
+                    log_error("Failed to prepare organization query", ERROR_DATABASE, ['error' => $conn->error]);
+                    // Continue despite error - organization info is not critical
+                } else {
+                    $org_stmt->bind_param("i", $user['user_id']);
+                    $org_stmt->execute();
+                    $org_result = $org_stmt->get_result();
+                    
+                    if ($org_result->num_rows > 0) {
+                        $org_data = $org_result->fetch_assoc();
+                        $_SESSION['organization_id'] = $org_data['organization_id'];
+                        $_SESSION['org_name'] = $org_data['org_name'];
+                        $_SESSION['has_organization'] = true;
+                    } else {
+                        $_SESSION['organization_id'] = null;
+                        $_SESSION['org_name'] = null;
+                        $_SESSION['has_organization'] = false;
+                    }
+                }
+                
+                // Log successful login
+                log_error("User logged in successfully: " . $user['email'], "auth", ['user_id' => $user['user_id']]);
+                
+                header("Location: homelogin.php");
+                exit();
+            } else {
+                handle_error("Invalid email or password", ERROR_AUTH, "login.php");
+            }
+        } else {
+            handle_error("Invalid email or password", ERROR_AUTH, "login.php");
+        }
+    } catch (Exception $e) {
+        handle_error("An unexpected error occurred: " . $e->getMessage(), ERROR_GENERAL, "login.php", 
+            ['exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
     }
 }
 ?>
@@ -72,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - MDX</title>
+    <link rel="stylesheet" href="assets/css/error_styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -257,11 +283,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <img src="images/mdx_logo.png" alt="MDX Logo">
             </div>
             
-            <?php if (isset($error_message)): ?>
-                <div style="color: red; font-size: 16px; margin-bottom: 20px;">
-                    <?php echo $error_message; ?>
-                </div>
-            <?php endif; ?>
+            <?php echo display_error_message(); ?>
+            
             <form action="login.php" method="POST">
                 <div class="input-container">
                     <img src="images/user_icon.png" alt="User Icon">

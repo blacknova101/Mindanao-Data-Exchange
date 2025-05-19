@@ -45,6 +45,7 @@ if (isset($_SESSION['user_id'])) {
         margin-top:30px;
         margin-left: auto; /* Center align the navbar */
         margin-right: auto; /* Center align the navbar */
+        z-index: 50;
     }
 
     .logo {
@@ -63,6 +64,7 @@ if (isset($_SESSION['user_id'])) {
         text-decoration: none;
         font-size: 18px;
         transition: transform 0.3s ease; /* Smooth transition for scaling */
+        padding: 5px 10px;
     }
     .nav-links a:hover {
         transform: scale(1.2); /* Scale up the link by 20% */
@@ -81,6 +83,7 @@ if (isset($_SESSION['user_id'])) {
         display: flex;
         align-items: center;
         gap: 20px;
+        z-index: 55;
     }
     .main-wrapper {
             display: flex;
@@ -118,9 +121,16 @@ if (isset($_SESSION['user_id'])) {
         .account-org h2, .account-individual h2 {
             color: #0099ff;
         }
-        #checkmark{
-            margin-top: 50px;
+        
+        .account-individual p, .account-org p {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: rgba(0, 153, 255, 0.05);
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
         }
+        
         .account-individual, .account-org {
             flex: 1;
             margin-top: -160px;
@@ -129,6 +139,12 @@ if (isset($_SESSION['user_id'])) {
             text-align: center;
             height: 500px;
             border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .account-individual:hover, .account-org:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 153, 255, 0.2);
         }
         .account-individual img, .account-org img {
             width: 40px;
@@ -146,6 +162,7 @@ if (isset($_SESSION['user_id'])) {
             border-radius: 5px;
             cursor: pointer;
             font-size:30px;
+            display: inline-block;
         }
         .next-button a:hover {
             background-color: #142850;
@@ -169,6 +186,64 @@ if (isset($_SESSION['user_id'])) {
         }
         .cancel p {
             margin-top: 20px;
+        }
+        
+        /* Media Queries for Responsive Design */
+        @media (max-width: 1024px) {
+            .signup-container {
+                width: 90%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .content-row {
+                grid-template-columns: 1fr;
+                margin-top: 40px;
+            }
+            
+            .description {
+                margin-bottom: 30px;
+            }
+            
+            .account-individual, .account-org {
+                margin-top: 0;
+                height: auto;
+                min-height: 300px;
+                padding: 20px;
+            }
+            
+            .next-button a, .cancel .cancel-button {
+                padding: 10px 40px;
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .signup-container {
+                padding: 15px;
+                height: auto;
+            }
+            
+            .content-row {
+                gap: 30px;
+                margin-top: 20px;
+            }
+            
+            .description h2 {
+                font-size: 14px;
+            }
+            
+            .next-button a, .cancel .cancel-button {
+                padding: 10px 30px;
+                font-size: 18px;
+                width: 80%;
+                max-width: 250px;
+            }
+            
+            .account-individual p, .account-org p {
+                font-size: 12px;
+                padding: 8px 5px;
+            }
         }
     </style>
 </head>
@@ -198,20 +273,20 @@ if (isset($_SESSION['user_id'])) {
                     <h2><strong>ADD DATA</strong></h2>
                     <p id="p1">Contribute datasets to the platform, making them available for others to discover and use. Share valuable insights, research, or real-world data.</p>
                 </div>
-                <div class="account-individual">
+                <div class="account-individual" onclick="window.location.href='registrationdetails.php?accountType=normal'">
                     <h2><strong>Normal MDX account</strong></h2>
                     <img src="images/user_icon.png" alt="User Icon">
                     <br>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
+                    <p>SEARCH AND DOWNLOAD PUBLIC DATA</p>
+                    <p>REQUEST PRIVATE DATASETS</p>
                 </div>
-                <div class="account-org">
+                <div class="account-org" onclick="window.location.href='registrationdetails.php?accountType=organization'">
                     <h2><strong>With organization</strong></h2>
                     <img src="images/user_icon.png" alt="User Icon">
                     <br>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
+                    <p>SEARCH AND DOWNLOAD PUBLIC DATA</p>
+                    <p>REQUEST PRIVATE DATASETS</p>
+                    <p>ADD DATA</p>
                 </div>
             </div>
             <div class="next-button">
@@ -229,127 +304,3 @@ if (isset($_SESSION['user_id'])) {
 
 </body>
 </html>
-<!-- <div class="main-wrapper">
-        <div class="signup-container">
-            <div class="content-row">
-                <div class="description">
-                    <h2><strong>SEARCH AND DOWNLOAD DATA</strong></h2>
-                    <p id="p1">Explore a vast collection of datasets from various sources. Filter, search, and download the data you need for analysis and research.</p>
-                    <h2><strong>CONTACT THE CONTRIBUTOR</strong></h2>
-                    <p id="p1">Connect with dataset contributors for inquiries, collaboration, or further details about their shared data.</p>
-                    <h2><strong>ADD DATA</strong></h2>
-                    <p id="p1">Contribute datasets to the platform, making them available for others to discover and use. Share valuable insights, research, or real-world data.</p>
-                </div>
-                <div class="account-individual">
-                    <h2><strong>Normal MDX account</strong></h2>
-                    <img src="images/user_icon.png" alt="User Icon">
-                    <br>
-                    <a href="registrationdetailsnoorg.php">Sign Up</a>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                </div>
-                <div class="account-org">
-                    <h2><strong>With organization</strong></h2>
-                    <img src="images/user_icon.png" alt="User Icon">
-                    <br>
-                    <a href="registrationdetailswithorg.php">Sign Up</a>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                </div>
-            </div>
-            
-            <div class="cancel">
-                <a class="cancel-button" href="MindanaoDataExchange.php">Cancel</a>
-                <p class="backlogin">Already have an account? <a class= "backlogin" href="login.php">Log in</a></p>
-            </div>
-            
-        </div>
-    </div>
-            .main-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: calc(100vh - 60px);
-        }
-        
-        .signup-container {
-            width: 1050px;
-            background-color: white;
-            border: 1px solid black;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 900px;
-            margin-top:200px;
-        }
-        
-        .content-row {
-            margin-top: 250px;
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            row-gap: 100px; 
-            gap: 20px; 
-        }
-        
-        
-        .description {
-            flex: 1;
-            padding: 0;
-
-            margin-top: -10px;
-       
-        }
-        .description h2 {
-            font-size: 15px;
-        }
-        #checkmark{
-            margin-top: 50px;
-        }
-        .account-individual, .account-org {
-            flex: 1;
-            margin-top: -160px;
-            padding: 0px 20px;
-            border: 1px solid black;
-            text-align: center;
-            height: 500px;
-        }
-        
-        .account-individual img, .account-org img {
-            width: 40px;
-            margin-bottom: 10px;
-        }
-        
-        .account-individual a, .account-org a {
-            background-color: #0c1a36;
-            text-decoration: none;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .account-individual a:hover, .account-org a:hover {
-            background-color: #142850;
-        }
-        
-        .cancel {
-            text-align: center;
-            margin-top: 90px;
-        }
-        .cancel .cancel-button{
-            font-size: 30px;
-            background-color: #0c1a36;
-            text-decoration: none;
-            color: white;
-            padding: 10px 100px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .cancel .cancel-button:hover {
-            background-color: #142850;
-        }
-        .cancel p {
-            margin-top: 10px;
-        }

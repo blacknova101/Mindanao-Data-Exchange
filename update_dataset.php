@@ -1,10 +1,11 @@
 <?php
 session_start();
 include('db_connection.php');
+include('includes/error_handler.php');
+include('includes/path_handler.php');
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+    handle_error("You must be logged in to update datasets.", ERROR_AUTH, "login.php");
 }
 
 $user_id = $_SESSION['user_id'];
@@ -20,9 +21,7 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
 if (mysqli_num_rows($result) === 0) {
-    $_SESSION['error_message'] = "You don't have permission to edit this dataset.";
-    header("Location: dataset.php?id=$dataset_id");
-    exit();
+    handle_error("You don't have permission to edit this dataset.", ERROR_PERMISSION, "dataset.php?id=$dataset_id");
 }
 
 $dataset = mysqli_fetch_assoc($result);
@@ -54,32 +53,46 @@ try {
         $nextVersion = ($versionRow['max_version'] ?? 0) + 1;
 
         // Debug output to check what's happening
-        error_log("Creating new version: v{$nextVersion} for batch_id: {$batch_id}");
+        log_error("Creating new version", "dataset", [
+            'version' => "v{$nextVersion}",
+            'batch_id' => $batch_id,
+            'dataset_id' => $dataset_id
+        ]);
 
         // Handle file uploads
         $file_paths = [];
         if (isset($_FILES['files']) && !empty($_FILES['files']['name'][0])) {
-            $upload_dir = dirname($dataset['file_path']);
-            // Create version-specific directory
-            $version_dir = $upload_dir . "/v{$nextVersion}";
-            if (!file_exists($version_dir)) {
-                mkdir($version_dir, 0777, true);
-            }
+            // Get the base directory from the current file path
+            $current_file_path = $dataset['file_path'];
+            $base_dir = dirname($current_file_path);
+            
+            // Create version-specific directory using our path handling functions
+            $version_folder = "v{$nextVersion}";
+            $version_dir = $base_dir . '/' . $version_folder;
+            ensure_directory_exists($version_dir);
             
             foreach ($_FILES['files']['tmp_name'] as $key => $tmp_name) {
                 if ($_FILES['files']['error'][$key] === UPLOAD_ERR_OK) {
-                    // Use original filename instead of creating a new one
-                    $original_name = $_FILES['files']['name'][$key];
-                    $target_file = $version_dir . '/' . $original_name;
-                    
-                    // If file with same name exists, append a unique identifier
-                    if (file_exists($target_file)) {
-                        $file_info = pathinfo($original_name);
-                        $target_file = $version_dir . '/' . $file_info['filename'] . '_' . time() . '.' . $file_info['extension'];
-                    }
+                    // Sanitize filename and make it unique
+                    $original_name = sanitize_filename($_FILES['files']['name'][$key]);
+                    $unique_filename = generate_unique_filename($version_dir, $original_name);
+                    $target_file = $version_dir . '/' . $unique_filename;
                     
                     if (move_uploaded_file($tmp_name, $target_file)) {
                         $file_paths[] = $target_file;
+                        
+                        // Log successful file upload
+                        log_error("File uploaded for new version", "file", [
+                            'filename' => $unique_filename,
+                            'path' => $target_file,
+                            'version' => "v{$nextVersion}"
+                        ]);
+                    } else {
+                        // Log file upload error
+                        log_error("Failed to upload file", ERROR_FILE, [
+                            'filename' => $original_name,
+                            'error' => error_get_last()
+                        ]);
                     }
                 }
             }
@@ -97,7 +110,11 @@ try {
         $version_number = "v{$nextVersion}";
         $category_id = $dataset['category_id'];
         
-        error_log("Creating version {$version_number} for batch_id: {$batch_id} with main file: {$main_file_path}");
+        log_error("Creating version record", "dataset", [
+            'version' => $version_number,
+            'batch_id' => $batch_id,
+            'file_path' => $main_file_path
+        ]);
         
         $insertVersionSql = "
             INSERT INTO datasetversions (
@@ -128,7 +145,7 @@ try {
         
         // Get the new version_id
         $new_version_id = mysqli_insert_id($conn);
-        error_log("Version created with ID: {$new_version_id}");
+        log_error("Version created", "dataset", ['version_id' => $new_version_id]);
         
         // Mark all other versions as not current
         $updateVersionsSql = "
@@ -210,14 +227,14 @@ try {
 
     // Commit transaction
     mysqli_commit($conn);
-    $_SESSION['success_message'] = "Dataset updated successfully!";
+    set_success_message("Dataset updated successfully!");
     
-    // Log success for debugging
-    if ($update_type === 'new_version') {
-        error_log("Transaction committed successfully. Created version {$version_number} with ID {$new_version_id} for batch {$batch_id}");
-    } else {
-        error_log("Transaction committed successfully. Updated dataset {$dataset_id} in batch {$batch_id}");
-    }
+    // Log success
+    log_error("Dataset update successful", "dataset", [
+        'dataset_id' => $dataset_id,
+        'batch_id' => $batch_id,
+        'update_type' => $update_type
+    ]);
     
     // Check if there's a return_to parameter to know where to redirect
     $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'dataset.php';
@@ -232,7 +249,14 @@ try {
 } catch (Exception $e) {
     // Rollback transaction on error
     mysqli_rollback($conn);
-    $_SESSION['error_message'] = "Error updating dataset: " . $e->getMessage();
+    
+    log_error("Dataset update failed", ERROR_DATABASE, [
+        'dataset_id' => $dataset_id,
+        'exception' => $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+    ]);
+    
+    handle_error("Error updating dataset: " . $e->getMessage(), ERROR_DATABASE);
     
     // Check if there's a return_to parameter to know where to redirect
     $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'dataset.php';

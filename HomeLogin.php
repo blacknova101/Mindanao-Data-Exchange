@@ -456,24 +456,24 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
     }
     
     .nav-links .notification-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: #ff3b30;
-    color: white;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 12px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
-    padding: 0;               /* NEW: remove extra padding */
-    line-height: 18px;        /* NEW: match height for vertical centering */
-    text-align: center;       /* Ensure text is centered */
-}
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #ff3b30;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        padding: 0;               /* NEW: remove extra padding */
+        line-height: 18px;        /* NEW: match height for vertical centering */
+        text-align: center;       /* Ensure text is centered */
+    }
 
     </style>
 </head>

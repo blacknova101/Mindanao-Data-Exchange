@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id']) && isse
         $conn->begin_transaction();
         
         try {
-            // Update request status
+            // Update request status with admin's ID directly
             $update_request_sql = "UPDATE organization_creation_requests 
                                   SET status = ?, admin_response = ?, reviewed_date = NOW(), reviewed_by = ? 
                                   WHERE request_id = ?";

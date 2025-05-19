@@ -2,11 +2,12 @@
 session_start();
 include 'db_connection.php';
 include 'update_session.php';
+include 'includes/error_handler.php';
+include 'includes/path_handler.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+    handle_error("You must be logged in to view your organization requests.", ERROR_AUTH, "login.php");
 }
 
 $user_id = $_SESSION['user_id'];
@@ -19,6 +20,11 @@ if (isset($_GET['action']) && $_GET['action'] === 'cancel' && isset($_GET['reque
     $check_sql = "SELECT request_id FROM organization_creation_requests 
                   WHERE request_id = ? AND user_id = ? AND status = 'Pending'";
     $check_stmt = $conn->prepare($check_sql);
+    
+    if (!$check_stmt) {
+        handle_db_error("Database error occurred", $conn, "user_org_requests.php");
+    }
+    
     $check_stmt->bind_param("ii", $request_id, $user_id);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
@@ -31,44 +37,91 @@ if (isset($_GET['action']) && $_GET['action'] === 'cancel' && isset($_GET['reque
             // Get documents for this request
             $docs_sql = "SELECT document_path FROM organization_request_documents WHERE request_id = ?";
             $docs_stmt = $conn->prepare($docs_sql);
+            
+            if (!$docs_stmt) {
+                throw new Exception("Failed to prepare document query: " . $conn->error);
+            }
+            
             $docs_stmt->bind_param("i", $request_id);
             $docs_stmt->execute();
             $docs_result = $docs_stmt->get_result();
             
             // Delete documents from filesystem
             while ($doc = $docs_result->fetch_assoc()) {
-                if (file_exists($doc['document_path'])) {
-                    unlink($doc['document_path']);
+                $file_path = $doc['document_path'];
+                
+                // Convert to absolute path if necessary
+                if (strpos($file_path, '/') !== 0 && strpos($file_path, ':\\') !== 1) {
+                    $file_path = get_absolute_path($file_path);
+                }
+                
+                if (file_exists($file_path)) {
+                    if (unlink($file_path)) {
+                        log_error("Document deleted", "file", [
+                            'path' => $file_path,
+                            'request_id' => $request_id
+                        ]);
+                    } else {
+                        log_error("Failed to delete document", ERROR_FILE, [
+                            'path' => $file_path,
+                            'error' => error_get_last()
+                        ]);
+                    }
                 }
             }
             
             // Delete request and documents records
             $delete_sql = "DELETE FROM organization_creation_requests WHERE request_id = ?";
             $delete_stmt = $conn->prepare($delete_sql);
+            
+            if (!$delete_stmt) {
+                throw new Exception("Failed to prepare delete query: " . $conn->error);
+            }
+            
             $delete_stmt->bind_param("i", $request_id);
             
             if ($delete_stmt->execute()) {
                 // Remove folder if empty
-                $folder_path = "uploads/org_requests/" . $request_id;
-                if (is_dir($folder_path)) {
-                    rmdir($folder_path);
+                $folder_path = get_uploads_dir("org_requests/{$request_id}");
+                
+                if (is_dir($folder_path) && count(scandir($folder_path)) <= 2) { // Only . and .. entries
+                    if (rmdir($folder_path)) {
+                        log_error("Request folder removed", "file", ['path' => $folder_path]);
+                    } else {
+                        log_error("Failed to remove request folder", ERROR_FILE, [
+                            'path' => $folder_path,
+                            'error' => error_get_last()
+                        ]);
+                    }
                 }
                 
                 $conn->commit();
-                $_SESSION['success_message'] = "Your organization request has been cancelled.";
+                set_success_message("Your organization request has been cancelled.");
+                
+                log_error("Organization request cancelled", "org_request", [
+                    'request_id' => $request_id,
+                    'user_id' => $user_id
+                ]);
             } else {
-                throw new Exception("Failed to delete request.");
+                throw new Exception("Failed to delete request: " . $conn->error);
             }
         } catch (Exception $e) {
             $conn->rollback();
-            $_SESSION['error_message'] = "Error cancelling request: " . $e->getMessage();
+            
+            log_error("Error cancelling organization request", ERROR_GENERAL, [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_id' => $request_id
+            ]);
+            
+            handle_error("Error cancelling request: " . $e->getMessage(), ERROR_GENERAL, "user_org_requests.php");
         }
         
         // Redirect to same page to prevent refresh issues
         header("Location: user_org_requests.php");
         exit();
     } else {
-        $_SESSION['error_message'] = "Request not found or cannot be cancelled.";
+        handle_error("Request not found or cannot be cancelled.", ERROR_PERMISSION, "user_org_requests.php");
     }
 }
 
@@ -96,6 +149,11 @@ $requests_sql = "
 ";
 
 $requests_stmt = $conn->prepare($requests_sql);
+
+if (!$requests_stmt) {
+    handle_db_error("Failed to prepare requests query", $conn, "HomeLogin.php");
+}
+
 $requests_stmt->bind_param("i", $user_id);
 $requests_stmt->execute();
 $requests_result = $requests_stmt->get_result();
@@ -107,6 +165,7 @@ $requests_result = $requests_stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Organization Requests</title>
+    <link rel="stylesheet" href="assets/css/error_styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -404,23 +463,8 @@ $requests_result = $requests_stmt->get_result();
     <div class="container">
         <h1>My Organization Requests</h1>
         
-        <?php if (isset($_SESSION['success_message'])): ?>
-            <div class="alert alert-success" id="org_requests_success">
-                <?php 
-                    echo $_SESSION['success_message']; 
-                    unset($_SESSION['success_message']); 
-                ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (isset($_SESSION['error_message'])): ?>
-            <div class="alert alert-danger" id="org_requests_error">
-                <?php 
-                    echo $_SESSION['error_message']; 
-                    unset($_SESSION['error_message']); 
-                ?>
-            </div>
-        <?php endif; ?>
+        <?php echo display_error_message(); ?>
+        <?php echo display_success_message(); ?>
         
         <?php
         // Check if user can make a new request

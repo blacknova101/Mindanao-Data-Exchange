@@ -1,55 +1,84 @@
 <?php
 session_start();
 include('db_connection.php');
+include('includes/error_handler.php');
 
 if (!isset($_SESSION['verification_code']) || !isset($_SESSION['pending_change'])) {
-    header("Location: user_settings.php");
-    exit();
+    handle_error("Verification session expired. Please try again.", ERROR_AUTH, "user_settings.php");
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $enteredCode = $_POST['verification_code'];
-    $correctCode = $_SESSION['verification_code'];
-    $pendingChange = $_SESSION['pending_change'];
-
-    if ($enteredCode == $correctCode) {
-        $userId = $_SESSION['user_id'];
-        
-        if ($pendingChange['type'] == 'email') {
-            // Update email
-            $newEmail = $pendingChange['value'];
-            $sql = "UPDATE users SET email = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("si", $newEmail, $userId);
+    try {
+        $enteredCode = $_POST['verification_code'];
+        $correctCode = $_SESSION['verification_code'];
+        $pendingChange = $_SESSION['pending_change'];
+    
+        if ($enteredCode == $correctCode) {
+            $userId = $_SESSION['user_id'];
             
-            if ($stmt->execute()) {
-                $_SESSION['email'] = $newEmail;
-                $_SESSION['success_message'] = "Email updated successfully!";
-            } else {
-                $_SESSION['error_message'] = "Failed to update email. Please try again.";
+            if ($pendingChange['type'] == 'email') {
+                // Update email
+                $newEmail = $pendingChange['value'];
+                $sql = "UPDATE users SET email = ? WHERE user_id = ?";
+                $stmt = $conn->prepare($sql);
+                
+                if (!$stmt) {
+                    handle_db_error("Database error occurred", $conn, "user_settings.php");
+                }
+                
+                $stmt->bind_param("si", $newEmail, $userId);
+                
+                if ($stmt->execute()) {
+                    $_SESSION['email'] = $newEmail;
+                    set_success_message("Email updated successfully!");
+                    
+                    // Log successful email change
+                    log_error("Email updated successfully", "auth", [
+                        'user_id' => $userId,
+                        'new_email' => $newEmail
+                    ]);
+                } else {
+                    handle_db_error("Failed to update email", $conn, "user_settings.php");
+                }
+            } else if ($pendingChange['type'] == 'password') {
+                // Update password using bcrypt
+                $newPassword = password_hash($pendingChange['value'], PASSWORD_BCRYPT);
+                $sql = "UPDATE users SET password = ? WHERE user_id = ?";
+                $stmt = $conn->prepare($sql);
+                
+                if (!$stmt) {
+                    handle_db_error("Database error occurred", $conn, "user_settings.php");
+                }
+                
+                $stmt->bind_param("si", $newPassword, $userId);
+                
+                if ($stmt->execute()) {
+                    set_success_message("Password updated successfully!");
+                    
+                    // Log successful password change
+                    log_error("Password updated successfully", "auth", [
+                        'user_id' => $userId
+                    ]);
+                } else {
+                    handle_db_error("Failed to update password", $conn, "user_settings.php");
+                }
             }
-        } else if ($pendingChange['type'] == 'password') {
-            // Update password
-            $newPassword = hash('sha256', $pendingChange['value']);
-            $sql = "UPDATE users SET password = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("si", $newPassword, $userId);
+    
+            // Clear verification data
+            unset($_SESSION['verification_code']);
+            unset($_SESSION['pending_change']);
             
-            if ($stmt->execute()) {
-                $_SESSION['success_message'] = "Password updated successfully!";
-            } else {
-                $_SESSION['error_message'] = "Failed to update password. Please try again.";
-            }
+            header("Location: user_settings.php");
+            exit();
+        } else {
+            handle_validation_error("Invalid verification code. Please try again.", "verification_code");
         }
-
-        // Clear verification data
-        unset($_SESSION['verification_code']);
-        unset($_SESSION['pending_change']);
-        
-        header("Location: user_settings.php");
-        exit();
-    } else {
-        $error = "Invalid verification code. Please try again.";
+    } catch (Exception $e) {
+        log_error("Verification error", ERROR_GENERAL, [
+            'exception' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        handle_error("An unexpected error occurred. Please try again.", ERROR_GENERAL);
     }
 }
 ?>
@@ -59,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Changes</title>
+    <link rel="stylesheet" href="assets/css/error_styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -236,14 +266,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="container">
         <div class="verification-form">
             <h2>Verify Changes</h2>
-            <?php if (isset($_SESSION['error_message'])): ?>
-                <div class="error-message">
-                    <?php 
-                        echo $_SESSION['error_message'];
-                        unset($_SESSION['error_message']);
-                    ?>
-                </div>
-            <?php endif; ?>
+            <?php echo display_error_message(); ?>
+            <?php echo display_success_message(); ?>
+            
             <form action="verify_changes_code.php" method="POST">
                 <input type="text" name="verification_code" placeholder="Enter verification code" required>
                 <button type="submit">Verify Changes</button>
