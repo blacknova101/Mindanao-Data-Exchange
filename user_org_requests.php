@@ -165,6 +165,7 @@ $requests_result = $requests_stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Organization Requests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/error_styles.css">
     <style>
         body {
@@ -193,6 +194,7 @@ $requests_result = $requests_stmt->get_result();
             margin-left: auto;
             margin-right: auto;
             font-weight: bold;
+            z-index: 1000;
         }
         
         .logo {
@@ -204,6 +206,19 @@ $requests_result = $requests_stmt->get_result();
             height: auto;
             width: 80px;
             max-width: 100%;
+            margin-right: 15px;
+        }
+        
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
         }
         
         .nav-links a {
@@ -216,6 +231,103 @@ $requests_result = $requests_stmt->get_result();
         
         .nav-links a:hover {
             transform: scale(1.2);
+        }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+        
+        .mobile-menu-toggle i {
+            display: block;
+        }
+
+        /* Responsive styles for the navbar */
+        @media screen and (max-width: 768px) {
+            .navbar {
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%;
+                max-width: 90%;
+                position: relative;
+                z-index: 2;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .logo {
+                flex-direction: row;
+                align-items: center;
+                text-align: center;
+                max-width: 80%;
+            }
+            
+            .logo img {
+                width: 50px;
+                margin-right: 12px;
+            }
+            
+            .logo h2 {
+                margin: 0;
+                font-size: 22px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 9999;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .navbar {
+                padding: 8px 10px;
+            }
+            
+            .logo img {
+                width: 45px;
+                margin-right: 10px;
+            }
+            
+            .logo h2 {
+                font-size: 18px;
+                text-align: center;
+            }
         }
         
         .container {
@@ -454,8 +566,13 @@ $requests_result = $requests_stmt->get_result();
             <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">
             <h2>My Organization Requests</h2>
         </div>
-        <nav class="nav-links">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
+            <a href="datasets.php">ALL DATASETS</a>
+            <a href="mydatasets.php">MY DATASETS</a>
             <a href="user_settings.php">SETTINGS</a>
         </nav>
     </header>
@@ -629,6 +746,24 @@ $requests_result = $requests_stmt->get_result();
         
         document.getElementById('confirmModalBtn').addEventListener('click', function() {
             window.location.href = pendingRequestUrl;
+        });
+        
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            
+            mobileMenuToggle.addEventListener('click', function() {
+                navLinks.classList.toggle('active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideNavbar = event.target.closest('.navbar');
+                if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                }
+            });
         });
     </script>
 </body>

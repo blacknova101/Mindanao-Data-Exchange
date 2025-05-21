@@ -15,340 +15,278 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Selection - MDX</title>
+    <link rel="stylesheet" href="assets/css/accountselection_responsive.css">
     <style>
-    html, body {
-        height: auto;
-        overflow: auto;
-    }
-
     body {
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
         text-align: center;
+        overflow-x: hidden;
+        background-image: url('images/bg6.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
     }
+    
     .navbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 5%; /* Adjusted padding for a more compact navbar */
+        padding: 10px 5%;
         padding-left: 30px;
-        background-color:  #0099ff; /* Transparent background */
+        background-color: #0099ff;
         color: #cfd9ff;
         border-radius: 20px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         position: relative;
-        margin: 10px 0;
+        margin: 10px auto;
         backdrop-filter: blur(10px);
-        max-width: 1200px; /* Limit the maximum width */
-        width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
-        margin-top:30px;
-        margin-left: auto; /* Center align the navbar */
-        margin-right: auto; /* Center align the navbar */
+        max-width: 1200px;
+        width: 100%;
+        margin-top: 30px;
+        box-sizing: border-box;
     }
-
+    
     .logo {
         display: flex;
         align-items: center;
         margin-right: 20px;
     }
+    
     .logo img {
         height: auto;
-        width: 80px; /* Adjust logo size */
+        width: 80px;
         max-width: 100%;
     }
-    .nav-links a {
-        color: white;
-        margin-left: 20px;
-        text-decoration: none;
-        font-size: 18px;
-        transition: transform 0.3s ease; /* Smooth transition for scaling */
-    }
-    .nav-links a:hover {
-        transform: scale(1.2); /* Scale up the link by 20% */
-    }
-
-    #background-video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1; /* stays behind everything */
-    }
+    
     .nav-links {
         display: flex;
         align-items: center;
         gap: 20px;
     }
-    .main-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+    
+    .nav-links a {
+        color: white;
+        margin-left: 20px;
+        text-decoration: none;
+        font-size: 18px;
+        transition: transform 0.3s ease;
     }
-    .signup-container {
-            width: 1250px;
-            background-color: white;
-            border-radius: 10px;
-            padding: 0px 20px;
-            display: flex;
-            flex-direction: column;
-            height: 750px;
-            margin-bottom:50px;
-            margin-top:0px;
-        }
-        .content-row {
-            margin-top: 200px;
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            row-gap: 100px; 
-            gap: 20px; 
-        }    
-        .description {
-            flex: 1;
-            padding: 0;
-            margin-top: -10px;
-       
-        }
-        .description h2 {
-            font-size: 15px;
-            color: #0099ff;
-        }
-        .account-org h2, .account-individual h2 {
-            color: #0099ff;
-        }
-        #checkmark{
-            margin-top: 50px;
-        }
-        .account-individual, .account-org {
-            flex: 1;
-            margin-top: -160px;
-            padding: 0px 20px;
-            border: 1px solid #0099ff;;
-            text-align: center;
-            height: 500px;
-            border-radius: 10px;
-        }
-        .account-individual img, .account-org img {
-            width: 40px;
-            margin-bottom: 10px;
-        }
-        .next-button{
-            margin-top: 50px;
-        }
-        .next-button a{
-            background-color:#0099ff;
-            text-decoration: none;
-            color: white;
-            padding: 10px 100px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size:30px;
-        }
-        .next-button a:hover {
-            background-color: #142850;
-        }
-        .cancel {
-            text-align: center;
-            margin-top: 30px;
-        }
-        .cancel .cancel-button{
-            font-size: 20px;
-            background-color: #0099ff;
-            text-decoration: none;
-            color: white;
-            padding: 10px 100px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .cancel .cancel-button:hover {
-            background-color: #142850;
-        }
-        .cancel p {
-            margin-top: 20px;
-        }
+    
+    .nav-links a:hover {
+        transform: scale(1.2);
+    }
+    
+    .main-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    
+    .account-selection-box {
+        width: 85%;
+        max-width: 1100px;
+        background-color: white;
+        border-radius: 10px;
+        padding: 40px;
+        margin: 20px auto;
+        box-sizing: border-box;
+    }
+    
+    .account-options {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 35px;
+    }
+    
+    .account-options th {
+        padding: 20px;
+        text-align: center;
+        font-weight: normal;
+    }
+    
+    .account-options td {
+        padding: 22px 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #000;
+    }
+    
+    .account-options tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .account-options td:first-child {
+        width: 50%;
+        text-align: left;
+    }
+    
+    .account-options td:not(:first-child) {
+        width: 25%;
+        text-align: center;
+    }
+    
+    .feature-name {
+        color: #0099ff;
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .feature-desc {
+        font-size: 14px;
+        line-height: 1.4;
+        margin: 0;
+    }
+    
+    .account-type {
+        font-size: 18px;
+        color: #0099ff;
+        margin-top: 5px;
+    }
+    
+    .account-icon {
+        width: 40px;
+        height: auto;
+    }
+    
+    .checkmark {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .action-buttons {
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+    .btn-next {
+        background-color: #0099ff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 0;
+        width: 180px;
+        font-size: 24px;
+        cursor: pointer;
+        margin-bottom: 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s ease;
+    }
+    
+    .btn-next:hover {
+        background-color: #007acc;
+    }
+    
+    .btn-cancel {
+        background-color: #0099ff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 0;
+        width: 180px;
+        font-size: 20px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #007acc;
+    }
+    
+    .login-link {
+        margin-top: 20px;
+        font-size: 15px;
+    }
+    
+    .login-link a {
+        color: #0099ff;
+        text-decoration: none;
+        transition: text-decoration 0.3s ease;
+    }
+    
+    .login-link a:hover {
+        text-decoration: underline;
+    }
     </style>
 </head>
 <body>
-            <video autoplay muted loop id="background-video">
-                <source src="videos/bg6.mp4" type="video/mp4">
-            </video>
+    <header class="navbar">
+        <div class="logo">
+            <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
+        </div>
+        <nav class="nav-links">
+            <a href="mindanaodataexchange.php">Home</a>
+        </nav>
+    </header>
 
-            <header class="navbar">
-                <div class="logo">
-                    <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
-                </div>
-
-                <nav class="nav-links">
-                    <a href="mindanaodataexchange.php">Home</a>
-                </nav>
-            </header>
-
-    <div class="main-wrapper">
-        <div class="signup-container">
-            <div class="content-row">
-                <div class="description">
-                    <h2><strong>SEARCH AND DOWNLOAD DATA</strong></h2>
-                    <p id="p1">Explore a vast collection of datasets from various sources. Filter, search, and download the data you need for analysis and research.</p>
-                    <h2><strong>CONTACT THE CONTRIBUTOR</strong></h2>
-                    <p id="p1">Connect with dataset contributors for inquiries, collaboration, or further details about their shared data.</p>
-                    <h2><strong>ADD DATA</strong></h2>
-                    <p id="p1">Contribute datasets to the platform, making them available for others to discover and use. Share valuable insights, research, or real-world data.</p>
-                </div>
-                <div class="account-individual">
-                    <h2><strong>Normal MDX account</strong></h2>
-                    <img src="images/user_icon.png" alt="User Icon">
-                    <br>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                </div>
-                <div class="account-org">
-                    <h2><strong>With organization</strong></h2>
-                    <img src="images/user_icon.png" alt="User Icon">
-                    <br>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                </div>
-            </div>
-            <div class="next-button">
-            <a href="registrationdetails.php">Next</a>
-            </div>
+    <div class="main-container">
+        <div class="account-selection-box">
+            <table class="account-options">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>
+                            <img src="images/user_icon.png" alt="Normal User" class="account-icon">
+                            <div class="account-type">Normal MDX Account</div>
+                        </th>
+                        <th>
+                            <img src="images/user_icon.png" alt="Organization" class="account-icon">
+                            <div class="account-type">With Organization</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="feature-name">SEARCH AND DOWNLOAD DATA</div>
+                            <p class="feature-desc">Explore a vast collection of datasets from various sources. Filter, search, and download the data you need for analysis and research.</p>
+                        </td>
+                        <td>
+                            <img src="images/check.png" alt="Available" class="checkmark">
+                        </td>
+                        <td>
+                            <img src="images/check.png" alt="Available" class="checkmark">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="feature-name">CONTACT THE CONTRIBUTOR</div>
+                            <p class="feature-desc">Connect with dataset contributors for inquiries, collaboration, or further details about their shared data.</p>
+                        </td>
+                        <td>
+                            <img src="images/check.png" alt="Available" class="checkmark">
+                        </td>
+                        <td>
+                            <img src="images/check.png" alt="Available" class="checkmark">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="feature-name">ADD DATA</div>
+                            <p class="feature-desc">Contribute datasets to the platform, making them available for others to discover and use. Share valuable insights, research, or real-world data.</p>
+                        </td>
+                        <td>
+                            <!-- No checkmark for normal account -->
+                        </td>
+                        <td>
+                            <img src="images/check.png" alt="Available" class="checkmark">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             
-            <div class="cancel">
-                <a class="cancel-button" href="MindanaoDataExchange.php">Cancel</a>
-                <p class="backlogin">Already have an account? <a class= "backlogin" href="login.php">Log in</a></p>
+            <div class="action-buttons">
+                <a href="registrationdetails.php" class="btn-next">Next</a><br>
+                <a href="MindanaoDataExchange.php" class="btn-cancel">Cancel</a>
+                <p class="login-link">Already have an account? <a href="login.php">Log in</a></p>
             </div>
-            
         </div>
     </div>
-
-
 </body>
-</html><!-- <div class="main-wrapper">
-        <div class="signup-container">
-            <div class="content-row">
-                <div class="description">
-                    <h2><strong>SEARCH AND DOWNLOAD DATA</strong></h2>
-                    <p id="p1">Explore a vast collection of datasets from various sources. Filter, search, and download the data you need for analysis and research.</p>
-                    <h2><strong>CONTACT THE CONTRIBUTOR</strong></h2>
-                    <p id="p1">Connect with dataset contributors for inquiries, collaboration, or further details about their shared data.</p>
-                    <h2><strong>ADD DATA</strong></h2>
-                    <p id="p1">Contribute datasets to the platform, making them available for others to discover and use. Share valuable insights, research, or real-world data.</p>
-                </div>
-                <div class="account-individual">
-                    <h2><strong>Normal MDX account</strong></h2>
-                    <img src="images/user_icon.png" alt="User Icon">
-                    <br>
-                    <a href="registrationdetailsnoorg.php">Sign Up</a>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                </div>
-                <div class="account-org">
-                    <h2><strong>With organization</strong></h2>
-                    <img src="images/user_icon.png" alt="User Icon">
-                    <br>
-                    <a href="registrationdetailswithorg.php">Sign Up</a>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                    <p id="checkmark"><img src="images/check.png"></p>
-                </div>
-            </div>
-            
-            <div class="cancel">
-                <a class="cancel-button" href="MindanaoDataExchange.php">Cancel</a>
-                <p class="backlogin">Already have an account? <a class= "backlogin" href="login.php">Log in</a></p>
-            </div>
-            
-        </div>
-    </div>
-            .main-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: calc(100vh - 60px);
-        }
-        
-        .signup-container {
-            width: 1050px;
-            background-color: white;
-            border: 1px solid black;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 900px;
-            margin-top:200px;
-        }
-        
-        .content-row {
-            margin-top: 250px;
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            row-gap: 100px; 
-            gap: 20px; 
-        }
-        
-        
-        .description {
-            flex: 1;
-            padding: 0;
-
-            margin-top: -10px;
-       
-        }
-        .description h2 {
-            font-size: 15px;
-        }
-        #checkmark{
-            margin-top: 50px;
-        }
-        .account-individual, .account-org {
-            flex: 1;
-            margin-top: -160px;
-            padding: 0px 20px;
-            border: 1px solid black;
-            text-align: center;
-            height: 500px;
-        }
-        
-        .account-individual img, .account-org img {
-            width: 40px;
-            margin-bottom: 10px;
-        }
-        
-        .account-individual a, .account-org a {
-            background-color: #0c1a36;
-            text-decoration: none;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .account-individual a:hover, .account-org a:hover {
-            background-color: #142850;
-        }
-        
-        .cancel {
-            text-align: center;
-            margin-top: 90px;
-        }
-        .cancel .cancel-button{
-            font-size: 30px;
-            background-color: #0c1a36;
-            text-decoration: none;
-            color: white;
-            padding: 10px 100px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .cancel .cancel-button:hover {
-            background-color: #142850;
-        }
-        .cancel p {
-            margin-top: 10px;
-        }
+</html>

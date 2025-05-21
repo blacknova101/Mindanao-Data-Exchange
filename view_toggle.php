@@ -40,6 +40,54 @@
         overflow: hidden;
         margin-bottom: 20px;
         display: none; /* Hidden by default */
+        table-layout: fixed; /* Use fixed layout for better control */
+    }
+    
+    /* Column widths for better control */
+    .dataset-table th:nth-child(1),
+    .dataset-table td:nth-child(1) {
+        width: 35%;
+    }
+    
+    .dataset-table th:nth-child(2),
+    .dataset-table td:nth-child(2) {
+        width: 15%;
+    }
+    
+    .dataset-table th:nth-child(3),
+    .dataset-table td:nth-child(3) {
+        width: 20%;
+    }
+    
+    .dataset-table th:nth-child(4),
+    .dataset-table td:nth-child(4) {
+        width: 30%;
+    }
+    
+    /* Responsive table wrapper */
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        display: none; /* Hidden by default */
+        position: relative; /* Ensure proper positioning */
+        box-sizing: border-box; /* Include padding in width calculation */
+    }
+    
+    /* Show table wrapper when view-list class is added to body */
+    body.view-list .table-responsive-wrapper {
+        display: block !important; /* Force display with !important */
+    }
+
+    /* Show table when view-list class is added to body */
+    body.view-list .dataset-table {
+        display: table !important;
+        min-width: 800px; /* Wider to ensure all content is visible */
+        table-layout: fixed;
+    }
+    
+    body.view-list .dataset-grid {
+        display: none !important;
     }
 
     .dataset-table th {
@@ -83,6 +131,7 @@
         align-items: center;
         justify-content: space-between;
         width: 100%;
+        white-space: nowrap; /* Prevent wrapping */
     }
 
     /* Download button container */
@@ -91,11 +140,13 @@
         margin-right: 10px;
     }
 
-    /* Upvote container */
+    /* Table upvote container and button styles */
     .table-upvote {
         display: flex;
         align-items: center;
-        flex: 0 0 110px; /* Fixed width */
+        flex: 0 0 120px; /* Increased fixed width */
+        white-space: nowrap; /* Prevent wrapping */
+        min-width: 120px; /* Minimum width to ensure count is visible */
     }
 
     .table-upvote button {
@@ -108,6 +159,7 @@
         transition: background-color 0.3s ease;
         width: 80px; /* Fixed width */
         text-align: center;
+        display: inline-block;
     }
 
     .table-upvote button.upvoted {
@@ -117,9 +169,9 @@
 
     .table-upvote-count {
         display: inline-block;
-        margin-left: 5px;
+        margin-left: 10px;
         font-weight: bold;
-        width: 25px; /* Fixed width */
+        min-width: 25px; /* Fixed minimum width */
         text-align: center;
     }
 
@@ -159,10 +211,160 @@
     }
     
     /* Consistent download button width */
-    .download-btn {
+    .download-btn, 
+    .private-btn {
         width: 90px; /* Fixed width */
         display: inline-block;
         text-align: center;
+        box-sizing: border-box;
+    }
+
+    /* Responsive styles for mobile devices */
+    @media (max-width: 768px) {
+        .view-toggle {
+            padding-right: 10px;
+        }
+        
+        .table-actions {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        
+        .table-download {
+            margin-bottom: 5px;
+        }
+        
+        .table-upvote {
+            flex: 0 0 auto;
+        }
+        
+        .dataset-table th, 
+        .dataset-table td {
+            padding: 10px 8px;
+        }
+        
+        /* Hide description column on mobile */
+        .hide-on-mobile {
+            display: none;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .view-toggle {
+            justify-content: center;
+            padding-right: 0;
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .view-toggle button {
+            padding: 5px 8px;
+            font-size: 13px;
+            flex: 0 1 auto;
+            min-width: 90px;
+            text-align: center;
+        }
+        
+        .view-toggle button i {
+            margin-right: 4px;
+        }
+        
+        .dataset-table {
+            font-size: 13px;
+        }
+        
+        /* Improved table display on mobile */
+        .table-responsive-wrapper {
+            margin: 0 -15px; /* Negative margin to allow full-width scrolling */
+            padding: 0 15px;
+            position: relative;
+            width: 100vw; /* Full viewport width */
+            max-width: 100vw;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+        
+        /* Force table display in list view on mobile */
+        body.view-list .table-responsive-wrapper {
+            display: block !important;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        body.view-list .dataset-table {
+            display: table !important;
+            min-width: 800px; /* Wider to ensure all content is visible */
+            table-layout: fixed;
+        }
+        
+        body.view-list .dataset-grid {
+            display: none !important;
+        }
+        
+        /* Adjust column widths for mobile */
+        .dataset-table th:nth-child(1),
+        .dataset-table td:nth-child(1) {
+            width: 30%;
+        }
+        
+        .dataset-table th:nth-child(2),
+        .dataset-table td:nth-child(2) {
+            width: 15%;
+        }
+        
+        .dataset-table th:nth-child(3),
+        .dataset-table td:nth-child(3) {
+            width: 20%;
+        }
+        
+        .dataset-table th:nth-child(4),
+        .dataset-table td:nth-child(4) {
+            width: 35%; /* Wider for actions column */
+        }
+        
+        /* Improve table actions layout on mobile */
+        .table-actions {
+            flex-direction: row;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 10px;
+            justify-content: flex-start;
+            white-space: nowrap;
+            width: 100%;
+        }
+        
+        /* Make download and private buttons smaller */
+        .download-btn, 
+        .private-btn {
+            width: auto;
+            padding: 6px 10px;
+            min-width: 80px;
+            margin-right: 15px;
+        }
+        
+        /* Improve upvote button and count layout */
+        .table-upvote {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            min-width: 120px; /* Ensure enough space for button and count */
+        }
+        
+        .table-upvote button {
+            width: auto;
+            padding: 6px 8px;
+            min-width: 70px;
+        }
+        
+        .table-upvote-count {
+            display: inline-block;
+            margin-left: 10px;
+            min-width: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
     }
 </style>
 
@@ -179,6 +381,7 @@
     // Function to toggle between card and list views
     function toggleView(viewType) {
         const cardView = document.querySelector('.dataset-grid');
+        const tableWrapper = document.querySelector('.table-responsive-wrapper');
         const listView = document.querySelector('.dataset-table');
         const cardBtn = document.getElementById('card-view-btn');
         const listBtn = document.getElementById('list-view-btn');
@@ -187,10 +390,20 @@
             document.body.classList.remove('view-list');
             cardBtn.classList.add('active');
             listBtn.classList.remove('active');
+            
+            // Ensure grid is visible and table is hidden
+            if (cardView) cardView.style.display = '';
+            if (tableWrapper) tableWrapper.style.display = 'none';
+            if (listView) listView.style.display = 'none';
         } else {
             document.body.classList.add('view-list');
             listBtn.classList.add('active');
             cardBtn.classList.remove('active');
+            
+            // Ensure table is visible and grid is hidden
+            if (cardView) cardView.style.display = 'none';
+            if (tableWrapper) tableWrapper.style.display = 'block';
+            if (listView) listView.style.display = 'table';
         }
         
         // Save the user's preference to localStorage
@@ -200,6 +413,7 @@
     // When the page loads, check for saved preference
     document.addEventListener('DOMContentLoaded', function() {
         const savedView = localStorage.getItem('datasetViewPreference');
+        
         if (savedView) {
             toggleView(savedView);
         }
@@ -253,27 +467,22 @@
                     });
                 } else {
                     // List view - use table selectors
-                    const tableUpvoteButton = document.querySelector(`.table-upvote[data-id="${datasetId}"] button`);
+                    const tableUpvoteBtn = document.querySelector(`.table-upvote[data-id="${datasetId}"] button`);
                     const tableCountSpan = document.querySelector(`.table-upvote[data-id="${datasetId}"] .table-upvote-count`);
                     
-                    if (!tableUpvoteButton || !tableCountSpan) {
-                        console.error('Could not find upvote elements for dataset ID', datasetId);
-                        return;
-                    }
-                    
                     // Check if the button is already upvoted
-                    const isUpvoted = tableUpvoteButton.classList.contains('upvoted');
+                    const isUpvoted = tableUpvoteBtn.classList.contains('upvoted');
                     
                     // Toggle the class based on the upvote state
                     if (isUpvoted) {
-                        tableUpvoteButton.classList.remove('upvoted');
-                        tableUpvoteButton.textContent = '⬆ Upvote';
+                        tableUpvoteBtn.classList.remove('upvoted');
+                        tableUpvoteBtn.textContent = '⬆ Upvote';
                     } else {
-                        tableUpvoteButton.classList.add('upvoted');
-                        tableUpvoteButton.textContent = '⬆ Upvoted';
+                        tableUpvoteBtn.classList.add('upvoted');
+                        tableUpvoteBtn.textContent = '⬆ Upvoted';
                     }
                     
-                    // Make the API call to update the upvote
+                    // Make the API call
                     fetch('upvote.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

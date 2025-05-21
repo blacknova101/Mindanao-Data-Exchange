@@ -140,30 +140,74 @@ if (isset($_POST['confirm_leave']) && $_POST['confirm_leave'] === 'yes' && isset
     
     // Proceed with leaving the organization if the user can leave
     if ($can_leave) {
-        // Remove user from organization
-        $leave_sql = "UPDATE users SET organization_id = NULL, user_type = 'Normal' WHERE user_id = ?";
-        $leave_stmt = $conn->prepare($leave_sql);
-        $leave_stmt->bind_param("i", $user_id);
-        
-        if ($leave_stmt->execute()) {
-            $_SESSION['success_message'] = "You have successfully left the organization.";
+        // Start transaction for safety
+        $conn->begin_transaction();
+
+        try {
+            // We need to handle dataset_batches properly
+            // Since organization_id is NOT NULL, we need to find an alternative organization
+            // or create a new placeholder organization for orphaned datasets
             
-            // Check if there are any members left in the organization
-            $check_members_sql = "SELECT COUNT(*) as member_count FROM users WHERE organization_id = ?";
-            $check_members_stmt = $conn->prepare($check_members_sql);
-            $check_members_stmt->bind_param("i", $organization_id);
-            $check_members_stmt->execute();
-            $count_result = $check_members_stmt->get_result();
-            $member_count = $count_result->fetch_assoc()['member_count'];
+            // Check if we already have a placeholder organization
+            $placeholder_sql = "SELECT organization_id FROM organizations WHERE name = 'Unassigned Datasets' LIMIT 1";
+            $placeholder_result = $conn->query($placeholder_sql);
             
-            if ($member_count == 0) {
-                // If no members left, first update dataset_batches to remove the organization reference
-                // but preserve the datasets themselves
-                $update_batches_sql = "UPDATE dataset_batches SET organization_id = NULL WHERE organization_id = ?";
-                $update_batches_stmt = $conn->prepare($update_batches_sql);
-                $update_batches_stmt->bind_param("i", $organization_id);
+            if ($placeholder_result->num_rows === 0) {
+                // Create a placeholder organization for orphaned datasets
+                $create_placeholder_sql = "INSERT INTO organizations (name, type, created_at, description) 
+                                          VALUES ('Unassigned Datasets', 'Other', NOW(), 'Placeholder organization for datasets with no organization')";
+                $conn->query($create_placeholder_sql);
+                $placeholder_org_id = $conn->insert_id;
+                error_log("Created placeholder organization with ID: " . $placeholder_org_id);
+            } else {
+                $placeholder_org_id = $placeholder_result->fetch_assoc()['organization_id'];
+                error_log("Using existing placeholder organization with ID: " . $placeholder_org_id);
+            }
+            
+            // First update user's own dataset batches to the placeholder organization
+            $update_user_batches_sql = "UPDATE dataset_batches SET organization_id = ? 
+                                     WHERE user_id = ? AND organization_id = ?";
+            $update_user_batches_stmt = $conn->prepare($update_user_batches_sql);
+            $update_user_batches_stmt->bind_param("iii", $placeholder_org_id, $user_id, $organization_id);
+            $update_user_batches_stmt->execute();
+            
+            // Remove user from organization
+            $leave_sql = "UPDATE users SET organization_id = NULL, user_type = 'Normal' WHERE user_id = ?";
+            $leave_stmt = $conn->prepare($leave_sql);
+            $leave_stmt->bind_param("i", $user_id);
+            
+            if ($leave_stmt->execute()) {
+                // Check if there are any members left in the organization
+                $check_members_sql = "SELECT COUNT(*) as member_count FROM users WHERE organization_id = ?";
+                $check_members_stmt = $conn->prepare($check_members_sql);
+                $check_members_stmt->bind_param("i", $organization_id);
+                $check_members_stmt->execute();
+                $count_result = $check_members_stmt->get_result();
+                $member_count = $count_result->fetch_assoc()['member_count'];
                 
-                if ($update_batches_stmt->execute()) {
+                if ($member_count == 0) {
+                    // If no members left, update ALL remaining dataset_batches to the placeholder organization
+                    $update_all_batches_sql = "UPDATE dataset_batches SET organization_id = ? WHERE organization_id = ?";
+                    $update_all_batches_stmt = $conn->prepare($update_all_batches_sql);
+                    $update_all_batches_stmt->bind_param("ii", $placeholder_org_id, $organization_id);
+                    $update_all_batches_stmt->execute();
+                    
+                    // Also need to check for sources table
+                    $check_sources_sql = "SELECT COUNT(*) as source_count FROM sources WHERE organization_id = ?";
+                    $check_sources_stmt = $conn->prepare($check_sources_sql);
+                    $check_sources_stmt->bind_param("i", $organization_id);
+                    $check_sources_stmt->execute();
+                    $source_result = $check_sources_stmt->get_result();
+                    $source_count = $source_result->fetch_assoc()['source_count'];
+                    
+                    if ($source_count > 0) {
+                        // Update sources to the placeholder organization
+                        $update_sources_sql = "UPDATE sources SET organization_id = ? WHERE organization_id = ?";
+                        $update_sources_stmt = $conn->prepare($update_sources_sql);
+                        $update_sources_stmt->bind_param("ii", $placeholder_org_id, $organization_id);
+                        $update_sources_stmt->execute();
+                    }
+                    
                     // Store organization details before deletion for historical reference
                     $get_org_details_sql = "SELECT * FROM organizations WHERE organization_id = ?";
                     $get_org_details_stmt = $conn->prepare($get_org_details_sql);
@@ -171,46 +215,56 @@ if (isset($_POST['confirm_leave']) && $_POST['confirm_leave'] === 'yes' && isset
                     $get_org_details_stmt->execute();
                     $org_details = $get_org_details_stmt->get_result()->fetch_assoc();
                     
-                    // Create a record in a historical organizations table if needed
-                    // This is optional but could be useful for maintaining a record of deleted organizations
-                    
                     // Then delete the organization
                     $delete_org_sql = "DELETE FROM organizations WHERE organization_id = ?";
                     $delete_org_stmt = $conn->prepare($delete_org_sql);
                     $delete_org_stmt->bind_param("i", $organization_id);
                     
                     if ($delete_org_stmt->execute()) {
-                        $_SESSION['success_message'] = "You have successfully left the organization and it has been deleted since there are no more members. Any datasets uploaded by the organization have been preserved.";
+                        $_SESSION['success_message'] = "You have successfully left the organization and it has been deleted since there are no more members. Any datasets have been preserved and reassigned.";
                     } else {
-                        // If deletion fails, just mark it as having no owner
+                        // If deletion fails, log the error and just mark it as having no owner
+                        error_log("Failed to delete organization: " . $conn->error);
                         $update_org_sql = "UPDATE organizations SET created_by = NULL WHERE organization_id = ?";
                         $update_org_stmt = $conn->prepare($update_org_sql);
                         $update_org_stmt->bind_param("i", $organization_id);
                         $update_org_stmt->execute();
                         $_SESSION['success_message'] = "You have successfully left the organization. The organization couldn't be deleted but has been marked as having no owner. All datasets are preserved.";
                     }
+                } else if ($member_count > 0 && $is_owner) {
+                    // If there are members but the owner is leaving without transferring ownership
+                    // Mark the organization as having no owner
+                    $update_org_sql = "UPDATE organizations SET created_by = NULL WHERE organization_id = ?";
+                    $update_org_stmt = $conn->prepare($update_org_sql);
+                    $update_org_stmt->bind_param("i", $organization_id);
+                    $update_org_stmt->execute();
+                    $_SESSION['success_message'] = "You have successfully left the organization. Since you were the owner, the organization has been marked as having no owner until another owner is assigned.";
                 } else {
-                    $_SESSION['error_message'] = "Failed to update dataset references. Please contact an administrator.";
-                    header("Location: user_settings.php");
-                    exit();
+                    $_SESSION['success_message'] = "You have successfully left the organization.";
                 }
-            } else if ($member_count > 0 && $is_owner) {
-                // If there are members but the owner is leaving without transferring ownership
-                // Mark the organization as having no owner
-                $update_org_sql = "UPDATE organizations SET created_by = NULL WHERE organization_id = ?";
-                $update_org_stmt = $conn->prepare($update_org_sql);
-                $update_org_stmt->bind_param("i", $organization_id);
-                $update_org_stmt->execute();
+                
+                // Update session variables
+                $_SESSION['organization_id'] = null;
+                $_SESSION['user_type'] = 'Normal';
+                
+                // Commit the transaction
+                $conn->commit();
+                
+                header("Location: user_settings.php");
+                exit();
+            } else {
+                // Rollback in case of error
+                $conn->rollback();
+                $_SESSION['error_message'] = "Failed to leave organization: " . $conn->error;
+                header("Location: user_settings.php");
+                exit();
             }
-            
-            // Update session variables
-            $_SESSION['organization_id'] = null;
-            $_SESSION['user_type'] = 'Normal';
-            
+        } catch (Exception $e) {
+            // Rollback on exception
+            $conn->rollback();
+            $_SESSION['error_message'] = "Error: " . $e->getMessage();
             header("Location: user_settings.php");
             exit();
-        } else {
-            $_SESSION['error_message'] = "Failed to leave organization. Please try again.";
         }
     }
 }

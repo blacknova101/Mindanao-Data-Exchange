@@ -1,0 +1,335 @@
+/* Responsive styles for verify email page */
+
+/* Base styles for the navbar to match main page responsiveness */
+.navbar {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.logo, .nav-links {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Base styles for content containers */
+html, body {
+    height: auto !important;
+    overflow: auto !important;
+}
+
+.container {
+    max-width: 800px !important;
+    width: 85% !important;
+    margin: 20px auto !important;
+    padding: 30px !important;
+    box-sizing: border-box !important;
+    overflow: auto !important;
+}
+
+/* Progress bar styles */
+.progress {
+    width: 100% !important;
+    margin: 20px auto !important;
+    height: auto !important;
+}
+
+.circle {
+    width: 40px !important;
+    height: 40px !important;
+}
+
+/* Content and form styles */
+.content {
+    width: 100% !important;
+}
+
+.verification-form {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.verification-form input[type="text"] {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.verification-form button {
+    width: 100% !important;
+    transition: background-color 0.3s ease !important;
+}
+
+.message {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .navbar {
+        max-width: 1200px !important;
+        padding: 10px 5% !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+    
+    .logo img {
+        width: 80px !important;
+    }
+    
+    .container {
+        max-width: 800px !important;
+    }
+    
+    h2 {
+        font-size: 2.5em !important;
+    }
+}
+
+/* Medium devices (tablets, between 768px and 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .navbar {
+        max-width: 95% !important;
+        padding: 8px 3% !important;
+    }
+    
+    .logo img {
+        width: 60px !important;
+    }
+    
+    .nav-links a {
+        font-size: 16px !important;
+        margin-left: 15px !important;
+    }
+    
+    .container {
+        width: 90% !important;
+        padding: 25px !important;
+    }
+    
+    .progress {
+        margin: 15px auto !important;
+    }
+    
+    h2 {
+        font-size: 2.2em !important;
+    }
+    
+    p {
+        font-size: 16px !important;
+    }
+}
+
+/* Small devices (landscape phones, between 576px and 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .navbar {
+        max-width: 95% !important;
+        padding: 8px 3% !important;
+    }
+    
+    .logo img {
+        width: 50px !important;
+    }
+    
+    .nav-links a {
+        font-size: 15px !important;
+        margin-left: 10px !important;
+    }
+    
+    .container {
+        width: 95% !important;
+        padding: 20px !important;
+    }
+    
+    .progress {
+        margin: 15px auto !important;
+    }
+    
+    .step {
+        font-size: 14px !important;
+    }
+    
+    .circle {
+        width: 35px !important;
+        height: 35px !important;
+    }
+    
+    h2 {
+        font-size: 2em !important;
+        margin-bottom: 15px !important;
+    }
+    
+    p {
+        font-size: 15px !important;
+    }
+    
+    .verification-form {
+        padding: 15px !important;
+    }
+    
+    .verification-form label {
+        font-size: 16px !important;
+    }
+    
+    .verification-form input[type="text"] {
+        padding: 10px !important;
+        font-size: 15px !important;
+    }
+    
+    .verification-form button[type="submit"] {
+        padding: 10px !important;
+        font-size: 16px !important;
+    }
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575px) {
+    .navbar {
+        max-width: 95% !important;
+        padding: 8px 4% !important;
+        margin-top: 15px !important;
+    }
+    
+    .logo img {
+        width: 40px !important;
+    }
+    
+    .nav-links a {
+        font-size: 14px !important;
+        margin-left: 0 !important;
+    }
+    
+    .container {
+        width: 95% !important;
+        padding: 15px !important;
+        margin: 10px auto !important;
+    }
+    
+    .progress {
+        margin: 10px auto !important;
+    }
+    
+    .step {
+        font-size: 12px !important;
+    }
+    
+    .circle {
+        width: 30px !important;
+        height: 30px !important;
+        margin-bottom: 5px !important;
+    }
+    
+    h2 {
+        font-size: 1.8em !important;
+        margin-bottom: 15px !important;
+    }
+    
+    p {
+        font-size: 14px !important;
+    }
+    
+    .verification-form {
+        padding: 15px !important;
+        margin-top: 20px !important;
+    }
+    
+    .verification-form label {
+        font-size: 15px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .verification-form input[type="text"] {
+        padding: 10px !important;
+        font-size: 14px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .verification-form button[type="submit"] {
+        padding: 10px !important;
+        font-size: 15px !important;
+    }
+    
+    .message {
+        padding: 10px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* Very small devices */
+@media (max-width: 380px) {
+    .container {
+        padding: 12px !important;
+    }
+    
+    .progress {
+        margin: 8px auto !important;
+    }
+    
+    .step {
+        font-size: 11px !important;
+    }
+    
+    .circle {
+        width: 25px !important;
+        height: 25px !important;
+        margin-bottom: 3px !important;
+    }
+    
+    h2 {
+        font-size: 1.6em !important;
+        margin-bottom: 12px !important;
+    }
+    
+    p {
+        font-size: 13px !important;
+    }
+    
+    .verification-form {
+        padding: 12px !important;
+        margin-top: 15px !important;
+    }
+    
+    .verification-form label {
+        font-size: 14px !important;
+    }
+    
+    .verification-form input[type="text"] {
+        padding: 8px !important;
+        font-size: 13px !important;
+    }
+    
+    .verification-form button[type="submit"] {
+        padding: 8px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* Landscape mode for small devices */
+@media (max-height: 500px) and (orientation: landscape) {
+    .container {
+        padding: 15px !important;
+        margin: 10px auto !important;
+    }
+    
+    .progress {
+        margin: 10px auto !important;
+    }
+    
+    h2 {
+        font-size: 1.8em !important;
+        margin-bottom: 10px !important;
+    }
+    
+    p {
+        margin-bottom: 10px !important;
+    }
+    
+    .verification-form {
+        padding: 12px !important;
+        margin-top: 15px !important;
+    }
+} 

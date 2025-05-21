@@ -205,8 +205,8 @@ $total_count = $request_count + $notif_count;
         <span><?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></span>
     </div>
     <a href="user_settings.php" class="menu-item">
-        <i id="gear"class="fa-solid fa-gear"></i>
-        <span id="user_settings">User Settings</i>
+        <i id="gear" class="fa-solid fa-gear"></i>
+        <span id="user_settings">User Settings</span>
     </a>
     
     <a href="create_organization_request.php" class="menu-item">
@@ -219,14 +219,14 @@ $total_count = $request_count + $notif_count;
         <span>My Org Requests</span>
     </a>
     
-    <a href="#" class="menu-item">
+    <a href="mydatasets.php" class="menu-item">
         <i class="fa-solid fa-file"></i>
-        <i id="my_datasets" style="cursor: pointer;" onclick="window.location.href='mydatasets.php';">My Datasets</i>
+        <span id="my_datasets">My Datasets</span>
     </a>
     
     <a href="#" class="menu-item notifications-menu">
         <i class="fa-solid fa-envelope"></i>
-        <i id="notifications">Notifications</i>
+        <span id="notifications">Notifications</span>
         <?php if ($total_count > 0): ?>
             <span class="notification-badge"><?php echo $total_count; ?></span>
         <?php endif; ?>
@@ -266,10 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.sidebar-overlay').addEventListener('click', function() {
         document.querySelector('.sidebar').classList.remove('active');
         document.querySelector('.sidebar-overlay').classList.remove('active');
-    });
-    
-    document.querySelector('.sign-out').addEventListener('click', function() {
-        window.location.href = 'mindanaodataexchange.php';
     });
 
     // Toggle submenu for notifications

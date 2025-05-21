@@ -35,7 +35,7 @@ $organizations = [];
 if (!$has_organization && !$has_pending_request) {
     // Handle search
     $search = $_GET['search'] ?? '';
-    $sql = "SELECT organization_id, name FROM organizations WHERE name LIKE ?";
+    $sql = "SELECT organization_id, name FROM organizations WHERE name LIKE ? AND created_by IS NOT NULL";
     $stmt = $conn->prepare($sql);
     $searchParam = '%' . $search . '%';
     $stmt->bind_param("s", $searchParam);

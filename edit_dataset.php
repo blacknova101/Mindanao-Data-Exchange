@@ -51,10 +51,22 @@ $dataset = mysqli_fetch_assoc($result);
 $categories_sql = "SELECT * FROM datasetcategories ORDER BY name";
 $categories_result = mysqli_query($conn, $categories_sql);
 
+// Function to properly handle newlines in descriptions
+function fixNewlines($text) {
+    // First, normalize all newlines to a standard format
+    $text = str_replace(["\r\n", "\r"], "\n", $text);
+    
+    // Then, handle any escaped newlines that might be in the text
+    $text = str_replace(['\\r\\n', '\\n', '\\r'], "\n", $text);
+    
+    return $text;
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title']);
-    $description = trim($_POST['description']);
+    // Get description and fix newlines
+    $description = fixNewlines($_POST['description']);
     $start_period = $_POST['start_period'];
     $end_period = $_POST['end_period'];
     $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
@@ -83,7 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Sanitize inputs
             $title = htmlspecialchars(trim($title));
-            $description = htmlspecialchars(trim($description));
+            
+            // Sanitize description while preserving newlines
+            // First apply fixNewlines again to ensure all newlines are properly handled
+            $description = fixNewlines($description);
+            // Then sanitize HTML
+            $description = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
+            
             $source = htmlspecialchars(trim($source));
             $link = htmlspecialchars(trim($link));
             $location = htmlspecialchars(trim($location));
@@ -201,6 +219,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } else {
             // Simple update of current version
+            
+            // Sanitize description while preserving newlines for regular update
+            $description = fixNewlines($description);
+            $description = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
+            
             $updateDatasetSql = "
                 UPDATE datasets 
                 SET title = ?, description = ?, start_period = ?, end_period = ?,
@@ -727,7 +750,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-group">
                         <label for="description">Description:</label>
-                        <textarea id="description" name="description" rows="4" required><?php echo htmlspecialchars($dataset['description']); ?></textarea>
+                        <textarea id="description" name="description" rows="4" required><?php echo htmlspecialchars(fixNewlines($dataset['description'])); ?></textarea>
+                        <p class="form-help">Use Enter or Shift+Enter for line breaks. Line breaks will be preserved when saving.</p>
                     </div>
 
                     <div class="form-group">
@@ -825,6 +849,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const versionNotes = document.querySelector('.version-notes');
                 versionNotes.style.display = this.value === 'new_version' ? 'block' : 'none';
             });
+        });
+        
+        // Process description before form submission to ensure newlines are preserved
+        document.querySelector('form.edit-form').addEventListener('submit', function(e) {
+            // Get the description textarea
+            const descriptionTextarea = document.getElementById('description');
+            if (descriptionTextarea) {
+                // Replace any literal '\r\n' with actual newlines
+                const value = descriptionTextarea.value;
+                const cleanedValue = value.replace(/\\r\\n|\\n|\\r/g, '\n');
+                descriptionTextarea.value = cleanedValue;
+            }
         });
     </script>
 </body>

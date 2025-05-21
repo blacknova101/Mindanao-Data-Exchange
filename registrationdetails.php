@@ -7,86 +7,85 @@ session_start();
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Registration Form</title>
+    <link rel="stylesheet" href="assets/css/registration_responsive.css">
     <style>
-            html, body {
-        height: auto;
-        overflow: hidden;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
+            padding-left: 30px;
+            background-color:  #0099ff; /* Transparent background */
+            color: #cfd9ff;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            margin: 10px 0;
+            backdrop-filter: blur(10px);
+            max-width: 1200px; /* Limit the maximum width */
+            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
+            margin-top:30px;
+            margin-left: auto; /* Center align the navbar */
+            margin-right: auto; /* Center align the navbar */
+            box-sizing: border-box;
+        }
 
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        text-align: center;
-    }
-    .navbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 5%; /* Adjusted padding for a more compact navbar */
-        padding-left: 30px;
-        background-color:  #0099ff; /* Transparent background */
-        color: #cfd9ff;
-        border-radius: 20px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        position: relative;
-        margin: 10px 0;
-        backdrop-filter: blur(10px);
-        max-width: 1200px; /* Limit the maximum width */
-        width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
-        margin-top:30px;
-        margin-left: auto; /* Center align the navbar */
-        margin-right: auto; /* Center align the navbar */
-    }
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .logo img {
+            height: auto;
+            width: 80px; /* Adjust logo size */
+            max-width: 100%;
+        }
+        .nav-links a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: transform 0.3s ease; /* Smooth transition for scaling */
+        }
+        .nav-links a:hover {
+            transform: scale(1.2); /* Scale up the link by 20% */
+        }
 
-    .logo {
-        display: flex;
-        align-items: center;
-        margin-right: 20px;
-    }
-    .logo img {
-        height: auto;
-        width: 80px; /* Adjust logo size */
-        max-width: 100%;
-    }
-    .nav-links a {
-        color: white;
-        margin-left: 20px;
-        text-decoration: none;
-        font-size: 18px;
-        transition: transform 0.3s ease; /* Smooth transition for scaling */
-    }
-    .nav-links a:hover {
-        transform: scale(1.2); /* Scale up the link by 20% */
-    }
-
-    #background-video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1; /* stays behind everything */
-    }
-    .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-    .container {
-            max-width: 600px;
-            margin: 50px auto;
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* stays behind everything */
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .container {
+            max-width: 800px;
+            width: 85%;
+            margin: 20px auto;
             background-color: white;
-            padding: 40px;
+            padding: 30px;
             text-align: center;
             border-radius: 12px;
             box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-    }
+            box-sizing: border-box;
+        }
         .progress {
             display: flex;
             justify-content: space-between;
-            max-width: 600px;
+            width: 100%;
             margin: 30px auto;
         }
 
@@ -98,7 +97,6 @@ session_start();
             height: 40px;
             border-radius: 50%;
             margin: 0 auto 10px;
-            margin-top:px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -144,6 +142,8 @@ session_start();
             border-radius: 8px;
             font-size: 16px;
             background-color: #f8f9fa;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .error-message {
@@ -163,6 +163,7 @@ session_start();
             gap: 15px;
             align-items: center;
             margin-top: 20px;
+            width: 100%;
         }
 
         .btn-next {
@@ -174,6 +175,11 @@ session_start();
             font-size: 18px;
             cursor: pointer;
             width: 200px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-next:hover {
+            background-color: #007acc;
         }
 
         .btn-cancel {
@@ -182,6 +188,11 @@ session_start();
             color: #333;
             font-size: 18px;
             cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            color: #0099ff;
         }
     </style>
 </head>

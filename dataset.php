@@ -21,6 +21,22 @@ function formatUrl($url) {
     return $url;
 }
 
+// Function to fix newlines in descriptions
+function fixNewlines($text) {
+    if (!$text) return '';
+    
+    // First, normalize all newlines to a standard format
+    $text = str_replace(["\r\n", "\r"], "\n", $text);
+    
+    // Handle literal escaped newline sequences
+    $text = str_replace(['\\r\\n', '\\n', '\\r'], "\n", $text);
+    
+    // Handle literal "\r\n" as text
+    $text = str_replace(['\r\n', '\n', '\r'], "\n", $text);
+    
+    return $text;
+}
+
 $dataset_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
 if (!$dataset_id) {
@@ -407,6 +423,8 @@ $analytics = get_batch_analytics($conn, $batch_id);
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <title><?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
@@ -426,6 +444,13 @@ $analytics = get_batch_analytics($conn, $batch_id);
         margin-bottom: -1px;
         position: relative;
         z-index: 2;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+    }
+    
+    .version-tabs::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
     }
     
     .version-tab {
@@ -443,6 +468,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
         top: 1px;
         text-decoration: none;
         color: #495057;
+        white-space: nowrap;
     }
     
     .version-tab.active {
@@ -502,6 +528,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
         margin-left: auto;
         margin-right: auto;
         font-weight: bold;
+        z-index: 1000;
     }
     
     .logo {
@@ -513,6 +540,19 @@ $analytics = get_batch_analytics($conn, $batch_id);
         height: auto;
         width: 80px;
         max-width: 100%;
+        margin-right: 15px;
+    }
+    
+    .logo h2 {
+        color: white;
+        margin: 0;
+        font-size: 22px;
+        white-space: nowrap;
+    }
+    
+    .nav-links {
+        display: flex;
+        align-items: center;
     }
     
     .nav-links a {
@@ -525,6 +565,155 @@ $analytics = get_batch_analytics($conn, $batch_id);
     
     .nav-links a:hover {
         transform: scale(1.2);
+    }
+    
+    /* Mobile menu toggle button */
+    .mobile-menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        z-index: 1001;
+    }
+    
+    .mobile-menu-toggle i {
+        display: block;
+    }
+
+    /* Responsive styles for the navbar */
+    @media screen and (max-width: 768px) {
+        .navbar {
+            padding: 10px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 90%;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .mobile-menu-toggle {
+            display: block;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            flex-direction: row;
+            align-items: center;
+            text-align: center;
+            max-width: 80%;
+        }
+        
+        .logo img {
+            width: 50px;
+            margin-right: 12px;
+        }
+        
+        .logo h2 {
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-links {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            flex-direction: column;
+            background-color: #0099ff;
+            padding: 10px 0;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 9999;
+        }
+        
+        .nav-links.active {
+            display: flex;
+        }
+        
+        .nav-links a {
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            margin: 0;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 90%;
+            margin: 20px auto;
+            padding: 15px;
+        }
+        
+        .version-tabs {
+            margin-bottom: 10px;
+        }
+        
+        .version-tab {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        
+        .version-indicator {
+            padding: 2px 6px;
+            font-size: 11px;
+        }
+        
+        .header-section {
+            flex-direction: column;
+        }
+        
+        .info-grid {
+            flex-direction: column;
+        }
+        
+        .info-box, .resources-box {
+            min-width: 100%;
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+        .navbar {
+            padding: 8px 10px;
+        }
+        
+        .logo img {
+            width: 45px;
+            margin-right: 10px;
+        }
+        
+        .logo h2 {
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .container {
+            padding: 10px;
+            margin: 15px auto;
+        }
+        
+        .version-tab {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .version-indicator {
+            padding: 2px 4px;
+            font-size: 10px;
+        }
+        
+        .title-section h1 {
+            font-size: 20px;
+        }
     }
 
     .header-section {
@@ -575,6 +764,9 @@ $analytics = get_batch_analytics($conn, $batch_id);
       font-size: 16px;
       line-height: 1.5;
       color: #555;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
 
     .info-grid {
@@ -1651,6 +1843,106 @@ $analytics = get_batch_analytics($conn, $batch_id);
       line-height: 1.4;
       font-size: 14px;
     }
+    
+    /* Responsive styles for comments and modals */
+    @media screen and (max-width: 768px) {
+        #form {
+            padding: 15px;
+        }
+        
+        #form h3 {
+            font-size: 18px;
+        }
+        
+        .comment-item {
+            padding: 12px;
+        }
+        
+        .comment-actions {
+            position: static;
+            margin-top: 10px;
+            justify-content: flex-start;
+        }
+        
+        .comment-replies {
+            margin-left: 10px;
+            padding-left: 10px;
+        }
+        
+        .reply-form {
+            margin-left: 10px;
+        }
+        
+        .modal-content {
+            width: 95%;
+            max-width: 95%;
+            padding: 20px;
+            margin: 10% auto;
+        }
+        
+        .form-row {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+    }
+    
+    @media screen and (max-width: 480px) {
+        #form {
+            padding: 10px;
+        }
+        
+        .comment-item {
+            padding: 10px;
+        }
+        
+        .comment-item strong, 
+        .comment-item small {
+            display: block;
+        }
+        
+        .comment-item small {
+            margin-left: 0;
+            margin-top: 2px;
+        }
+        
+        .btn-edit-comment,
+        .btn-delete-comment,
+        .btn-reply {
+            font-size: 11px;
+            padding: 2px 6px;
+        }
+        
+        .reply-form-actions {
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .btn-cancel-reply,
+        .btn-submit-reply {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .modal-content {
+            padding: 15px;
+        }
+        
+        .close {
+            font-size: 24px;
+            margin-top: -15px;
+            margin-right: -10px;
+        }
+        
+        .modal h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+    }
   </style>
 </head>
 <body>
@@ -1732,7 +2024,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
             <h2><?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?></h2>
         </div>
-        <nav class="nav-links">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
         </nav>
     </header>
@@ -1813,7 +2108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     
     <div class="title-section">
-      <p><?php echo !empty($dataset['description']) ? nl2br(htmlspecialchars($dataset['description'])) : 'No description available.'; ?></p>
+      <p><?php echo !empty($dataset['description']) ? nl2br(htmlspecialchars(fixNewlines($dataset['description']))) : 'No description available.'; ?></p>
       </div>
       
 
@@ -2145,7 +2440,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <div class="form-group">
                 <label for="description">Description:</label>
-                <textarea name="description" id="description" required><?php echo htmlspecialchars($dataset['description']); ?></textarea>
+                <textarea name="description" id="description" required><?php echo htmlspecialchars(fixNewlines($dataset['description'])); ?></textarea>
             </div>
 
             <div class="form-row">
@@ -2284,6 +2579,22 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('.close').addEventListener('click', function() {
                 document.getElementById('request_reason').value = '';
                 countChars();
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            
+            mobileMenuToggle.addEventListener('click', function() {
+                navLinks.classList.toggle('active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideNavbar = event.target.closest('.navbar');
+                if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                }
             });
         });
 

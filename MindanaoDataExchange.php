@@ -356,6 +356,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
     .footer-link:hover {
         color: #e0e0e0;
     }
+    
     </style>
 </head>
 <body>
@@ -380,7 +381,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
             <div class="stats-box">
                 <div class="stat">
                 <span class="stat-number"><?= number_format($dataset_count) ?></span>
-                    <p>Datasets</p>
+                    <p>Dataset Files</p>
                 </div>
                 <div class="divider"></div>
                 <div class="stat">
@@ -438,16 +439,16 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
                 
                 <!-- Social media icons -->
                 <div class="social-icons">
-                    <a href="https://twitter.com" target="_blank" class="social-link">
+                    <a href="https://x.com/MindanaoE66996" target="_blank" class="social-link">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="https://facebook.com" target="_blank" class="social-link">
+                    <a href="https://www.facebook.com/61576255121231" target="_blank" class="social-link">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="https://instagram.com" target="_blank" class="social-link">
+                    <a href="https://www.instagram.com/mindanaodataexchange/-" target="_blank" class="social-link">
                         <i class="fab fa-instagram"></i>
                     </a>
-                    <a href="https://linkedin.com" target="_blank" class="social-link">
+                    <a href="https://www.linkedin.com/in/mindanao-data-exchange-270b97366/" target="_blank" class="social-link">
                         <i class="fab fa-linkedin-in"></i>
                     </a>
                 </div>

@@ -180,13 +180,13 @@ function selectCategory(category_id) {
     // Get the current page URL
     const currentPath = window.location.pathname;
     
-    // If on search_results.php, filter by category on that page
-    if (currentPath.includes('search_results.php')) {
-        // Get the category name instead of ID
+    // If on my_search_results.php, filter by category on that page
+    if (currentPath.includes('my_search_results.php')) {
+        // Get the category name instead of ID for my_search_results.php
         const categoryName = event.target.textContent.trim();
-        window.location.href = 'search_results.php?category=' + encodeURIComponent(categoryName);
+        window.location.href = 'my_search_results.php?category=' + encodeURIComponent(categoryName);
     } else {
-        // Otherwise use the original behavior for other pages
+        // For all other pages, including search_results.php, redirect to datasetsbycategory.php
         window.location.href = 'datasetsbycategory.php?category_id=' + encodeURIComponent(category_id);
     }
 }

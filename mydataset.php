@@ -21,6 +21,22 @@ function formatUrl($url) {
     return $url;
 }
 
+// Function to fix newlines in descriptions
+function fixNewlines($text) {
+    if (!$text) return '';
+    
+    // First, normalize all newlines to a standard format
+    $text = str_replace(["\r\n", "\r"], "\n", $text);
+    
+    // Handle literal escaped newline sequences
+    $text = str_replace(['\\r\\n', '\\n', '\\r'], "\n", $text);
+    
+    // Handle literal "\r\n" as text
+    $text = str_replace(['\r\n', '\n', '\r'], "\n", $text);
+    
+    return $text;
+}
+
 $dataset_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
 if (!$dataset_id) {
@@ -198,6 +214,7 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title><?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
@@ -214,6 +231,13 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
         margin-bottom: -1px;
         position: relative;
         z-index: 2;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+    }
+    
+    .version-tabs::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
     }
     
     .version-tab {
@@ -231,6 +255,7 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
         top: 1px;
         text-decoration: none;
         color: #495057;
+        white-space: nowrap;
     }
     
     .version-tab.active {
@@ -290,6 +315,7 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
             margin-left: auto; /* Center align the navbar */
             margin-right: auto; /* Center align the navbar */
             font-weight: bold;
+            z-index: 1000;
         }
         .logo {
         display: flex;
@@ -299,6 +325,17 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
             height: auto;
             width: 80px; /* Adjust logo size */
             max-width: 100%;
+            margin-right: 15px;
+        }
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
         }
         .nav-links a {
             color: white;
@@ -309,6 +346,103 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
         }
         .nav-links a:hover {
             transform: scale(1.2); /* Scale up on hover */
+        }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+        
+        .mobile-menu-toggle i {
+            display: block;
+        }
+
+        /* Responsive styles for the navbar */
+        @media screen and (max-width: 768px) {
+            .navbar {
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%;
+                max-width: 90%;
+                position: relative;
+                z-index: 2;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .logo {
+                flex-direction: row;
+                align-items: center;
+                text-align: center;
+                max-width: 80%;
+            }
+            
+            .logo img {
+                width: 50px;
+                margin-right: 12px;
+            }
+            
+            .logo h2 {
+                margin: 0;
+                font-size: 22px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 9999;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .navbar {
+                padding: 8px 10px;
+            }
+            
+            .logo img {
+                width: 45px;
+                margin-right: 10px;
+            }
+            
+            .logo h2 {
+                font-size: 18px;
+                text-align: center;
+            }
         }
     
     .header-section {
@@ -359,6 +493,9 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
       font-size: 16px;
       line-height: 1.5;
       color: #555;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
 
     .info-grid {
@@ -973,24 +1110,6 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
       min-width: 0; /* Prevents flex item overflow */
     }
     
-    @media (max-width: 768px) {
-      .modal-content {
-        width: 95%;
-        padding: 20px;
-        margin: 10% auto;
-      }
-      
-      .form-row {
-        flex-direction: column;
-        gap: 15px;
-      }
-      
-      .radio-group {
-        flex-direction: column;
-        gap: 10px;
-      }
-    }
-
     /* Comment section styles with specific IDs */
     #form {
       margin-top: 30px;
@@ -1372,7 +1491,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
             <h2><?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?></h2>
         </div>
-        <nav class="nav-links">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
         </nav>
     </header>
@@ -1429,7 +1551,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
     <div class="title-section">
-      <p><?php echo !empty($dataset['description']) ? nl2br(htmlspecialchars($dataset['description'])) : 'No description available.'; ?></p>
+      <p><?php echo !empty($dataset['description']) ? nl2br(htmlspecialchars(fixNewlines($dataset['description']))) : 'No description available.'; ?></p>
     </div>
       
 
@@ -1710,7 +1832,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <div class="form-group">
                 <label for="description">Description:</label>
-                <textarea name="description" id="description" required><?php echo htmlspecialchars($dataset['description']); ?></textarea>
+                <textarea name="description" id="description" required><?php echo htmlspecialchars(fixNewlines($dataset['description'])); ?></textarea>
             </div>
 
             <div class="form-row">
@@ -1853,6 +1975,24 @@ document.addEventListener('DOMContentLoaded', function() {
         radio.addEventListener('change', function() {
             const versionNotes = document.querySelector('.version-notes');
             versionNotes.style.display = this.value === 'new_version' ? 'block' : 'none';
+        });
+    });
+    
+    // Mobile menu toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const navLinks = document.getElementById('nav-links');
+        
+        mobileMenuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickInsideNavbar = event.target.closest('.navbar');
+            if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+            }
         });
     });
 </script>

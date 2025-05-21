@@ -123,14 +123,17 @@ $requestsResult = mysqli_query($conn, $requestsSql);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manage Dataset Access Requests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
             background-color: #f4f6f9;
             color: #333;
+            overflow-x: hidden;
+            min-width: 320px;
         }
         .navbar {
             display: flex;
@@ -151,6 +154,8 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             margin-left: auto;
             margin-right: auto;
             font-weight: bold;
+            box-sizing: border-box;
+            z-index: 1000;
         }
         .logo {
             display: flex;
@@ -178,6 +183,7 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
         h1, h2 {
             color: #007BFF;
@@ -399,6 +405,203 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             overflow-wrap: break-word !important;
             line-height: 1.8 !important;
         }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+        
+        /* Responsive styles */
+        @media screen and (max-width: 992px) {
+            .container {
+                width: 90%;
+                padding: 15px;
+            }
+            
+            .navbar {
+                padding: 10px 20px;
+                width: 90%;
+            }
+            
+            .logo h2 {
+                font-size: 18px;
+            }
+            
+            .modal-content {
+                width: 70%;
+            }
+            
+            .reason-text {
+                max-width: 200px;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .navbar {
+                padding: 10px 15px;
+                width: calc(100% - 20px);
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .logo img {
+                width: 50px;
+            }
+            
+            .logo h2 {
+                font-size: 16px;
+                margin-left: 10px;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 1000;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+            
+            .container {
+                padding: 10px;
+                margin: 20px auto;
+            }
+            
+            /* Table responsive */
+            .requests-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .requests-table thead, 
+            .requests-table tbody,
+            .requests-table tr {
+                display: block;
+                width: 100%;
+            }
+            
+            .requests-table tr {
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                padding: 10px;
+            }
+            
+            .requests-table td, 
+            .requests-table th {
+                display: flex;
+                flex-direction: column;
+                border: none;
+                padding: 8px 5px;
+                text-align: left;
+                white-space: normal;
+            }
+            
+            .requests-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            .requests-table td {
+                position: relative;
+                padding-left: 50%;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .requests-table td::before {
+                position: absolute;
+                left: 10px;
+                width: 45%;
+                white-space: nowrap;
+                font-weight: bold;
+                color: #007BFF;
+            }
+            
+            .requests-table td:nth-of-type(1)::before { content: "Dataset"; }
+            .requests-table td:nth-of-type(2)::before { content: "Requester"; }
+            .requests-table td:nth-of-type(3)::before { content: "Date Requested"; }
+            .requests-table td:nth-of-type(4)::before { content: "Reason"; }
+            .requests-table td:nth-of-type(5)::before { content: "Verification"; }
+            .requests-table td:nth-of-type(6)::before { content: "Status"; }
+            .requests-table td:nth-of-type(7)::before { content: "Actions"; }
+            
+            .btn {
+                margin-bottom: 5px;
+                width: 100%;
+                box-sizing: border-box;
+                text-align: center;
+            }
+            
+            .reason-text {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .modal-content {
+                width: 90%;
+                margin: 30% auto;
+                padding: 15px;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            .navbar {
+                padding: 8px 10px;
+            }
+            
+            .logo img {
+                width: 40px;
+            }
+            
+            .logo h2 {
+                font-size: 14px;
+                margin-left: 8px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .container {
+                padding: 8px;
+                margin: 15px auto;
+                width: 95%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -411,8 +614,14 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">
             <h2>Manage Access Requests</h2>
         </div>
-        <nav class="nav-links">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
+            <a href="datasets.php">ALL DATASETS</a>
+            <a href="mydatasets.php">MY DATASETS</a>
+            <a href="user_settings.php"><i class="fas fa-user-circle"></i></a>
         </nav>
     </header>
     
@@ -553,6 +762,24 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                 hideReasonModal();
             }
         }
+        
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            
+            mobileMenuToggle.addEventListener('click', function() {
+                navLinks.classList.toggle('active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideNavbar = event.target.closest('.navbar');
+                if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                }
+            });
+        });
     </script>
 </body>
 </html> 

@@ -9,7 +9,8 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Get all organizations
-$sql = "SELECT o.*, COUNT(u.user_id) as member_count 
+$sql = "SELECT o.*, COUNT(u.user_id) as member_count, 
+        CASE WHEN o.created_by IS NULL THEN 1 ELSE 0 END as no_owner
         FROM organizations o
         LEFT JOIN users u ON o.organization_id = u.organization_id
         GROUP BY o.organization_id
@@ -229,7 +230,12 @@ if (isset($_POST['delete_org']) && isset($_POST['org_id'])) {
                         <div class="col-md-4 mb-4">
                             <div class="card org-card h-100">
                                 <div class="card-body">
-                                    <h5 class="card-title"><?php echo htmlspecialchars($org['name']); ?></h5>
+                                    <h5 class="card-title">
+                                        <?php echo htmlspecialchars($org['name']); ?>
+                                        <?php if ($org['no_owner']): ?>
+                                            <span class="badge bg-warning">No Owner</span>
+                                        <?php endif; ?>
+                                    </h5>
                                     <p class="card-text">
                                         <i class="fas fa-users"></i> Members: <?php echo $org['member_count']; ?><br>
                                         <i class="fas fa-calendar"></i> Created: <?php echo date('M d, Y', strtotime($org['created_at'])); ?>

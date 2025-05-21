@@ -1,0 +1,263 @@
+/* Responsive styles for account selection page */
+
+/* Base styles for the navbar to match main page responsiveness */
+.navbar {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.logo, .nav-links {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Base styles for content containers */
+html, body {
+    height: auto !important;
+    overflow: auto !important;
+}
+
+.main-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    padding: 20px 10px !important;
+    box-sizing: border-box !important;
+}
+
+.account-selection-box {
+    box-sizing: border-box !important;
+    max-width: 1100px !important;
+    width: 85% !important;
+    margin: 0px auto !important;
+    padding: 30px !important;
+    padding-bottom: 10px !important;
+    overflow: auto !important;
+}
+
+/* Table styles overrides */
+.account-options {
+    width: 100% !important;
+    table-layout: fixed !important;
+}
+
+.feature-name {
+    font-size: 16px !important;
+    margin-bottom: 8px !important;
+}
+
+.feature-desc {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.checkmark {
+    width: 30px !important;
+    height: 30px !important;
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .navbar {
+        max-width: 1200px !important;
+        padding: 10px 5% !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+    
+    .logo img {
+        width: 80px !important;
+    }
+}
+
+/* Medium devices (tablets, between 768px and 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .navbar {
+        max-width: 95% !important;
+        padding: 8px 3% !important;
+    }
+    
+    .logo img {
+        width: 60px !important;
+    }
+    
+    .nav-links a {
+        font-size: 16px !important;
+        margin-left: 15px !important;
+    }
+    
+    .account-selection-box {
+        width: 90% !important;
+        padding: 30px !important;
+    }
+    
+    .account-options th {
+        padding: 15px !important;
+    }
+    
+    .account-options td {
+        padding: 18px 15px !important;
+    }
+}
+
+/* Small devices (landscape phones, between 576px and 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .navbar {
+        max-width: 95% !important;
+        padding: 8px 3% !important;
+    }
+    
+    .logo img {
+        width: 50px !important;
+    }
+    
+    .nav-links a {
+        font-size: 15px !important;
+        margin-left: 10px !important;
+    }
+    
+    .account-selection-box {
+        width: 95% !important;
+        padding: 20px !important;
+    }
+    
+    .feature-name {
+        font-size: 15px !important;
+    }
+    
+    .feature-desc {
+        font-size: 13px !important;
+    }
+    
+    .account-options th {
+        padding: 12px !important;
+    }
+    
+    .account-options td {
+        padding: 15px 12px !important;
+    }
+    
+    .btn-next, .btn-cancel {
+        width: 160px !important;
+        font-size: 18px !important;
+    }
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575px) {
+    .navbar {
+        max-width: 95% !important;
+        padding: 8px 4% !important;
+        margin-top: 15px !important;
+    }
+    
+    .logo img {
+        width: 40px !important;
+    }
+    
+    .nav-links a {
+        font-size: 14px !important;
+        margin-left: 0 !important;
+    }
+    
+    .account-selection-box {
+        width: 95% !important;
+        padding: 15px !important;
+    }
+    
+    .feature-name {
+        font-size: 14px !important;
+    }
+    
+    .feature-desc {
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+    }
+    
+    .account-type {
+        font-size: 16px !important;
+    }
+    
+    .account-options th {
+        padding: 10px !important;
+    }
+    
+    .account-options td {
+        padding: 12px 8px !important;
+    }
+    
+    .btn-next, .btn-cancel {
+        width: 150px !important;
+        font-size: 16px !important;
+    }
+    
+    .login-link {
+        font-size: 14px !important;
+    }
+}
+
+/* Very small devices */
+@media (max-width: 380px) {
+    .account-selection-box {
+        padding: 10px !important;
+    }
+    
+    .feature-name {
+        font-size: 13px !important;
+    }
+    
+    .feature-desc {
+        font-size: 11px !important;
+    }
+    
+    .account-options th {
+        padding: 8px !important;
+    }
+    
+    .account-options td {
+        padding: 10px 6px !important;
+    }
+    
+    .checkmark {
+        width: 22px !important;
+        height: 22px !important;
+    }
+    
+    .btn-next, .btn-cancel {
+        width: 130px !important;
+        font-size: 15px !important;
+    }
+}
+
+/* Landscape mode for small devices */
+@media (max-height: 500px) and (orientation: landscape) {
+    .account-selection-box {
+        padding: 15px !important;
+    }
+    
+    .account-options {
+        margin-bottom: 20px !important;
+    }
+    
+    .account-options th {
+        padding: 10px !important;
+    }
+    
+    .account-options td {
+        padding: 12px 8px !important;
+    }
+    
+    .btn-next, .btn-cancel {
+        padding: 8px 0 !important;
+        margin: 5px 0 !important;
+    }
+    
+    .login-link {
+        margin-top: 10px !important;
+    }
+} 

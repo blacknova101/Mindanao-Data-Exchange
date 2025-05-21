@@ -191,6 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Organization Request</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -203,10 +204,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 5%;
+            padding: 15px 5%;
             padding-left: 30px;
             background-color: #0099ff;
-            color: #cfd9ff;
+            color: #ffffff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
@@ -218,6 +219,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-left: auto;
             margin-right: auto;
             font-weight: bold;
+            z-index: 1000;
+            min-height: 60px;
         }
         
         .logo {
@@ -229,6 +232,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             height: auto;
             width: 80px;
             max-width: 100%;
+            margin-right: 15px;
+        }
+        
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
         }
         
         .nav-links a {
@@ -237,10 +253,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-decoration: none;
             font-size: 18px;
             transition: transform 0.3s ease;
+            font-weight: bold;
         }
         
         .nav-links a:hover {
             transform: scale(1.2);
+        }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+        
+        .mobile-menu-toggle i {
+            display: block;
+        }
+
+        /* Responsive styles for the navbar */
+        @media screen and (max-width: 768px) {
+            .navbar {
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%;
+                max-width: 90%;
+                position: relative;
+                z-index: 2;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .logo {
+                flex-direction: row;
+                align-items: center;
+                max-width: 80%;
+            }
+            
+            .logo img {
+                width: 50px;
+                margin-right: 12px;
+            }
+            
+            .logo h2 {
+                margin: 0;
+                font-size: 24px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 9999;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .navbar {
+                padding: 8px 10px;
+            }
+            
+            .logo img {
+                width: 50px;
+            }
+            
+            .logo h2 {
+                font-size: 16px;
+            }
         }
         
         .container {
@@ -250,6 +361,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
         }
         
         h1 {
@@ -383,6 +496,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             object-fit: cover;
             z-index: -1;
         }
+        
+        /* Responsive adjustments for form elements */
+        @media screen and (max-width: 600px) {
+            .document-inputs {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .document-inputs input[type="file"] {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .document-inputs button {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .add-document-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -393,10 +528,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">
-            <h2>Create Organization Request</h2>
+            <h2>Create Organization</h2>
         </div>
-        <nav class="nav-links">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
+            <a href="datasets.php">ALL DATASETS</a>
+            <a href="mydatasets.php">MY DATASETS</a>
             <a href="user_settings.php">SETTINGS</a>
         </nav>
     </header>
@@ -477,6 +617,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     
     <script>
+        // Document input functions
         function addDocumentInput() {
             const container = document.getElementById('document-container');
             const newInput = document.createElement('div');
@@ -494,6 +635,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const inputDiv = button.parentElement;
             inputDiv.remove();
         }
+        
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            
+            mobileMenuToggle.addEventListener('click', function() {
+                navLinks.classList.toggle('active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideNavbar = event.target.closest('.navbar');
+                if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                }
+            });
+        });
     </script>
 </body>
 </html> 

@@ -13,7 +13,7 @@ $orgId = $_POST['organization_id'];
 $message = isset($_POST['message']) ? trim($_POST['message']) : '';
 
 // First verify the organization exists and check if it has auto-accept enabled
-$check_org_sql = "SELECT organization_id, auto_accept FROM organizations WHERE organization_id = ?";
+$check_org_sql = "SELECT organization_id, auto_accept, created_by FROM organizations WHERE organization_id = ?";
 $check_stmt = $conn->prepare($check_org_sql);
 $check_stmt->bind_param("i", $orgId);
 $check_stmt->execute();
@@ -28,6 +28,14 @@ if ($org_result->num_rows === 0) {
 
 $org_data = $org_result->fetch_assoc();
 $auto_accept = $org_data['auto_accept'];
+
+// Check if the organization has an owner
+if ($org_data['created_by'] === NULL) {
+    error_log("Join organization failed: Organization ID $orgId has no owner");
+    $_SESSION['error_message'] = "Cannot join an organization without an owner. Please contact the administrator.";
+    header("Location: join_organization.php");
+    exit();
+}
 
 // Check if the user already has a pending request
 $check_pending_sql = "SELECT request_id, status FROM organization_membership_requests 

@@ -99,21 +99,22 @@ $hasOrganization = !empty($organizationId);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
+            padding: 10px 5%;
             padding-left: 30px;
-            background-color: #0099ff; /* Transparent background */
+            background-color: #0099ff;
             color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
             margin: 10px 0;
             backdrop-filter: blur(10px);
-            max-width: 1200px; /* Limit the maximum width */
-            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
-            margin-top:30px;
-            margin-left: auto; /* Center align the navbar */
-            margin-right: auto; /* Center align the navbar */
+            max-width: 1200px;
+            width: 100%;
+            margin-top: 30px;
+            margin-left: auto;
+            margin-right: auto;
             font-weight: bold;
+            z-index: 999;
         }
         .logo {
             display: flex;
@@ -123,13 +124,14 @@ $hasOrganization = !empty($organizationId);
             height: auto;
             width: 80px;
             max-width: 100%;
+            margin-right: 15px;
         }
         .search-bar {
             flex-grow: 1;
             display: flex;
             align-items: center;
             position: relative;
-            margin-left: -190px; /* Adjust space for a smaller navbar */
+            margin-left: -190px;
         }
         .search-bar input {
             padding: 8px;
@@ -147,11 +149,20 @@ $hasOrganization = !empty($organizationId);
             height: 20px;
             margin-left: -50px;
         }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
         .nav-links a {
             color: white;
             margin-left: 20px;
             text-decoration: none;
             font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+        .nav-links a:hover {
+            transform: scale(1.2);
         }
         .profile-icon {
             width: 40px;
@@ -161,7 +172,7 @@ $hasOrganization = !empty($organizationId);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-left: 70px;
+            margin-left: 20px;
         }
         .profile-icon img {
             width: 150%;
@@ -170,26 +181,100 @@ $hasOrganization = !empty($organizationId);
             object-fit: cover;
             cursor: pointer;
         }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+        
+        .mobile-menu-toggle i {
+            display: block;
+        }
+        
         @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .navbar {
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%;
+                max-width: 90%;
+            }
+            
+            .logo {
+                flex-direction: row;
+                text-align: center;
+                max-width: 80%;
+            }
+            
+            .logo img {
+                width: 50px;
+                margin-right: 10px;
+            }
+            
+            .search-bar {
+                display: none;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 9999;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+            
+            .profile-icon {
+                margin-left: 0;
+            }
+            
             .stats-box {
                 flex-direction: column;
                 width: 80%;
                 font-size: 24px;
             }
+            
             .divider {
                 width: 100%;
                 height: 2px;
                 margin: 20px 0;
             }
+            
             h1 {
                 font-size: 40px;
             }
         }
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+
         .container {
             width: 70%;
             margin: 50px auto;
@@ -200,6 +285,17 @@ $hasOrganization = !empty($organizationId);
             text-align: center;
             position: relative;
         }
+        
+        .settings-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        
         .settings-container h2 {
             margin: 0 auto;
             font-size: 25px;
@@ -207,6 +303,21 @@ $hasOrganization = !empty($organizationId);
             text-align: left;
             color: black;
         }
+        
+        @media (max-width: 1200px) {
+            .settings-container {
+                padding: 20px;
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .settings-container {
+                width: 90%;
+                padding: 15px;
+            }
+        }
+
         #uploadForm {
             padding: 20px;
             margin: 0 auto;
@@ -295,43 +406,31 @@ $hasOrganization = !empty($organizationId);
             border-radius: 5px;
             margin-top: 10px;
         }
+        
         @media (max-width: 600px) {
             .container {
                 width: 90%;
             }
-        }
-        #errormessage{
-            color: red;
-        }
-        .settings-container {
-            width: 100%; /* Full width */
-            max-width: 1200px; /* Ensure it matches the max-width of the navbar */
-            margin: 40px auto; /* Centering the container */
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-        }
-
-        @media (max-width: 1200px) {
-            .settings-container {
-                padding: 20px;
+            
+            .category-grid {
+                grid-template-columns: 1fr;
             }
-        }
-
-        @media (max-width: 600px) {
-            .settings-container {
+            
+            .modal-content {
                 width: 90%;
             }
         }
-
-
+        
+        #errormessage{
+            color: red;
+        }
 
         .profile-container {
-            width: 500px;
+            width: 100%;
+            max-width: 500px;
             display: flex;
-            justify-content: space-between; /* Ensure the inputs are spaced out */
-            gap: 30px; /* Add space between the fields */
+            justify-content: space-between;
+            gap: 30px;
         }
 
         .form-group {
@@ -350,17 +449,23 @@ $hasOrganization = !empty($organizationId);
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #ccc;
+            width: 100%;
         }
 
         .form-group input[type="file"] {
             padding: 5px;
         }
+        
         #email, #current_password, #new_password, #confirm_password {
-            width: 468px; /* Set the width of the email input box */
+            width: 100%;
+            max-width: 468px;
         }
+        
         #first_name, #last_name {
-            width: 200px; /* Ensure both fields fit within their respective containers */
+            width: 100%;
+            max-width: 200px;
         }
+        
         #confirmpass{
             padding-bottom: 20px;
         }
@@ -373,14 +478,15 @@ $hasOrganization = !empty($organizationId);
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            height: 42px; /* Match input height */
-            min-width: 120px; /* Set minimum width */
-            max-width: 200px; /* Set maximum width */
+            height: 42px;
+            min-width: 120px;
+            max-width: 200px;
         }
 
         .submit-btn:hover {
             background-color: #007acc;
         }
+        
         #profpic-firstname {
             display: flex;
             align-items: center;
@@ -404,11 +510,13 @@ $hasOrganization = !empty($organizationId);
             border-top: 2px solid black;
             margin-bottom: 10px;
         }
+        
         #first_name[readonly],
         #last_name[readonly] {
-            background-color: #d3d3d3; /* Gray background */
-            cursor: not-allowed; /* Disable the cursor to indicate the field is not editable */
+            background-color: #d3d3d3;
+            cursor: not-allowed;
         }
+        
         #background-video {
             position: fixed;
             top: 0;
@@ -416,36 +524,79 @@ $hasOrganization = !empty($organizationId);
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: -1; /* stays behind everything */
+            z-index: -1;
         }
-        #profile {
-            width: 525px;
-            padding: 25px;
-            background-color: #f2f2f2; /* Light gray background to differentiate from white */
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        #change-password {
-            width: 525px;
-            padding: 25px;
-            background-color: #f2f2f2; /* Light gray background for distinction */
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        #profile-wrapper{
+        
+        #profile-wrapper {
             display: flex;
+            flex-wrap: wrap;
             gap: 50px;
+            justify-content: center;
+            margin-bottom: 50px;
         }
-        #organization-container {
-            width: 525px;
+        
+        #profile {
+            width: 100%;
+            max-width: 525px;
             padding: 25px;
-            background-color: #f2f2f2; /* Light gray background for distinction */
+            background-color: #f2f2f2;
             margin-bottom: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+        
+        #change-password {
+            width: 100%;
+            max-width: 525px;
+            padding: 25px;
+            background-color: #f2f2f2;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            clear: both;
+            box-sizing: border-box;
+        }
+        
+        #change-password h2 {
+            margin-bottom: 20px;
+            text-align: left;
+            padding-left: 0;
+        }
+        
+        #change-password .form-group {
+            width: 100%;
+            padding-right: 15px;
+            box-sizing: border-box;
+        }
+        
+        #change-password input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        
+        #change-password .submit-btn {
+            width: auto;
+            min-width: 200px;
+            margin: 10px auto;
+            display: block;
+        }
+        
+        #organization-container {
+            width: 100%;
+            max-width: 525px;
+            padding: 25px;
+            background-color: #f2f2f2;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
         .create-org-btn {
             background-color: #0099ff;
             color: white;
@@ -455,22 +606,25 @@ $hasOrganization = !empty($organizationId);
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-            margin-left: 15px;
+            text-align: center;
+            width: 100%;
         }
+        
         #org{
             margin-bottom: 23px;
         }
-        /* Add this for disabled state */
+        
         .create-org-btn:disabled {
             background-color: #cccccc;
             color: #666666;
             cursor: not-allowed;
         }
+        
         .leave-org-modal-content {
-            background: #fff; /* white background */
-            border: 2px solid #0099ff; /* blue border */
-            color: #ff4d4d; /* red text for caution */
-            box-shadow: 0 0 20px #0099ff22; /* subtle blue shadow */
+            background: #fff;
+            border: 2px solid #0099ff;
+            color: #ff4d4d;
+            box-shadow: 0 0 20px #0099ff22;
             padding: 30px 20px;
             border-radius: 16px;
             max-width: 400px;
@@ -478,16 +632,19 @@ $hasOrganization = !empty($organizationId);
             text-align: center;
             position: relative;
         }
+        
         .leave-org-modal-content h3 {
-            color: #ff4d4d; /* red for caution */
+            color: #ff4d4d;
             margin-bottom: 10px;
         }
+        
         .leave-org-modal-content p {
-            color: #0099ff; /* blue for instructions */
+            color: #0099ff;
             margin-bottom: 20px;
         }
+        
         .leave-org-modal-content input[type="text"] {
-            border: 1.5px solid #0099ff; /* blue border */
+            border: 1.5px solid #0099ff;
             border-radius: 5px;
             padding: 8px;
             width: 80%;
@@ -495,9 +652,10 @@ $hasOrganization = !empty($organizationId);
             color: #222;
             background: #fff;
         }
+        
         .leave-org-modal-content button[type="submit"] {
-            background: #0099ff; /* blue button */
-            color: #fff;         /* white text */
+            background: #0099ff;
+            color: #fff;
             border: none;
             border-radius: 5px;
             padding: 10px 18px;
@@ -506,31 +664,34 @@ $hasOrganization = !empty($organizationId);
             cursor: pointer;
             transition: background 0.2s;
         }
+        
         .leave-org-modal-content button[type="submit"]:hover {
             background: #007acc;
         }
+        
         .leave-org-modal-content button[type="button"] {
-            background: #fff; /* white background */
-            color: #0099ff;   /* blue text */
-            border: 1.5px solid #0099ff; /* blue border */
+            background: #fff;
+            color: #0099ff;
+            border: 1.5px solid #0099ff;
             border-radius: 5px;
             padding: 10px 18px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
         }
+        
         .leave-org-modal-content button[type="button"]:hover {
             background: #0099ff;
             color: #fff;
         }
+        
         .leave-org-modal-content .warning-icon {
             font-size: 40px;
-            color: #ff4d4d; /* red icon */
+            color: #ff4d4d;
             margin-bottom: 10px;
             display: block;
         }
 
-        /* Floating Success Message */
         .floating-message {
             position: fixed;
             top: 20px;
@@ -545,12 +706,15 @@ $hasOrganization = !empty($organizationId);
             transition: transform 0.3s ease-in-out;
             font-weight: bold;
         }
+        
         .floating-message.show {
             transform: translateX(0);
         }
+        
         .floating-message.hide {
             transform: translateX(150%);
         }
+        
         .error-message {
             color: #dc3545;
             background-color: #f8d7da;
@@ -561,18 +725,12 @@ $hasOrganization = !empty($organizationId);
             font-size: 14px;
         }
 
-        /* Update password button specific style */
-        #change-password .submit-btn {
-            width: 200px; /* Fixed width for password update button */
-            margin: 0 auto; /* Center the button */
-            display: block; /* Make it block level */
-        }
-
         .email-update-container {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             align-items: center;
-            padding-right:20px;
+            padding-right: 20px;
         }
 
         .email-update-btn {
@@ -582,40 +740,6 @@ $hasOrganization = !empty($organizationId);
             white-space: nowrap;
         }
 
-        .submit-btn {
-            padding: 10px 20px;
-            background-color: #0099ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            height: 42px;
-            min-width: 120px;
-            max-width: 200px;
-        }
-
-        .submit-btn:hover {
-            background-color: #007acc;
-        }
-
-        #change-password .submit-btn {
-            width: 200px;
-            margin: 0 auto;
-            display: block;
-        }
-
-        .error-message {
-            color: #dc3545;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        /* Pending request styling */
         .pending-request-info {
             background-color: #fff3cd;
             border: 1px solid #ffeeba;
@@ -650,7 +774,6 @@ $hasOrganization = !empty($organizationId);
             background-color: #c82333;
         }
         
-        /* Admin controls styling */
         .admin-controls {
             margin-top: 20px;
             padding: 15px;
@@ -669,21 +792,27 @@ $hasOrganization = !empty($organizationId);
         .admin-btn {
             display: inline-block;
             background-color: #0099ff;
-            color: white;
+            color: white !important;
             padding: 8px 15px;
             border-radius: 4px;
             text-decoration: none;
             font-weight: bold;
             margin-top: 5px;
             transition: background-color 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            font-size: 14px;
+            min-height: 38px;
+            line-height: 1.5;
         }
         
         .admin-btn:hover {
             background-color: #007acc;
-            color: white;
+            color: white !important;
             text-decoration: none;
         }
-        /* Updated notification badge styles for navbar */
+        
         .nav-links .profile-icon {
             position: relative;
         }
@@ -703,9 +832,183 @@ $hasOrganization = !empty($organizationId);
             align-items: center;
             justify-content: center;
             z-index: 5;
-            padding: 0;               /* Remove extra padding */
-            line-height: 18px;        /* Match height for vertical centering */
-            text-align: center;       /* Ensure text is centered */
+            padding: 0;
+            line-height: 18px;
+            text-align: center;
+        }
+        
+        /* Responsive styles for smaller screens */
+        @media screen and (max-width: 768px) {
+            .profile-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            #first_name, #last_name {
+                width: 90%;
+                max-width: none;
+            }
+            
+            #email, #current_password, #new_password, #confirm_password {
+                width: 90%;
+                max-width: none;
+            }
+            
+            .email-update-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .email-update-btn {
+                width: 100%;
+                margin-top: 10px;
+            }
+            
+            .org-actions {
+                flex-direction: column;
+                width: 100%;
+                gap: 15px;
+            }
+            
+            .create-org-btn {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 0;
+            }
+            
+            #profpic-firstname {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            #header #first_name, #header #last_name {
+                font-size: 20px;
+            }
+            
+            .settings-container {
+                padding-bottom: 50px;
+            }
+            
+            #profile-wrapper {
+                gap: 30px;
+            }
+            
+            #organization-container {
+                padding: 20px;
+                width: 100%;
+            }
+            
+            .admin-controls {
+                padding: 10px;
+            }
+            
+            .admin-btn {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 8px 10px;
+                font-size: 14px;
+                margin-top: 10px;
+            }
+            
+            #change-password {
+                margin-top: 20px;
+                padding: 15px;
+                width: 100%;
+                max-width: none;
+                box-sizing: border-box;
+            }
+            
+            #change-password input[type="password"] {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            #change-password .form-group {
+                padding: 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            #change-password .submit-btn {
+                width: 100%;
+                margin: 10px auto;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            .settings-container h2 {
+                font-size: 20px;
+            }
+            
+            #profile-wrapper {
+                margin-bottom: 30px;
+            }
+            
+            #profile, #organization-container, #change-password {
+                margin-bottom: 30px;
+            }
+            
+            .leave-org-modal-content {
+                max-width: 90%;
+                padding: 20px 10px;
+            }
+            
+            .leave-org-modal-content button[type="submit"],
+            .leave-org-modal-content button[type="button"] {
+                padding: 8px 12px;
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            #change-password {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            #change-password input[type="password"] {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Ensure consistent spacing for organization actions */
+        .org-actions {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Style the view organization requests link */
+        #organization-container a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #0099ff;
+            text-decoration: none;
+        }
+
+        /* Fix organization input field styling */
+        #organization {
+            background-color: #e9e9e9;
+            cursor: not-allowed;
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #555;
+            box-sizing: border-box;
+        }
+        
+        #organization-container .form-group {
+            padding-left: 0;
+            margin-bottom: 15px;
+        }
+        
+        #org-label {
+            padding-left: 0;
         }
     </style>
 </head>
@@ -734,10 +1037,12 @@ $hasOrganization = !empty($organizationId);
                     <button>
                         <img src="images/search_icon.png" alt="Search">
                     </button>
-                    
                 </div>
             </form>
-            <nav class="nav-links">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav class="nav-links" id="nav-links">
                 <a href="HomeLogin.php">HOME</a>
                 <a href="datasets.php">DATASETS</a>
                 <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
@@ -798,6 +1103,7 @@ $hasOrganization = !empty($organizationId);
                     <div id="organization-container">
                         <h2 id="org">Organization</h2>
                         <div class="form-group">
+                            <label id="org-label" for="organization">Current Organization</label>
                             <input type="text" id="organization" name="organization" value="<?php echo $organizationName; ?>" readonly>
                         </div>
                         <?php if ($has_pending_request): ?>
@@ -832,12 +1138,12 @@ $hasOrganization = !empty($organizationId);
                                 if ($is_org_owner): ?>
                                     <div class="admin-controls">
                                         <h4>Organization Owner Controls</h4>
-                                        <a href="manage_org_requests.php" class="admin-btn">Manage Membership Requests</a>
+                                        <a href="manage_org_requests.php" class="admin-btn" style="display: block; color: white; background-color: #0099ff; text-decoration: none; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; width: 100%; box-sizing: border-box;">Manage Membership Requests</a>
                                     </div>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <!-- If user has no org, show options -->
-                                <div class="org-actions" style="display: flex; gap: 10px;">
+                                <div class="org-actions">
                                     <button type="button" class="create-org-btn" onclick="window.location.href='join_organization.php'">Join an Organization</button>
                                     <button type="button" class="create-org-btn" onclick="checkPendingOrgRequests()">Request New Org</button>
                                 </div>
@@ -853,7 +1159,7 @@ $hasOrganization = !empty($organizationId);
                         <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'admin'): ?>
                             <div class="admin-controls" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
                                 <h4>Admin Controls</h4>
-                                <a href="admin_org_requests.php" class="admin-btn">Manage Organization Requests</a>
+                                <a href="admin_org_requests.php" class="admin-btn" style="display: block; color: white; background-color: #0099ff; text-decoration: none; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; width: 100%; box-sizing: border-box;">Manage Organization Requests</a>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -875,7 +1181,7 @@ $hasOrganization = !empty($organizationId);
                             <input type="hidden" name="change_type" value="password">
                         </div>
 
-                        <div id="confirmpass" class="form-group">
+                        <div class="form-group">
                             <label for="confirm_password">Confirm New Password</label>
                             <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" required>
                         </div>
@@ -885,7 +1191,9 @@ $hasOrganization = !empty($organizationId);
                             <?php unset($_SESSION['error_message'], $_SESSION['error_type']); ?>
                         <?php endif; ?>
 
+                        <div style="text-align: center;">
                         <button type="submit" class="submit-btn">Update Password</button>
+                        </div>
                     </form>
                 </div>
 
@@ -928,6 +1236,28 @@ $hasOrganization = !empty($organizationId);
             const leaveOrgModal = document.getElementById("leaveOrgModal");
             if (!leaveOrgModal) {
                 console.error("Leave organization modal element not found");
+            }
+            
+            // Mobile menu toggle functionality
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            
+            if (mobileMenuToggle && navLinks) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    const isClickInsideNavbar = event.target.closest('.navbar');
+                    const isClickOnToggle = event.target.closest('#mobile-menu-toggle');
+                    
+                    if (!isClickInsideNavbar || (isClickInsideNavbar && !isClickOnToggle && event.target.tagName !== 'A')) {
+                        if (navLinks.classList.contains('active') && !isClickOnToggle) {
+                            navLinks.classList.remove('active');
+                        }
+                    }
+                });
             }
         });
 

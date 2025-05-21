@@ -98,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - MDX</title>
     <link rel="stylesheet" href="assets/css/error_styles.css">
+    <link rel="stylesheet" href="assets/css/login_responsive.css">
     <style>
         body {
             font-family: Arial, sans-serif;

@@ -99,8 +99,10 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>All Datasets</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/datasets_styles.css">
     <style>
         html, body {
             height: 100%;
@@ -157,98 +159,7 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
             color: #0c1a36;
             margin-bottom: 15px;
         }
-        #wrapper {
-            max-width: 1240px;
-            margin: 5px auto;
-            padding: 0 20px;
-        }
-        .dataset-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-            gap: 20px;
-            width: 100%;
-        }
-
-        .dataset-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Ensures uploader stays at bottom */
-            height: 250px; /* Fixed height */
-            padding: 20px;
-            box-sizing: border-box;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            overflow: hidden;
-            text-align: left; /* Default alignment for text */
-        }
-        .dataset-download {
-            text-align: center; 
-            margin-top: 10px;
-        }
-
-        .dataset-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #0c1a36;
-            margin-bottom: 10px;
-        }
-
-        .dataset-description {
-            font-size: 14px;
-            color: #333;
-            line-height: 1.4;
-            flex-grow: 1; /* Takes up remaining space */
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .dataset-uploader {
-            font-size: 14px;
-            color: #555;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            line-height: 1.4;
-        }
-        
-        .dataset-uploader .uploader-name {
-            font-weight: 500;
-            border-left: 3px solid #0099ff;
-            padding-left: 8px;
-        }
-        
-        .dataset-uploader .category-badge {
-            margin-left: auto;
-            background-color: #f0f0f0;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            white-space: nowrap;
-        }
-
-        .dataset-card:hover {
-            transform: translateY(-5px);
-        }
-        .dataset-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #0c1a36;
-            margin-bottom: 10px;
-        }
-        .dataset-title a {
-            text-decoration: none;
-            color: #0c1a36;
-        }
-        .dataset-description {
-            font-size: 14px;
-            color: #333;
-            line-height: 1.5;
-        }
-        #wrapper{
-            width: 100%;
-            padding-top: 30px;
-        }
+        /* All dataset-related styles now come from datasets_styles.css */
         .search-bar {
             display: flex;
             position: relative;
@@ -256,7 +167,8 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
         }
         .search-bar input {
             padding: 20px;
-            width: 1000px;/* Reduced width */
+            width: 100%;
+            max-width: 1000px;
             border: solid black 1px;
             border-radius:10px;
             margin-top: 20px;
@@ -396,172 +308,9 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
             margin-top: 21px;
             padding-bottom:19.5px;
         }
-        .dataset-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-            padding-top: 10px;
-        }
-
-        .dataset-download {
-            flex: 1;
-            text-align: center;
-            padding-left: 70px;
-        }
-
-        .dataset-upvote {
-            padding-top: 20px;
-            text-align: right;
-        }
-
-        .dataset-upvote button {
-            background-color: white;
-            color: #333;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 5px 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            width: 80px; /* Ensure a consistent button width */
-            height: 30px; /* Set a fixed height for the button */
-            box-sizing: border-box; /* Prevent padding from affecting size */
-            display: inline-block; /* Keep the button inline to prevent shifting */
-        }
-
-
-        .dataset-upvote button:hover {
-            background-color: #f0f0f0;  /* Light gray background on hover */
-        }
-
-        .dataset-upvote span {
-            display: inline-block;
-            margin-left: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-        }
-        .dataset-upvote button.upvoted {
-            border: 1px solid; /* Avoid layout shift */
-            background-color: #f0f0f0; /* Change background color when upvoted */
-            box-shadow: inset 0 0 0 1px black; /* Add a shadow instead of border */
-        }
-        .dataset-analytics {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            margin-top: 25px;
-        }
-
-        .dataset-analytics .analytics-item {
-            display: flex;
-            align-items: center;
-            color: #888;
-        }
-
-        .dataset-analytics .analytics-item i {
-            margin-right: 4px;
-        }
-
-        .visibility-filter {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .filter-sidebar {
-            position: fixed;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: #f8f9fa;
-            border-radius: 0 10px 10px 0;
-            width: 120px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 15px;
-            z-index: 100;
-        }
         
-        .filter-sidebar-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 14px;
-        }
+        /* All dataset-related styles now come from datasets_styles.css */
         
-        .filter-btn {
-            display: block;
-            padding: 8px 0;
-            margin: 5px 0;
-            text-decoration: none;
-            color: #555;
-            border-radius: 5px;
-            transition: all 0.3s;
-            font-size: 13px;
-        }
-        
-        .filter-btn:hover {
-            background-color: #e9ecef;
-        }
-        
-        .filter-btn.active {
-            background-color: #0099ff;
-            color: white;
-        }
-
-        .visibility-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: 10px;
-            font-weight: bold;
-        }
-
-        .visibility-badge.public {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .visibility-badge.private {
-            background-color: #f44336;
-            color: white;
-        }
-
-        .dataset-card.private {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            opacity: 0.85;
-        }
-
-        .dataset-card.private .dataset-title span {
-            color: #777;
-        }
-
-        .dataset-card.private .dataset-description {
-            color: #777;
-        }
-        
-        /* Ensure view toggle functions properly */
-        .dataset-grid {
-            display: grid; /* Default is grid for card view */
-        }
-        
-        .dataset-table {
-            display: none; /* Initially hidden */
-            width: 100%;
-        }
-        
-        /* When list view is active */
-        .view-list .dataset-grid {
-            display: none !important;
-        }
-        
-        .view-list .dataset-table {
-            display: table !important;
-        }
         .profile-icon {
             width: 40px;
             height: 40px;
@@ -611,6 +360,93 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
             line-height: 18px;        /* Match height for vertical centering */
             text-align: center;       /* Ensure text is centered */
         }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Responsive styles for the navbar */
+        @media screen and (max-width: 768px) {
+            .navbar {
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%; /* Smaller width on mobile */
+                max-width: 90%;
+                position: relative;
+                z-index: 2; /* Give navbar highest z-index */
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .logo img {
+                width: 50px;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 9999; /* Same as navbar to ensure it stays on top */
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+            
+            .profile-icon {
+                margin: 10px auto 0;
+            }
+            
+            /* Ensure notification badge is visible on mobile */
+            .nav-links .notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 9999;
+            }
+        }
+
+        /* Add this to fix z-index issues */
+        .search-bar, #category-btn, .add-data-btn, #wrapper {
+            position: relative;
+            z-index: 1; /* Lower z-index than navbar */
+        }
+
+        @media screen and (max-width: 480px) {
+            .navbar {
+                padding: 8px 10px;
+            }
+            
+            .logo img {
+                width: 50px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -619,6 +455,7 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
     </video>
 
 <!-- Visibility filter sidebar -->
+<!--
 <div class="filter-sidebar">
     <div class="filter-sidebar-title">
         <i class="fa-solid fa-filter"></i>
@@ -628,6 +465,7 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
     <a href="datasets.php?visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
     <a href="datasets.php?visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
 </div>
+-->
 
 <div class="container">
 <header class="navbar">
@@ -635,7 +473,10 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
             <h2>Available Datasets</h2>
         </div>
-        <nav class="nav-links">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="mydatasets.php">MY DATASETS</a>
             <div class="profile-icon" id="navbar-profile-icon">
@@ -646,183 +487,36 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
             </div>
         </nav>
     </header>
-    <form id="searchForm" action="search_results.php" method="GET">
-        <div class="search-bar">
-        <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
-        <button>
-            <img src="images/search_icon.png" alt="Search">
-        </button>
-    </form>
-    <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
 
-    <span class="tooltip-wrapper">
-        <a href="<?= $upload_disabled ? '#' : 'uploadselection.php' ?>" 
-        id="add-data-btn" 
-        class="add-data-btn<?= $upload_disabled ? ' disabled-link' : '' ?>">
-            ADD DATA
-        </a>
-        <?php if ($upload_disabled): ?>
-            <span class="tooltip-text">You must be part of an organization to upload datasets.</span>
-        <?php endif; ?>
-    </span>
-    
+        <form id="searchForm" action="search_results.php" method="GET">
+            <div class="search-bar">
+            <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
+            <button>
+                <img src="images/search_icon.png" alt="Search">
+            </button>
+        </form>
+        <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
+        <span class="tooltip-wrapper">
+            <a href="<?= $upload_disabled ? '#' : 'uploadselection.php' ?>" 
+            id="add-data-btn" 
+            class="add-data-btn<?= $upload_disabled ? ' disabled-link' : '' ?>">
+                ADD DATA
+            </a>
+            <?php if ($upload_disabled): ?>
+                <span class="tooltip-text">You must be part of an organization to upload datasets.</span>
+            <?php endif; ?>
+        </span>
     </div>
 
 <div id="wrapper">
-    <?php include 'view_toggle.php'; ?>
+    <?php
+    // Set variables required by dataset_layout.php
+    $page_title = "Available Datasets";
+    $filter_base_url = "datasets.php";
     
-    <!-- Card View -->
-    <div class="dataset-grid">
-        <?php if (mysqli_num_rows($result) > 0): ?>
-            <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                <?php
-                    $batch_id = $row['dataset_batch_id'];
-                    $analytics = get_batch_analytics($conn, $batch_id);
-                    $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
-                ?>
-                <div class="dataset-card">
-                    <div class="dataset-title">
-                        <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
-                            <?= htmlspecialchars($row['title']) ?>
-                        </a>
-                        <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
-                            <?= $row['visibility'] ?>
-                        </span>
-                        <?php if (!empty($row['category_name'])): ?>
-                            <span class="category-badge" style="margin-left: 5px; background-color: #e9f5ff; color: #0066cc; border: 1px solid #99ccff;">
-                                <?= htmlspecialchars($row['category_name']) ?>
-                            </span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="dataset-description">
-                        <?= htmlspecialchars(mb_strimwidth($row['description'], 0, 255, '...')) ?>
-                    </div>
-                    <div class="dataset-uploader">
-                        <span class="uploader-name">Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></span>
-                    </div>
-                    <div class="dataset-actions">
-                        <div class="dataset-analytics">
-                            <span class="analytics-item" title="Views">
-                                <i class="fa-regular fa-eye"></i>
-                                <?= $analytics['total_views'] ?>
-                            </span>
-                            <span class="analytics-item" title="Downloads">
-                                <i class="fa-solid fa-download"></i>
-                                <?= $analytics['total_downloads'] ?>
-                            </span>
-                        </div>
-                        <div class="dataset-download">
-                            <?php 
-                                $has_access = hasApprovedAccess($conn, $row['dataset_id'], $_SESSION['user_id']);
-                                if (!$is_private_unowned || $has_access): 
-                            ?>
-                                <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
-                            <?php else: ?>
-                                <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
-                            <?php endif; ?>
-                        </div>
-                        <div class="dataset-upvote" data-id="<?= $row['dataset_id'] ?>">
-                            <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
-                                <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
-                            </button>
-                            <span id="upvote-count-<?= $row['dataset_id'] ?>"><?= $row['upvotes'] ?></span>
-                        </div>
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        <?php endif; ?>
-    </div>
-    
-    <!-- Table View -->
-    <table class="dataset-table">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Visibility</th>
-                <th>Analytics</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php 
-            // Reset the result pointer to the beginning
-            mysqli_data_seek($result, 0);
-            
-            if (mysqli_num_rows($result) > 0): 
-                while ($row = mysqli_fetch_assoc($result)): 
-                    $batch_id = $row['dataset_batch_id'];
-                    $analytics = get_batch_analytics($conn, $batch_id);
-                    $is_private_unowned = ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']);
-            ?>
-                <tr>
-                    <td>
-                        <a href="dataset.php?id=<?= $row['dataset_id'] ?>&title=<?= urlencode($row['title']) ?>">
-                            <?= htmlspecialchars($row['title']) ?>
-                        </a>
-                    </td>
-                    <td><?= htmlspecialchars(mb_strimwidth($row['description'], 0, 100, '...')) ?></td>
-                    <td>
-                        <?php if (!empty($row['category_name'])): ?>
-                            <span class="category-badge"><?= htmlspecialchars($row['category_name']) ?></span>
-                        <?php else: ?>
-                            <span class="category-badge">Uncategorized</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <span class="table-visibility <?= strtolower($row['visibility']) ?>">
-                            <?= $row['visibility'] ?>
-                        </span>
-                    </td>
-                    <td>
-                        <div class="table-analytics">
-                            <span class="analytics-item" title="Views">
-                                <i class="fa-regular fa-eye"></i> <?= $analytics['total_views'] ?>
-                            </span>
-                            <span class="analytics-item" title="Downloads">
-                                <i class="fa-solid fa-download"></i> <?= $analytics['total_downloads'] ?>
-                            </span>
-                            <span class="analytics-item" title="Upvotes">
-                                <i class="fa-solid fa-arrow-up"></i> <?= $row['upvotes'] ?>
-                            </span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="table-actions">
-                            <div class="table-download">
-                                <?php 
-                                    $has_access = hasApprovedAccess($conn, $row['dataset_id'], $_SESSION['user_id']);
-                                    if (!$is_private_unowned || $has_access): 
-                                ?>
-                                    <a href="download_batch.php?batch_id=<?= $row['dataset_batch_id'] ?>" class="download-btn">Download</a>
-                                <?php else: ?>
-                                    <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="table-upvote" data-id="<?= $row['dataset_id'] ?>">
-                                <button class="<?= $row['user_upvoted'] == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $row['dataset_id'] ?>)">
-                                    <?= $row['user_upvoted'] == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
-                                </button>
-                                <span class="table-upvote-count"><?= $row['upvotes'] ?></span>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            <?php 
-                endwhile; 
-            endif; 
-            ?>
-        </tbody>
-    </table>
-    
-    <!-- No datasets found message outside of the grid -->
-    <?php if (mysqli_num_rows($result) == 0): ?>
-        <div class="no-datasets">
-            <img src="images/no-found1.png" alt="No data" class="no-found-img">
-            <p>No dataset found.</p>
-        </div>
-    <?php endif; ?>
+    // Include the common layout
+    include 'dataset_layout.php';
+    ?>
 </div>
 
         </div>
@@ -846,6 +540,20 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
             if (savedView) {
                 toggleView(savedView);
             }
+            
+            // Mobile menu toggle functionality
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            
+            mobileMenuToggle.addEventListener('click', function() {
+                navLinks.classList.toggle('active');
+            });
+            
+            // Profile icon click handler
+            document.getElementById('navbar-profile-icon').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.add('active');
+                document.querySelector('.sidebar-overlay').classList.add('active');
+            });
         });
 
     function upvoteDataset(datasetId) {
@@ -867,8 +575,7 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
         fetch('upvote.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `dataset_id=${datasetId}`
-        })
+            body: `dataset_id=${datasetId}`        })
         .then(response => response.json())
         .then(data => {
             let current = parseInt(countSpan.textContent);
@@ -895,3 +602,4 @@ function hasApprovedAccess($conn, $dataset_id, $user_id) {
     
 </body>
 </html>
+

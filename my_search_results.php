@@ -48,6 +48,7 @@ $total_count = $request_count + $notif_count;
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? $_GET['category'] : '';
+$user_id = $_SESSION['user_id'];
 
 // Include the hasApprovedAccess function
 function hasApprovedAccess($conn, $dataset_id, $user_id) {
@@ -95,7 +96,8 @@ if ($search) {
         )
         LEFT JOIN datasetcategories c ON d.category_id = c.category_id
         WHERE 
-            (u.first_name LIKE '%$search%'
+            db.user_id = $user_id
+            AND (u.first_name LIKE '%$search%'
             OR u.last_name LIKE '%$search%'
             OR o.name LIKE '%$search%'
             OR d.title LIKE '%$search%'
@@ -130,7 +132,8 @@ if ($search) {
             SELECT MIN(dataset_id) FROM datasets WHERE dataset_batch_id = db.dataset_batch_id
         )
         LEFT JOIN datasetcategories c ON d.category_id = c.category_id
-        WHERE c.name = '$category'
+        WHERE db.user_id = $user_id
+            AND c.name = '$category'
             $visibility_condition
         ORDER BY db.dataset_batch_id DESC
     ";
@@ -158,10 +161,11 @@ if ($search) {
             SELECT MIN(dataset_id) FROM datasets WHERE dataset_batch_id = db.dataset_batch_id
         )
         LEFT JOIN datasetcategories c ON d.category_id = c.category_id
-        " . ($visibility_condition ? "WHERE " . ltrim($visibility_condition, "AND ") : "") . "
+        WHERE db.user_id = $user_id
+        " . ($visibility_condition ? "AND " . ltrim($visibility_condition, "AND ") : "") . "
         ORDER BY db.dataset_batch_id DESC
     ";
-    $page_title = "All Datasets";
+    $page_title = "My Datasets";
 }
 
 $result = mysqli_query($conn, $sql);
@@ -181,7 +185,7 @@ include 'batch_analytics.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>All Datasets</title>
+    <title>My Datasets Search</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/datasets_styles.css">
     <style>
@@ -195,6 +199,7 @@ include 'batch_analytics.php';
             padding: 0;
             text-align: center;
         }
+        
         .navbar {
             display: flex;
             align-items: center;
@@ -215,15 +220,24 @@ include 'batch_analytics.php';
             margin-right: auto; /* Center align the navbar */
             font-weight: bold;
         }
+        
         .logo {
-        display: flex;
-        align-items: center;
+            display: flex;
+            align-items: center;
         }
+        
         .logo img {
             height: auto;
             width: 80px; /* Adjust logo size */
             max-width: 100%;
         }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
         .nav-links a {
             color: white;
             margin-left: 20px;
@@ -231,10 +245,152 @@ include 'batch_analytics.php';
             font-size: 18px;
             transition: transform 0.3s ease; /* Smooth transition for scaling */
         }
+        
         .nav-links a:hover {
             transform: scale(1.2); /* Scale up on hover */
         }
+        
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+        }
+        
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        
+        /* Updated notification badge styles for navbar */
+        .nav-links .profile-icon {
+            position: relative;
+        }
+        
+        .nav-links .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            padding: 0;               /* Remove extra padding */
+            line-height: 18px;        /* Match height for vertical centering */
+            text-align: center;       /* Ensure text is centered */
+        }
 
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Responsive styles for the navbar */
+        @media screen and (max-width: 768px) {
+            body{
+                overflow-x: hidden;
+            }
+            .navbar {
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%; /* Smaller width on mobile */
+                max-width: 90%;
+                position: relative;
+                z-index: 2; /* Give navbar highest z-index */
+            }
+            .navbar h2{
+                font-size: 21px;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .logo img {
+                width: 50px;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 9999; /* Same as navbar to ensure it stays on top */
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+            
+            .profile-icon {
+                margin: 10px auto 0;
+            }
+            
+            /* Ensure notification badge is visible on mobile */
+            .nav-links .notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 9999;
+            }
+        }
+
+        /* Add this to fix z-index issues */
+        .search-bar, #category-btn, .add-data-btn, #wrapper {
+            position: relative;
+            z-index: 1; /* Lower z-index than navbar */
+        }
+
+        @media screen and (max-width: 480px) {
+            .navbar {
+                padding: 8px 10px;
+            }
+            
+            .logo img {
+                width: 50px;
+            }
+        }
+        
         h2 {
             text-align: center;
             color: #0c1a36;
@@ -263,7 +419,7 @@ include 'batch_analytics.php';
             width: 20px;
             height: 20px;
             margin-left: -50px;
-            margin-top: 16px;
+            margin-top: 20px;
         }
         .add-data-btn {
             margin-top: 20px;
@@ -389,145 +545,6 @@ include 'batch_analytics.php';
             margin-top: 21px;
             padding-bottom:19.5px;
         }
-        
-        /* All dataset-related styles now come from datasets_styles.css */
-        
-        .profile-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: white; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 70px;
-        }
-        .profile-icon img {
-            width: 150%;
-            height: auto;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-        }
-        .profile-icon img:hover {
-            transform: scale(1.2); /* Slightly enlarge the image on hover */
-        }
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        /* Updated notification badge styles for navbar */
-        .nav-links .profile-icon {
-            position: relative;
-        }
-        
-        .nav-links .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #ff3b30;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 5;
-            padding: 0;               /* Remove extra padding */
-            line-height: 18px;        /* Match height for vertical centering */
-            text-align: center;       /* Ensure text is centered */
-        }
-        
-        /* Mobile menu toggle button */
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        /* Responsive styles for the navbar */
-        @media screen and (max-width: 768px) {
-            .navbar {
-                padding: 10px;
-                border-radius: 15px;
-                width: 90%; /* Smaller width on mobile */
-                max-width: 90%;
-                position: relative;
-                z-index: 2; /* Give navbar highest z-index */
-            }
-            
-            .mobile-menu-toggle {
-                display: block;
-                position: absolute;
-                right: 15px;
-                top: 50%;
-                transform: translateY(-50%);
-            }
-            
-            .logo img {
-                width: 50px;
-            }
-            
-            .nav-links {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                flex-direction: column;
-                background-color: #0099ff;
-                padding: 10px 0;
-                border-radius: 0 0 15px 15px;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-                display: none;
-                z-index: 9999; /* Same as navbar to ensure it stays on top */
-            }
-            
-            .nav-links.active {
-                display: flex;
-            }
-            
-            .nav-links a {
-                width: 100%;
-                text-align: center;
-                padding: 10px 0;
-                margin: 0;
-            }
-            
-            .profile-icon {
-                margin: 10px auto 0;
-            }
-            
-            /* Ensure notification badge is visible on mobile */
-            .nav-links .notification-badge {
-                position: absolute;
-                top: -5px;
-                right: -5px;
-                z-index: 9999;
-            }
-        }
-
-        /* Add this to fix z-index issues */
-        .search-bar, #category-btn, .add-data-btn, #wrapper {
-            position: relative;
-            z-index: 1; /* Lower z-index than navbar */
-        }
-
-        @media screen and (max-width: 480px) {
-            .navbar {
-                padding: 8px 10px;
-            }
-            
-            .logo img {
-                width: 50px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -535,30 +552,18 @@ include 'batch_analytics.php';
         <source src="videos/bg6.mp4" type="video/mp4">
     </video>
 
-<!-- Visibility filter sidebar -->
-<!--
-<div class="filter-sidebar">
-    <div class="filter-sidebar-title">
-        <i class="fa-solid fa-filter"></i>
-        VISIBILITY
-    </div>
-    <a href="datasets.php" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
-    <a href="datasets.php?visibility=Public" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
-    <a href="datasets.php?visibility=Private" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
-</div>
--->
-
 <div class="container">
 <header class="navbar">
         <div class="logo">
-            <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
-            <h2>Available Datasets</h2>
+            <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">
+            <h2>My Datasets - Search Results</h2>
         </div>
         <button class="mobile-menu-toggle" id="mobile-menu-toggle">
             <i class="fas fa-bars"></i>
         </button>
         <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
+            <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
             <div class="profile-icon" id="navbar-profile-icon">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
@@ -567,31 +572,31 @@ include 'batch_analytics.php';
                 <?php endif; ?>
             </div>
         </nav>
-    </header> 
-    <form id="searchForm" action="search_results.php" method="GET">
-        <div class="search-bar">
-        <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
-        <button>
-            <img src="images/search_icon.png" alt="Search">
-        </button>
-    </form>
+    </header>
+        <form id="searchForm" action="my_search_results.php" method="GET">
+            <div class="search-bar">
+            <input type="text" name="search" placeholder="Search my datasets" onfocus="showDropdown()" onblur="hideDropdown()">
+            <button>
+                <img src="images/search_icon.png" alt="Search">
+            </button>
+        </form>
         <a id="category-btn" onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
-    <span class="tooltip-wrapper">
-        <a href="<?= $upload_disabled ? '#' : 'uploadselection.php' ?>" 
-        id="add-data-btn" 
-        class="add-data-btn<?= $upload_disabled ? ' disabled-link' : '' ?>">
-            ADD DATA
-        </a>
-        <?php if ($upload_disabled): ?>
-            <span class="tooltip-text">You must be part of an organization to upload datasets.</span>
-        <?php endif; ?>
-    </span>
+        <span class="tooltip-wrapper">
+            <a href="<?= $upload_disabled ? '#' : 'uploadselection.php' ?>" 
+            id="add-data-btn" 
+            class="add-data-btn<?= $upload_disabled ? ' disabled-link' : '' ?>">
+                ADD DATA
+            </a>
+            <?php if ($upload_disabled): ?>
+                <span class="tooltip-text">You must be part of an organization to upload datasets.</span>
+            <?php endif; ?>
+        </span>
     </div>
-<div id="wrapper">
+    <div id="wrapper">
     <?php
     // Set variables required by dataset_layout.php
     // Build the base URL for filter links, preserving existing query parameters
-    $baseUrl = 'search_results.php?';
+    $baseUrl = 'my_search_results.php?';
     if ($search) {
         $baseUrl .= 'search=' . urlencode($search) . '&';
     }
@@ -602,11 +607,8 @@ include 'batch_analytics.php';
     // Remove trailing ampersand if present
     $filter_base_url = rtrim($baseUrl, '&');
     
-    // Set page title
-    $page_title = isset($search) ? "Search results for: " . htmlspecialchars($search) : 
-                 (isset($category) ? htmlspecialchars($category) : "All Datasets");
-    
-    // Back button has been moved to JavaScript to be inserted directly into the controls-wrapper
+    // Set page title and flag for conditional rendering
+    $is_my_datasets = true;
     
     // Include the common layout
     include 'dataset_layout.php';
@@ -698,33 +700,7 @@ include 'batch_analytics.php';
             }
         });
     }
-    // Update the click event to use the specific ID
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('navbar-profile-icon').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.add('active');
-            document.querySelector('.sidebar-overlay').classList.add('active');
-        });
-    });
-
-// Add JavaScript to insert the back button into the controls-wrapper
-document.addEventListener('DOMContentLoaded', function() {
-    <?php if ($category && isset($_SESSION['last_category_id'])): ?>
-        const controlsWrapper = document.querySelector('.controls-wrapper');
-        if (controlsWrapper) {
-            const backButton = document.createElement('a');
-            backButton.href = 'datasetsbycategory.php?category_id=<?= $_SESSION['last_category_id'] ?>';
-            backButton.classList.add('filter-btn', 'back-btn');
-            backButton.style.backgroundColor = '#0099ff';
-            backButton.style.color = 'white';
-            backButton.style.marginRight = '20px';
-            backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Return to <?= htmlspecialchars($_SESSION['last_category_name']) ?>';
-            
-            // Insert at the beginning of controls-wrapper
-            controlsWrapper.insertBefore(backButton, controlsWrapper.firstChild);
-        }
-    <?php endif; ?>
-    });
-    </script>
+</script>
 
 </body>
-</html>
+</html> 

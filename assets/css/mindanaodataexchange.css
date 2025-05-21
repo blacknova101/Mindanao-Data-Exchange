@@ -1,0 +1,327 @@
+/* Responsive styles for MDX */
+
+/* Base styles that apply to all screen sizes */
+html, body {
+    height: 100%;
+}
+
+/* Override inline styles with important to ensure responsive design works properly */
+.navbar {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.logo, .nav-links {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .navbar {
+        max-width: 1200px !important;
+        padding: 10px 5% !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+    
+    .logo {
+        margin-right: 20px !important;
+    }
+    
+    .logo img {
+        width: 80px !important;
+        height: auto !important;
+    }
+    
+    .nav-links {
+        gap: 20px !important;
+    }
+    
+    .nav-links a {
+        margin-left: 20px !important;
+        font-size: 18px !important;
+    }
+    
+    h1 {
+        font-size: 90px !important;
+    }
+    
+    .stats-box {
+        width: 30% !important;
+    }
+}
+
+/* Medium devices (tablets, between 768px and 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .navbar {
+        max-width: 95% !important;
+        padding: 8px 3% !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+    
+    .logo {
+        margin-right: 15px !important;
+    }
+    
+    .logo img {
+        width: 60px !important;
+        height: auto !important;
+    }
+    
+    .nav-links {
+        gap: 15px !important;
+    }
+    
+    .nav-links a {
+        margin-left: 15px !important;
+        font-size: 16px !important;
+    }
+    
+    h1 {
+        font-size: 70px !important;
+    }
+    
+    .stats-box {
+        width: 50% !important;
+    }
+    
+    .footer-container {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 20px !important;
+    }
+}
+
+/* Small devices (landscape phones, between 576px and 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .navbar {
+        max-width: 95% !important;
+        padding: 8px 3% !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+    
+    .logo {
+        margin-right: 10px !important;
+    }
+    
+    .logo img {
+        width: 50px !important;
+        height: auto !important;
+    }
+    
+    .nav-links {
+        gap: 10px !important;
+    }
+    
+    .nav-links a {
+        margin-left: 10px !important;
+        font-size: 15px !important;
+    }
+    
+    .search-bar {
+        margin-left: 15px !important;
+    }
+    
+    h1 {
+        font-size: 50px !important;
+    }
+    
+    #tagline {
+        font-size: 1rem !important;
+    }
+    
+    .stats-box {
+        width: 70% !important;
+        font-size: 24px !important;
+    }
+    
+    .upload-btn i {
+        font-size: 30px !important;
+    }
+    
+    .footer-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+    }
+    
+    .footer-column:last-child {
+        grid-column: span 2 !important;
+    }
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575px) {
+    .navbar {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+        padding: 8px 4% !important;
+        max-width: 95% !important;
+        margin-top: 15px !important;
+    }
+    
+    .logo {
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .logo img {
+        width: 40px !important;
+        height: auto !important;
+    }
+    
+    .nav-links {
+        gap: 12px !important;
+        margin-top: 0 !important;
+    }
+    
+    .nav-links a {
+        margin-left: 0 !important;
+        font-size: 14px !important;
+    }
+    
+    .profile-icon {
+        margin-left: 10px !important;
+        width: 30px !important;
+        height: 30px !important;
+    }
+    
+    h1 {
+        font-size: 40px !important;
+        margin-top: 40px !important;
+    }
+    
+    h1:hover {
+        font-size: 42px !important;
+    }
+    
+    #tagline {
+        font-size: 0.9rem !important;
+    }
+    
+    #tagline:hover {
+        font-size: 1rem !important;
+    }
+    
+    .stats-box {
+        width: 90% !important;
+        font-size: 20px !important;
+    }
+    
+    .stat-number {
+        font-size: 24px !important;
+    }
+    
+    .upload-btn {
+        padding: 15px !important;
+    }
+    
+    .upload-btn i {
+        font-size: 25px !important;
+    }
+    
+    .footer-container {
+        grid-template-columns: 1fr !important;
+        gap: 30px !important;
+    }
+    
+    .footer-column {
+        padding: 0 10px !important;
+    }
+    
+    .footer-heading {
+        font-size: 18px !important;
+    }
+    
+    .footer-text, .footer-description, .footer-link {
+        font-size: 14px !important;
+    }
+}
+
+/* Extra extra small devices (very small phones) */
+@media (max-width: 380px) {
+    .navbar {
+        padding: 6px 3% !important;
+    }
+    
+    .logo img {
+        width: 35px !important;
+    }
+    
+    .nav-links {
+        gap: 8px !important;
+    }
+    
+    .nav-links a {
+        font-size: 13px !important;
+    }
+    
+    h1 {
+        font-size: 32px !important;
+        margin-top: 30px !important;
+    }
+    
+    h1:hover {
+        font-size: 34px !important;
+    }
+    
+    .stats-box {
+        font-size: 16px !important;
+    }
+    
+    .stat-number {
+        font-size: 20px !important;
+    }
+    
+    .upload-btn {
+        padding: 12px !important;
+    }
+    
+    .upload-btn i {
+        font-size: 20px !important;
+    }
+}
+
+/* Portrait phones and smaller in landscape mode */
+@media (max-height: 450px) and (orientation: landscape) {
+    .navbar {
+        padding: 5px 3% !important;
+    }
+    
+    .logo img {
+        width: 40px !important;
+    }
+    
+    h1 {
+        font-size: 36px !important;
+        margin-top: 20px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    #tagline {
+        margin-top: 5px !important;
+    }
+    
+    .stats-box {
+        padding: 10px 0 0 0 !important;
+    }
+    
+    .upload-section {
+        bottom: 10px !important;
+    }
+    
+    .upload-btn {
+        padding: 10px !important;
+    }
+    
+    .upload-btn i {
+        font-size: 18px !important;
+    }
+}
